@@ -3,7 +3,7 @@ services:
     name: stockguru-web
     runtime: node
     plan: standard
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     preDeployCommand: |
       echo "Seeding initial news articles..."
