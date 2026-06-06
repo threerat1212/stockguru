@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="StockGuru">
+  <rect width="64" height="64" rx="14" fill="#0A0E1A"/>
+  <path d="M14 44h36" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <path d="M16 40l10-12 9 7 13-17" fill="none" stroke="#3B82F6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M42 18h8v8" fill="none" stroke="#10B981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

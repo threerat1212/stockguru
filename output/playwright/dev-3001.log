@@ -1,0 +1,1192 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1573ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1690ms (770 modules)
+ GET / 200 in 2239ms
+ GET / 200 in 68ms
+ GET / 200 in 58ms
+ GET / 200 in 74ms
+ ✓ Compiled /api/market in 355ms (423 modules)
+ GET /api/market 200 in 589ms
+ GET / 200 in 179ms
+ GET /api/market 200 in 19ms
+ ○ Compiling /stock/[symbol] ...
+ ✓ Compiled /stock/[symbol] in 1086ms (839 modules)
+ ✓ Compiled /api/stock/history in 140ms (444 modules)
+ ✓ Compiled (446 modules)
+ GET /api/stock/quote?symbol=NVDA 200 in 536ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 584ms
+ ✓ Compiled /api/stock/analysis in 210ms (449 modules)
+ GET /api/stock/analysis?symbol=NVDA 200 in 451ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 181ms
+ GET / 200 in 211ms
+ GET /api/market 200 in 161ms
+ GET /api/stock/quote?symbol=NVDA 200 in 29ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 35ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 2.6s (857 modules)
+ ✓ Compiled in 0ms (446 modules)
+ ✓ Compiled in 1ms (446 modules)
+ ✓ Compiled in 0ms (446 modules)
+ GET /stock/NVDA 200 in 877ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 169ms
+ GET /api/stock/quote?symbol=NVDA 200 in 213ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 215ms
+ ✓ Compiled in 873ms (857 modules)
+ ✓ Compiled in 537ms (855 modules)
+ ✓ Compiled /api/market in 939ms (806 modules)
+ ✓ Compiled (843 modules)
+ GET /api/market 200 in 1064ms
+ GET /api/stock/quote?symbol=NVDA 200 in 1076ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 1084ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /api/stock/history in 953ms (820 modules)
+ ✓ Compiled in 1ms (444 modules)
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 1349ms
+ GET /api/stock/quote?symbol=NVDA 200 in 1351ms
+ GET /stock/NVDA 200 in 1195ms
+ GET /api/stock/quote?symbol=NVDA 200 in 14ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 5ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 86ms
+ GET /stock/NVDA 200 in 82ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 18ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 200 in 18ms
+ GET /api/stock/quote?symbol=NVDA 200 in 177ms
+ ✓ Compiled /api/stock/analysis in 287ms (447 modules)
+ GET /api/stock/analysis?symbol=NVDA 200 in 513ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 200 in 68ms
+ GET / 200 in 193ms
+ ✓ Compiled /api/market in 100ms (449 modules)
+ GET /api/market 200 in 297ms
+ GET /api/stock/quote?symbol=NVDA 200 in 65ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 200 in 185ms
+   Reload env: .env.local
+ ✓ Compiled in 249ms (846 modules)
+ GET /stock/NVDA 200 in 169ms
+ GET /api/stock/quote?symbol=NVDA 200 in 177ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 205ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 200 in 197ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 833ms (855 modules)
+ ✓ Compiled in 0ms (444 modules)
+ ✓ Compiled in 1ms (444 modules)
+ ✓ Compiled in 0ms (444 modules)
+ GET /stock/NVDA 200 in 931ms
+ GET /api/stock/quote?symbol=NVDA 200 in 233ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1M 200 in 244ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 200 in 193ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 874ms (844 modules)
+ GET /api/stock/history?symbol=NVDA&timeframe=3M 404 in 1141ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1Y 404 in 61ms
+ GET /api/stock/history?symbol=NVDA&timeframe=6M 404 in 62ms
+ GET /api/stock/history?symbol=NVDA&timeframe=3M 404 in 84ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 404 in 73ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 404 in 70ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 404 in 81ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 404 in 80ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1W 404 in 71ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 404 in 47ms
+ GET /api/stock/history?symbol=NVDA&timeframe=1D 404 in 83ms
+ ✓ Compiled in 405ms (411 modules)
+ ✓ Compiled in 264ms (411 modules)
+ ✓ Compiled /_not-found in 419ms (809 modules)
+ ✓ Compiled in 333ms (809 modules)
+ GET / 404 in 144ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 1134ms (809 modules)
+ ✓ Compiled in 1ms (403 modules)
+ ✓ Compiled in 1ms (403 modules)
+ ✓ Compiled in 1ms (403 modules)
+ GET /stock/NVDA 200 in 695ms
+ GET / 404 in 109ms
+ ✓ Compiled /api/stock/quote in 331ms (436 modules)
+ GET /api/stock/quote?symbol=NVDA 200 in 571ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 995ms (844 modules)
+ ✓ Compiled in 1ms (437 modules)
+ ✓ Compiled in 0ms (437 modules)
+ ✓ Compiled in 1ms (437 modules)
+ GET /stock/NVDA 200 in 1143ms
+ GET / 404 in 212ms
+ GET /api/stock/quote?symbol=NVDA 200 in 607ms
+ ✓ Compiled in 878ms (830 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/df5c91beb687ed82.webpack.hot-update.json 404 in 776ms
+ GET /_next/static/webpack/df5c91beb687ed82.webpack.hot-update.json 404 in 776ms
+ GET / 404 in 76ms
+ GET /stock/NVDA 200 in 139ms
+ GET / 404 in 124ms
+ GET /api/stock/quote?symbol=NVDA 200 in 593ms
+ ✓ Compiled in 521ms (844 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/f797a26e58699e2a.webpack.hot-update.json 404 in 143ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/f797a26e58699e2a.webpack.hot-update.json 404 in 140ms
+ GET / 404 in 134ms
+ GET /stock/NVDA 200 in 100ms
+ GET /api/stock/quote?symbol=NVDA 200 in 193ms
+ ✓ Compiled in 415ms (844 modules)
+ GET / 404 in 87ms
+ ✓ Compiled in 567ms (830 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/25ab22fd08566a83.webpack.hot-update.json 404 in 437ms
+ GET / 404 in 61ms
+ GET / 404 in 85ms
+ ✓ Compiled in 673ms (830 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/9e243f2bb24a4750.webpack.hot-update.json 404 in 570ms
+ GET / 200 in 55ms
+ GET / 404 in 102ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /api/stock/history in 1903ms (844 modules)
+ ✓ Compiled in 1ms (445 modules)
+ ✓ Compiled in 365ms (844 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /_next/static/webpack/a0dff9b83598eee2.webpack.hot-update.json 404 in 1943ms
+ GET / 200 in 22ms
+ GET /api/stock/quote?symbol=NVDA 200 in 1518ms
+ GET /api/stock/history?symbol=NVDA&timeframe=3M 200 in 1554ms
+ GET / 404 in 63ms
+ ⨯ ./components/market/MarketOverview.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+    ,-[[36;1;4mE:\งาน\หุ้น\stockguru\components\market\MarketOverview.tsx[0m:22:1]
+ [2m22[0m |   }
+ [2m23[0m | 
+ [2m24[0m |   return (
+ [2m25[0m |     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+    : [31;1m     ^^^[0m
+ [2m26[0m |       {indices.map((index) => {
+ [2m27[0m |         const isPositive = index.change >= 0
+ [2m28[0m |         return (
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/market/MarketOverview.tsx
+./app/page.tsx
+ ✓ Compiled in 560ms (820 modules)
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 361 (line 19 column 2)
+    at JSON.parse (<anonymous>)
+    at loadManifest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-manifest.js:36:25)
+    at loadManifestWithRetries (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-components.js:40:51)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:567:9)
+    at process.processTimers (node:internal/timers:541:7)
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-components.js:84:100)
+    at async DevServer.findPageComponentsImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\งาน\หุ้น\stockguru\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 361 (line 19 column 2)
+    at JSON.parse (<anonymous>)
+    at loadManifest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-manifest.js:36:25)
+    at loadManifestWithRetries (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-components.js:40:51)
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\load-components.js:84:100)
+    at async DevServer.findPageComponentsImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\งาน\หุ้น\stockguru\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/stock/NVDA'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.5s (1033 modules)
+ GET /stock/NVDA 200 in 336ms
+ GET / 200 in 110ms
+ ✓ Compiled /api/market in 152ms (483 modules)
+ ✓ Compiled (487 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development\9.pack.gz_' -> 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development\9.pack.gz'
+ GET /api/market 200 in 655ms
+ GET /api/stock/quote?symbol=NVDA 200 in 712ms
+ GET /api/stock/history?symbol=NVDA&timeframe=3M 200 in 745ms
+ ✓ Compiled in 1976ms (1031 modules)
+ ✓ Compiled in 253ms (596 modules)
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1628ms (1172 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled /_error in 310ms (1033 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 931ms (1036 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 4ms
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (102kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (243kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled in 279ms (599 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 226ms (599 modules)
+ GET /stock/NVDA 404 in 1ms
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ GET /_next/static/webpack/7224e5d772628679.webpack.hot-update.json 404 in 31ms
+ ✓ Compiled in 203ms (599 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⚠ ./components/layout/Header.tsx
+Attempted import error: 'useStockSearch' is not exported from '@/lib/hooks/use-stock' (imported as 'useStockSearch').
+
+Import trace for requested module:
+./components/layout/Header.tsx
+
+./components/layout/Header.tsx
+Attempted import error: 'useStockSearch' is not exported from '@/lib/hooks/use-stock' (imported as 'useStockSearch').
+
+Import trace for requested module:
+./components/layout/Header.tsx
+
+./components/layout/Header.tsx
+Attempted import error: 'useStockSearch' is not exported from '@/lib/hooks/use-stock' (imported as 'useStockSearch').
+
+Import trace for requested module:
+./components/layout/Header.tsx
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ components\layout\Header.tsx (21:71) @ useStockSearch
+ ⨯ TypeError: (0 , _lib_hooks_use_stock__WEBPACK_IMPORTED_MODULE_4__.useStockSearch) is not a function
+    at Header (./components/layout/Header.tsx:38:127)
+digest: "684666332"
+[0m [90m 19 |[39m   [36mconst[39m [searchQuery[33m,[39m setSearchQuery] [33m=[39m useState([32m''[39m)[0m
+[0m [90m 20 |[39m   [36mconst[39m [authModalOpen[33m,[39m setAuthModalOpen] [33m=[39m useState([36mfalse[39m)[0m
+[0m[31m[1m>[22m[39m[90m 21 |[39m   [36mconst[39m { results[33m,[39m isLoading[33m:[39m searchLoading[33m,[39m search } [33m=[39m useStockSearch()[0m
+[0m [90m    |[39m                                                                       [31m[1m^[22m[39m[0m
+[0m [90m 22 |[39m   [36mconst[39m { sidebarOpen[33m,[39m toggleSidebar[33m,[39m searchHistory[33m,[39m addSearchHistory } [33m=[39m useAppStore()[0m
+[0m [90m 23 |[39m   [36mconst[39m { user[33m,[39m isAuthenticated[33m,[39m signOut } [33m=[39m useAuth()[0m
+[0m [90m 24 |[39m   [36mconst[39m { isPro } [33m=[39m useSubscription()[0m
+ ✓ Compiled in 477ms (1165 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ components\layout\Header.tsx (21:57) @ useStockSearch
+ ⨯ ReferenceError: useStockSearch is not defined
+    at Header (./components/layout/Header.tsx:36:59)
+digest: "1490876025"
+[0m [90m 19 |[39m   [36mconst[39m [searchQuery[33m,[39m setSearchQuery] [33m=[39m useState([32m''[39m)[0m
+[0m [90m 20 |[39m   [36mconst[39m [authModalOpen[33m,[39m setAuthModalOpen] [33m=[39m useState([36mfalse[39m)[0m
+[0m[31m[1m>[22m[39m[90m 21 |[39m   [36mconst[39m { results[33m,[39m isLoading[33m:[39m searchLoading[33m,[39m search } [33m=[39m useStockSearch()[0m
+[0m [90m    |[39m                                                         [31m[1m^[22m[39m[0m
+[0m [90m 22 |[39m   [36mconst[39m { sidebarOpen[33m,[39m toggleSidebar[33m,[39m searchHistory[33m,[39m addSearchHistory } [33m=[39m useAppStore()[0m
+[0m [90m 23 |[39m   [36mconst[39m { user[33m,[39m isAuthenticated[33m,[39m signOut } [33m=[39m useAuth()[0m
+[0m [90m 24 |[39m   [36mconst[39m { isPro } [33m=[39m useSubscription()[0m
+ ✓ Compiled in 272ms (1165 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 15ms
+ ⨯ lib\hooks\use-stock.ts (62:20) @ length
+ ⨯ TypeError: Cannot read properties of undefined (reading 'length')
+    at useSearch (./lib/hooks/use-stock.ts:71:24)
+    at Header (./components/layout/Header.tsx:38:128)
+digest: "2482907054"
+[0m [90m 60 |[39m     queryKey[33m:[39m [[32m'search'[39m[33m,[39m query][33m,[39m[0m
+[0m [90m 61 |[39m     queryFn[33m:[39m () [33m=>[39m fetchApi[33m<[39m[33mStockSearchResult[39m[][33m>[39m([32m`/api/stock/search?q=${encodeURIComponent(query)}`[39m)[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 62 |[39m     enabled[33m:[39m query[33m.[39mlength [33m>=[39m [35m1[39m[33m,[39m[0m
+[0m [90m    |[39m                    [31m[1m^[22m[39m[0m
+[0m [90m 63 |[39m     staleTime[33m:[39m [35m300[39m_000[33m,[39m[0m
+[0m [90m 64 |[39m   })[0m
+[0m [90m 65 |[39m }[0m
+ GET /_next/static/webpack/9727812a8db79d9e.webpack.hot-update.json 404 in 52ms
+ ⨯ lib\hooks\use-stock.ts (62:20) @ length
+ ⨯ TypeError: Cannot read properties of undefined (reading 'length')
+    at useSearch (./lib/hooks/use-stock.ts:71:24)
+    at Header (./components/layout/Header.tsx:38:128)
+digest: "2482907054"
+[0m [90m 60 |[39m     queryKey[33m:[39m [[32m'search'[39m[33m,[39m query][33m,[39m[0m
+[0m [90m 61 |[39m     queryFn[33m:[39m () [33m=>[39m fetchApi[33m<[39m[33mStockSearchResult[39m[][33m>[39m([32m`/api/stock/search?q=${encodeURIComponent(query)}`[39m)[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 62 |[39m     enabled[33m:[39m query[33m.[39mlength [33m>=[39m [35m1[39m[33m,[39m[0m
+[0m [90m    |[39m                    [31m[1m^[22m[39m[0m
+[0m [90m 63 |[39m     staleTime[33m:[39m [35m300[39m_000[33m,[39m[0m
+[0m [90m 64 |[39m   })[0m
+[0m [90m 65 |[39m }[0m
+ ✓ Compiled in 467ms (1165 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ✓ Compiled in 455ms (1165 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 5ms
+ GET /_next/static/webpack/c8878eb757e3cef6.webpack.hot-update.json 404 in 91ms
+ ✓ Compiled in 605ms (1177 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ GET /stock/NVDA 404 in 4ms
+ GET /_next/static/webpack/0c0b005cd9832d44.webpack.hot-update.json 404 in 114ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 188ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 979ms (1290 modules)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 3ms
+ GET /_next/static/webpack/1c311eafa0b967d0.webpack.hot-update.json 404 in 983ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 1ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 195ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 711ms (1290 modules)
+ GET /stock/NVDA 404 in 3ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 4ms
+ GET /_next/static/webpack/8678f83ea21cc9ea.webpack.hot-update.json 404 in 784ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 1078ms (1290 modules)
+ GET /stock/NVDA 404 in 3ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 12ms
+ GET /_next/static/webpack/b08c0531b062206b.webpack.hot-update.json 404 in 929ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 212ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 747ms (1290 modules)
+ GET /stock/NVDA 404 in 3ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /_next/static/webpack/f056554b10aac6d2.webpack.hot-update.json 404 in 682ms
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 1ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 202ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 747ms (1163 modules)
+ GET /stock/NVDA 404 in 3ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 3ms
+ GET /_next/static/webpack/70f110831238f968.webpack.hot-update.json 404 in 740ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 205ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled in 559ms (1163 modules)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ GET /_next/static/webpack/b5dc756da172abba.webpack.hot-update.json 404 in 529ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 1ms
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"
+ ✓ Compiled in 198ms (663 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ GET /stock/NVDA 404 in 2ms
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NextTracerImpl.trace (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1588:28)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'clientModules')
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:40:25679
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:191:62
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NextTracerImpl.trace (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\lib\trace\tracer.js:191:31
+    at ne (E:\งาน\หุ้น\stockguru\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:42:1678)
+    at async doRender (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1427:30)
+    at async cacheEntry.responseCache.get.routeKind (E:\งาน\หุ้น\stockguru\node_modules\next\dist\server\base-server.js:1588:28)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development-fallback\0.pack.gz_' -> 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development-fallback\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development\2.pack.gz_' -> 'E:\งาน\หุ้น\stockguru\.next\cache\webpack\client-development\2.pack.gz'
+ ✓ Compiled in 766ms (660 modules)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createServerClient (webpack-internal:///(middleware)/./node_modules/@supabase/ssr/dist/module/createServerClient.js:18:15)
+    at updateSession (webpack-internal:///(middleware)/./lib/supabase/middleware.ts:15:87)
+    at Object.middleware [as handler] (webpack-internal:///(middleware)/./middleware.ts:9:89)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:197:31)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at Object.wrap (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/async-storage/request-async-storage-wrapper.js:105:24)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/web/adapter.js:188:122)
+    at eval (webpack-internal:///(middleware)/./node_modules/next/dist/esm/server/lib/trace/tracer.js:115:36)
+    at NoopContextManager.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:7062)
+    at ContextAPI.with (webpack-internal:///(middleware)/./node_modules/next/dist/compiled/@opentelemetry/api/index.js:2:518)
+ ✓ Compiled /_error in 504ms (1160 modules)
+ GET /stock/NVDA 404 in 4ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 846ms (1163 modules)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at createClient (./lib/supabase/client.ts:8:78)
+    at AuthModal (./components/auth/AuthModal.tsx:29:88)
+digest: "2775316246"

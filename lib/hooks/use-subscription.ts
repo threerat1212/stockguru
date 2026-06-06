@@ -1,0 +1,143 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
+export type Plan = 'free' | 'pro' | 'founding_pro' | 'trader'
+
+export interface Subscription {
+  plan: Plan
+  status: 'active' | 'canceled' | 'past_due' | 'expired'
+  currentPeriodEnd: string | null
+}
+
+export interface UsageCounters {
+  aiQuestionsToday: number
+  aiQuestionsMonth: number
+  watchlistCount: number
+  alertsCount: number
+}
+
+export const PLAN_LIMITS = {
+  free: {
+    aiQuestionsDay: 3,
+    aiQuestionsMonth: 90,
+    watchlist: 10,
+    alerts: 3,
+    features: {
+      advancedScreener: false,
+      compare: false,
+      portfolio: false,
+      newsImpact: false,
+      exportCsv: false,
+    },
+  },
+  pro: {
+    aiQuestionsDay: 9999,
+    aiQuestionsMonth: 300,
+    watchlist: 200,
+    alerts: 100,
+    features: {
+      advancedScreener: true,
+      compare: true,
+      portfolio: true,
+      newsImpact: true,
+      exportCsv: true,
+    },
+  },
+  founding_pro: {
+    aiQuestionsDay: 9999,
+    aiQuestionsMonth: 300,
+    watchlist: 200,
+    alerts: 100,
+    features: {
+      advancedScreener: true,
+      compare: true,
+      portfolio: true,
+      newsImpact: true,
+      exportCsv: true,
+    },
+  },
+  trader: {
+    aiQuestionsDay: 9999,
+    aiQuestionsMonth: 500,
+    watchlist: 500,
+    alerts: 200,
+    features: {
+      advancedScreener: true,
+      compare: true,
+      portfolio: true,
+      newsImpact: true,
+      exportCsv: true,
+    },
+  },
+}
+
+export function useSubscription() {
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [usage, setUsage] = useState<UsageCounters | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const fetchSub = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setIsLoading(false)
+        return
+      }
+
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      const { data: usageData } = await supabase
+        .from('usage_counters')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (subData) {
+        setSubscription({
+          plan: subData.plan as Plan,
+          status: subData.status as Subscription['status'],
+          currentPeriodEnd: subData.current_period_end,
+        })
+      } else {
+        setSubscription({ plan: 'free', status: 'active', currentPeriodEnd: null })
+      }
+
+      if (usageData) {
+        setUsage({
+          aiQuestionsToday: usageData.ai_questions_today ?? 0,
+          aiQuestionsMonth: usageData.ai_questions_month ?? 0,
+          watchlistCount: usageData.watchlist_count ?? 0,
+          alertsCount: usageData.alerts_count ?? 0,
+        })
+      }
+
+      setIsLoading(false)
+    }
+
+    fetchSub()
+  }, [])
+
+  const plan = subscription?.status === 'active' ? subscription.plan : 'free'
+  const limits = PLAN_LIMITS[plan]
+
+  return {
+    subscription,
+    usage,
+    plan,
+    limits,
+    isLoading,
+    isPro: plan === 'pro' || plan === 'founding_pro' || plan === 'trader',
+    isTrader: plan === 'trader',
+    isFree: plan === 'free',
+    hasJournalAccess: plan === 'trader',
+    journalLimit: plan === 'trader' ? 9999 : plan === 'pro' ? 5 : 0,
+  }
+}

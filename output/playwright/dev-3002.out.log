@@ -1,0 +1,35 @@
+
+> stockguru@0.1.0 dev
+> next dev -p 3000 -p 3002
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3002
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1500ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1227ms (127 modules)
+ ○ Compiling /pricing ...
+ ✓ Compiled /pricing in 7.2s (832 modules)
+ GET /pricing 200 in 7617ms
+ GET /pricing 200 in 70ms
+ GET /pricing 200 in 86ms
+ GET /pricing 200 in 59ms
+ ○ Compiling /ai ...
+ ✓ Compiled /ai in 582ms (858 modules)
+ GET /ai 200 in 764ms
+ GET /pricing 200 in 90ms
+ GET /ai 200 in 91ms
+ ○ Compiling /journal ...
+ ✓ Compiled /journal in 604ms (870 modules)
+ GET /journal 200 in 764ms
+ GET /pricing 200 in 161ms
+ GET /ai 200 in 117ms
+ GET /journal 200 in 104ms
+ ✓ Compiled in 367ms (870 modules)
+ GET /journal 200 in 180ms
+ ✓ Compiled in 427ms (870 modules)
+ GET /pricing 200 in 149ms
+ ○ Compiling / ...
+[?25h

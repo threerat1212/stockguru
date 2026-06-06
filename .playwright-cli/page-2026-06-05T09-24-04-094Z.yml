@@ -1,0 +1,197 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "StockGuru สต็อกกูรู" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e11]:
+            - heading "StockGuru" [level=1] [ref=e12]
+            - paragraph [ref=e13]: สต็อกกูรู
+        - navigation [ref=e14]:
+          - link "หน้าแรก" [ref=e15] [cursor=pointer]:
+            - /url: /
+          - link "Screener" [ref=e16] [cursor=pointer]:
+            - /url: /screener
+          - link "ข่าวสาร" [ref=e17] [cursor=pointer]:
+            - /url: /news
+          - link "รายการโปรด" [ref=e18] [cursor=pointer]:
+            - /url: /watchlist
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - textbox "ค้นหาหุ้น เช่น PTT, AAPL, NVDA..." [ref=e24]
+      - generic [ref=e25]:
+        - link "เปิดรายการโปรด" [ref=e26] [cursor=pointer]:
+          - /url: /watchlist
+          - img [ref=e27]
+        - button "เปิดการแจ้งเตือน" [ref=e29] [cursor=pointer]:
+          - img [ref=e30]
+  - generic [ref=e34]:
+    - complementary [ref=e35]:
+      - generic [ref=e36]:
+        - navigation [ref=e37]:
+          - link "หน้าแรก" [ref=e38] [cursor=pointer]:
+            - /url: /
+            - img [ref=e39]
+            - text: หน้าแรก
+          - link "หุ้นมาแรง" [ref=e42] [cursor=pointer]:
+            - /url: /trending
+            - img [ref=e43]
+            - text: หุ้นมาแรง
+          - link "Screener" [ref=e46] [cursor=pointer]:
+            - /url: /screener
+            - img [ref=e47]
+            - text: Screener
+          - link "พอร์ตการลงทุน" [ref=e49] [cursor=pointer]:
+            - /url: /portfolio
+            - img [ref=e50]
+            - text: พอร์ตการลงทุน
+          - link "รายการโปรด" [ref=e53] [cursor=pointer]:
+            - /url: /watchlist
+            - img [ref=e54]
+            - text: รายการโปรด
+          - link "แจ้งเตือนราคา" [ref=e56] [cursor=pointer]:
+            - /url: /alerts
+            - img [ref=e57]
+            - text: แจ้งเตือนราคา
+          - link "ข่าวสาร" [ref=e60] [cursor=pointer]:
+            - /url: /news
+            - img [ref=e61]
+            - text: ข่าวสาร
+          - link "ปฏิทินงบ" [ref=e64] [cursor=pointer]:
+            - /url: /earnings
+            - img [ref=e65]
+            - text: ปฏิทินงบ
+          - link "วิเคราะห์กลุ่ม" [ref=e67] [cursor=pointer]:
+            - /url: /sector
+            - img [ref=e68]
+            - text: วิเคราะห์กลุ่ม
+          - link "เปรียบเทียบหุ้น" [ref=e71] [cursor=pointer]:
+            - /url: /compare
+            - img [ref=e72]
+            - text: เปรียบเทียบหุ้น
+          - link "AI วิเคราะห์" [ref=e77] [cursor=pointer]:
+            - /url: /ai
+            - img [ref=e78]
+            - text: AI วิเคราะห์
+          - link "ความรู้" [ref=e88] [cursor=pointer]:
+            - /url: /learn
+            - img [ref=e89]
+            - text: ความรู้
+        - generic [ref=e91]:
+          - heading "เข้าถึงด่วน" [level=3] [ref=e92]
+          - generic [ref=e93]:
+            - link "P ปตท. PTT" [ref=e94] [cursor=pointer]:
+              - /url: /stock/PTT.BK
+              - generic [ref=e96]: P
+              - generic [ref=e97]: ปตท.
+              - generic [ref=e98]: PTT
+            - link "N NVIDIA NVDA" [ref=e99] [cursor=pointer]:
+              - /url: /stock/NVDA
+              - generic [ref=e101]: "N"
+              - generic [ref=e102]: NVIDIA
+              - generic [ref=e103]: NVDA
+            - link "A Apple AAPL" [ref=e104] [cursor=pointer]:
+              - /url: /stock/AAPL
+              - generic [ref=e106]: A
+              - generic [ref=e107]: Apple
+              - generic [ref=e108]: AAPL
+            - link "C ซีพี ออลล์ CPALL" [ref=e109] [cursor=pointer]:
+              - /url: /stock/CPALL.BK
+              - generic [ref=e111]: C
+              - generic [ref=e112]: ซีพี ออลล์
+              - generic [ref=e113]: CPALL
+            - link "M Microsoft MSFT" [ref=e114] [cursor=pointer]:
+              - /url: /stock/MSFT
+              - generic [ref=e116]: M
+              - generic [ref=e117]: Microsoft
+              - generic [ref=e118]: MSFT
+        - generic [ref=e119]:
+          - heading "เครื่องมือ" [level=3] [ref=e120]
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - img [ref=e123]
+              - generic [ref=e125]: อัปเดตเรียลไทม์
+            - generic [ref=e126]:
+              - img [ref=e127]
+              - generic [ref=e137]: AI วิเคราะห์
+            - generic [ref=e138]:
+              - img [ref=e139]
+              - generic [ref=e142]: Technical Analysis
+        - generic [ref=e143]:
+          - paragraph [ref=e144]: StockGuru v1.0
+          - paragraph [ref=e145]: ข้อมูลเพื่อการศึกษาเท่านั้น
+    - main [ref=e146]:
+      - generic [ref=e148]:
+        - generic [ref=e150]:
+          - img [ref=e152]
+          - generic [ref=e154]:
+            - heading "Stock Screener" [level=1] [ref=e155]
+            - paragraph [ref=e156]: ค้นหาและกรองหุ้นไทย หุ้นสหรัฐ และหุ้นต่างประเทศตามเงื่อนไขที่ต้องการ
+        - generic [ref=e157]:
+          - button "Volume leader หุ้นไทยและหุ้นนอกที่มีแรงซื้อขายสูง เหมาะสำหรับเริ่มดูแรงตลาด" [ref=e158] [cursor=pointer]:
+            - img [ref=e160]
+            - paragraph [ref=e162]: Volume leader
+            - paragraph [ref=e163]: หุ้นไทยและหุ้นนอกที่มีแรงซื้อขายสูง เหมาะสำหรับเริ่มดูแรงตลาด
+          - button "US leaders หุ้นสหรัฐขนาดใหญ่ที่นักลงทุนไทยมักใช้ดูทิศทางตลาดโลก" [ref=e164] [cursor=pointer]:
+            - img [ref=e166]
+            - paragraph [ref=e169]: US leaders
+            - paragraph [ref=e170]: หุ้นสหรัฐขนาดใหญ่ที่นักลงทุนไทยมักใช้ดูทิศทางตลาดโลก
+          - button "Global gainers หุ้นที่ปรับขึ้นแรง พร้อมบังคับให้เช็ก volume ก่อนตามราคา" [ref=e171] [cursor=pointer]:
+            - img [ref=e173]
+            - paragraph [ref=e176]: Global gainers
+            - paragraph [ref=e177]: หุ้นที่ปรับขึ้นแรง พร้อมบังคับให้เช็ก volume ก่อนตามราคา
+          - button "Pullback watch หุ้นที่อ่อนตัวแรงและควรตรวจแนวรับก่อนตัดสินใจ" [ref=e178] [cursor=pointer]:
+            - img [ref=e180]
+            - paragraph [ref=e183]: Pullback watch
+            - paragraph [ref=e184]: หุ้นที่อ่อนตัวแรงและควรตรวจแนวรับก่อนตัดสินใจ
+          - button "Bank focus โฟกัสกลุ่มธนาคารเพื่อเทียบการเคลื่อนไหวใน sector เดียวกัน" [ref=e185] [cursor=pointer]:
+            - img [ref=e187]
+            - paragraph [ref=e189]: Bank focus
+            - paragraph [ref=e190]: โฟกัสกลุ่มธนาคารเพื่อเทียบการเคลื่อนไหวใน sector เดียวกัน
+        - generic [ref=e192]:
+          - generic [ref=e194]:
+            - img [ref=e196]
+            - textbox "ค้นหาด้วยชื่อหรือสัญลักษณ์หุ้น..." [ref=e199]
+          - button "ตัวกรอง" [ref=e200] [cursor=pointer]:
+            - img [ref=e201]
+            - text: ตัวกรอง
+        - paragraph [ref=e204]: พบ 0 จาก 0 รายการ
+        - img [ref=e207]
+      - generic [ref=e211]:
+        - generic [ref=e212]:
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - img [ref=e216]
+              - generic [ref=e219]:
+                - heading "StockGuru" [level=2] [ref=e220]
+                - paragraph [ref=e221]: สต็อกกูรู
+            - paragraph [ref=e222]: เว็บไซต์วิเคราะห์หุ้นไทยด้วย AI ครบครันด้วยกราฟเทคนิค ข่าวสาร และเครื่องมือวิเคราะห์
+          - generic [ref=e223]:
+            - heading "ลิงก์ด่วน" [level=3] [ref=e224]
+            - list [ref=e225]:
+              - listitem [ref=e226]:
+                - link "หน้าแรก" [ref=e227] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e228]:
+                - link "Screener" [ref=e229] [cursor=pointer]:
+                  - /url: /screener
+              - listitem [ref=e230]:
+                - link "ข่าวสาร" [ref=e231] [cursor=pointer]:
+                  - /url: /news
+              - listitem [ref=e232]:
+                - link "รายการโปรด" [ref=e233] [cursor=pointer]:
+                  - /url: /watchlist
+          - generic [ref=e234]:
+            - heading "เครื่องมือ" [level=3] [ref=e235]
+            - list [ref=e236]:
+              - listitem [ref=e237]: กราฟเทคนิค
+              - listitem [ref=e238]: AI วิเคราะห์
+              - listitem [ref=e239]: Stock Screener
+              - listitem [ref=e240]: Market Overview
+          - generic [ref=e241]:
+            - heading "ข้อจำกัดความรับผิด" [level=3] [ref=e242]
+            - paragraph [ref=e243]: ข้อมูลในเว็บไซต์นี้จัดทำขึ้นเพื่อวัตถุประสงค์ทางการศึกษาเท่านั้น ไม่ถือเป็นคำแนะนำในการลงทุน การลงทุนมีความเสี่ยง ผู้ลงทุนควรศึกษาข้อมูลก่อนตัดสินใจลงทุน
+        - generic [ref=e244]:
+          - paragraph [ref=e245]: © 2026 StockGuru. สงวนลิขสิทธิ์
+          - generic [ref=e247]: ขับเคลื่อนโดย AI

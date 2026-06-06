@@ -1,0 +1,430 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "StockGuru สต็อกกูรู" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8]
+          - generic [ref=e11]:
+            - heading "StockGuru" [level=1] [ref=e12]
+            - paragraph [ref=e13]: สต็อกกูรู
+        - navigation [ref=e14]:
+          - link "หน้าแรก" [ref=e15] [cursor=pointer]:
+            - /url: /
+          - link "Screener" [ref=e16] [cursor=pointer]:
+            - /url: /screener
+          - link "ข่าวสาร" [ref=e17] [cursor=pointer]:
+            - /url: /news
+          - link "รายการโปรด" [ref=e18] [cursor=pointer]:
+            - /url: /watchlist
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - textbox "ค้นหาหุ้น เช่น PTT, AAPL, NVDA..." [ref=e24]
+      - generic [ref=e25]:
+        - link "เปิดรายการโปรด" [ref=e26] [cursor=pointer]:
+          - /url: /watchlist
+          - img [ref=e27]
+        - button "เปิดการแจ้งเตือน" [ref=e29] [cursor=pointer]:
+          - img [ref=e30]
+  - generic [ref=e34]:
+    - complementary [ref=e35]:
+      - generic [ref=e36]:
+        - navigation [ref=e37]:
+          - link "หน้าแรก" [ref=e38] [cursor=pointer]:
+            - /url: /
+            - img [ref=e39]
+            - text: หน้าแรก
+          - link "หุ้นมาแรง" [ref=e42] [cursor=pointer]:
+            - /url: /trending
+            - img [ref=e43]
+            - text: หุ้นมาแรง
+          - link "Screener" [ref=e46] [cursor=pointer]:
+            - /url: /screener
+            - img [ref=e47]
+            - text: Screener
+          - link "พอร์ตการลงทุน" [ref=e49] [cursor=pointer]:
+            - /url: /portfolio
+            - img [ref=e50]
+            - text: พอร์ตการลงทุน
+          - link "รายการโปรด" [ref=e53] [cursor=pointer]:
+            - /url: /watchlist
+            - img [ref=e54]
+            - text: รายการโปรด
+          - link "แจ้งเตือนราคา" [ref=e56] [cursor=pointer]:
+            - /url: /alerts
+            - img [ref=e57]
+            - text: แจ้งเตือนราคา
+          - link "ข่าวสาร" [ref=e60] [cursor=pointer]:
+            - /url: /news
+            - img [ref=e61]
+            - text: ข่าวสาร
+          - link "ปฏิทินงบ" [ref=e64] [cursor=pointer]:
+            - /url: /earnings
+            - img [ref=e65]
+            - text: ปฏิทินงบ
+          - link "วิเคราะห์กลุ่ม" [ref=e67] [cursor=pointer]:
+            - /url: /sector
+            - img [ref=e68]
+            - text: วิเคราะห์กลุ่ม
+          - link "เปรียบเทียบหุ้น" [ref=e71] [cursor=pointer]:
+            - /url: /compare
+            - img [ref=e72]
+            - text: เปรียบเทียบหุ้น
+          - link "AI วิเคราะห์" [ref=e77] [cursor=pointer]:
+            - /url: /ai
+            - img [ref=e78]
+            - text: AI วิเคราะห์
+          - link "ความรู้" [ref=e88] [cursor=pointer]:
+            - /url: /learn
+            - img [ref=e89]
+            - text: ความรู้
+        - generic [ref=e91]:
+          - heading "เข้าถึงด่วน" [level=3] [ref=e92]
+          - generic [ref=e93]:
+            - link "P ปตท. PTT" [ref=e94] [cursor=pointer]:
+              - /url: /stock/PTT.BK
+              - generic [ref=e96]: P
+              - generic [ref=e97]: ปตท.
+              - generic [ref=e98]: PTT
+            - link "N NVIDIA NVDA" [ref=e99] [cursor=pointer]:
+              - /url: /stock/NVDA
+              - generic [ref=e101]: "N"
+              - generic [ref=e102]: NVIDIA
+              - generic [ref=e103]: NVDA
+            - link "A Apple AAPL" [ref=e104] [cursor=pointer]:
+              - /url: /stock/AAPL
+              - generic [ref=e106]: A
+              - generic [ref=e107]: Apple
+              - generic [ref=e108]: AAPL
+            - link "C ซีพี ออลล์ CPALL" [ref=e109] [cursor=pointer]:
+              - /url: /stock/CPALL.BK
+              - generic [ref=e111]: C
+              - generic [ref=e112]: ซีพี ออลล์
+              - generic [ref=e113]: CPALL
+            - link "M Microsoft MSFT" [ref=e114] [cursor=pointer]:
+              - /url: /stock/MSFT
+              - generic [ref=e116]: M
+              - generic [ref=e117]: Microsoft
+              - generic [ref=e118]: MSFT
+        - generic [ref=e119]:
+          - heading "เครื่องมือ" [level=3] [ref=e120]
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - img [ref=e123]
+              - generic [ref=e125]: อัปเดตเรียลไทม์
+            - generic [ref=e126]:
+              - img [ref=e127]
+              - generic [ref=e137]: AI วิเคราะห์
+            - generic [ref=e138]:
+              - img [ref=e139]
+              - generic [ref=e142]: Technical Analysis
+        - generic [ref=e143]:
+          - paragraph [ref=e144]: StockGuru v1.0
+          - paragraph [ref=e145]: ข้อมูลเพื่อการศึกษาเท่านั้น
+    - main [ref=e146]:
+      - generic [ref=e148]:
+        - generic [ref=e150]:
+          - img [ref=e152]
+          - generic [ref=e154]:
+            - heading "Stock Screener" [level=1] [ref=e155]
+            - paragraph [ref=e156]: ค้นหาและกรองหุ้นไทย หุ้นสหรัฐ และหุ้นต่างประเทศตามเงื่อนไขที่ต้องการ
+        - generic [ref=e157]:
+          - button "Volume leader หุ้นไทยและหุ้นนอกที่มีแรงซื้อขายสูง เหมาะสำหรับเริ่มดูแรงตลาด" [ref=e158] [cursor=pointer]:
+            - img [ref=e160]
+            - paragraph [ref=e162]: Volume leader
+            - paragraph [ref=e163]: หุ้นไทยและหุ้นนอกที่มีแรงซื้อขายสูง เหมาะสำหรับเริ่มดูแรงตลาด
+          - button "US leaders หุ้นสหรัฐขนาดใหญ่ที่นักลงทุนไทยมักใช้ดูทิศทางตลาดโลก" [active] [ref=e164] [cursor=pointer]:
+            - img [ref=e166]
+            - paragraph [ref=e169]: US leaders
+            - paragraph [ref=e170]: หุ้นสหรัฐขนาดใหญ่ที่นักลงทุนไทยมักใช้ดูทิศทางตลาดโลก
+          - button "Global gainers หุ้นที่ปรับขึ้นแรง พร้อมบังคับให้เช็ก volume ก่อนตามราคา" [ref=e171] [cursor=pointer]:
+            - img [ref=e173]
+            - paragraph [ref=e176]: Global gainers
+            - paragraph [ref=e177]: หุ้นที่ปรับขึ้นแรง พร้อมบังคับให้เช็ก volume ก่อนตามราคา
+          - button "Pullback watch หุ้นที่อ่อนตัวแรงและควรตรวจแนวรับก่อนตัดสินใจ" [ref=e178] [cursor=pointer]:
+            - img [ref=e180]
+            - paragraph [ref=e183]: Pullback watch
+            - paragraph [ref=e184]: หุ้นที่อ่อนตัวแรงและควรตรวจแนวรับก่อนตัดสินใจ
+          - button "Bank focus โฟกัสกลุ่มธนาคารเพื่อเทียบการเคลื่อนไหวใน sector เดียวกัน" [ref=e185] [cursor=pointer]:
+            - img [ref=e187]
+            - paragraph [ref=e189]: Bank focus
+            - paragraph [ref=e190]: โฟกัสกลุ่มธนาคารเพื่อเทียบการเคลื่อนไหวใน sector เดียวกัน
+        - generic [ref=e192]:
+          - generic [ref=e194]:
+            - img [ref=e196]
+            - textbox "ค้นหาด้วยชื่อหรือสัญลักษณ์หุ้น..." [ref=e199]
+          - button "ตัวกรอง" [ref=e200] [cursor=pointer]:
+            - img [ref=e201]
+            - text: ตัวกรอง
+        - generic [ref=e203]:
+          - paragraph [ref=e204]: พบ 7 จาก 24 รายการ
+          - generic [ref=e1263]:
+            - generic [ref=e1264]: "ตลาด: US"
+            - generic [ref=e1265]: Volume >= 10M
+            - button "ล้างทั้งหมด" [ref=e1266] [cursor=pointer]
+        - table [ref=e249]:
+          - rowgroup [ref=e250]:
+            - row "สัญลักษณ์ ชื่อบริษัท ตลาด กลุ่ม ราคา เปลี่ยนแปลง Volume มูลค่าตลาด ทำต่อ" [ref=e251]:
+              - columnheader "สัญลักษณ์" [ref=e252]
+              - columnheader "ชื่อบริษัท" [ref=e253]
+              - columnheader "ตลาด" [ref=e254]
+              - columnheader "กลุ่ม" [ref=e255]
+              - columnheader "ราคา" [ref=e256]:
+                - button "ราคา" [ref=e257] [cursor=pointer]:
+                  - text: ราคา
+                  - img [ref=e1267]
+              - columnheader "เปลี่ยนแปลง" [ref=e261]:
+                - button "เปลี่ยนแปลง" [ref=e262] [cursor=pointer]:
+                  - text: เปลี่ยนแปลง
+                  - img [ref=e1270]
+              - columnheader "Volume" [ref=e266]:
+                - button "Volume" [ref=e267] [cursor=pointer]:
+                  - text: Volume
+                  - img [ref=e1273]
+              - columnheader "มูลค่าตลาด" [ref=e270]:
+                - button "มูลค่าตลาด" [ref=e271] [cursor=pointer]:
+                  - text: มูลค่าตลาด
+                  - img [ref=e1276]
+              - columnheader "ทำต่อ" [ref=e275]
+          - rowgroup [ref=e276]:
+            - row "MS MSFT Microsoft Corporation NASDAQ ซอฟต์แวร์ US$472.12 +1.03% 21.80M US$3,510,000,000,000.00 เปิดกราฟ MSFT ถาม AI เกี่ยวกับ MSFT เพิ่ม MSFT เข้ารายการโปรด" [ref=e687]:
+              - cell "MS MSFT" [ref=e688]:
+                - link "MS MSFT" [ref=e689] [cursor=pointer]:
+                  - /url: /stock/MSFT
+                  - generic [ref=e691]: MS
+                  - generic [ref=e692]: MSFT
+              - cell "Microsoft Corporation" [ref=e693]:
+                - generic [ref=e694]: Microsoft Corporation
+              - cell "NASDAQ" [ref=e695]:
+                - generic [ref=e696]: NASDAQ
+              - cell "ซอฟต์แวร์" [ref=e697]:
+                - generic [ref=e698]: ซอฟต์แวร์
+              - cell "US$472.12" [ref=e699]
+              - cell "+1.03%" [ref=e700]:
+                - generic [ref=e701]:
+                  - img [ref=e702]
+                  - generic [ref=e705]: +1.03%
+              - cell "21.80M" [ref=e706]
+              - cell "US$3,510,000,000,000.00" [ref=e707]
+              - cell "เปิดกราฟ MSFT ถาม AI เกี่ยวกับ MSFT เพิ่ม MSFT เข้ารายการโปรด" [ref=e708]:
+                - generic [ref=e709]:
+                  - link "เปิดกราฟ MSFT" [ref=e710] [cursor=pointer]:
+                    - /url: /stock/MSFT
+                    - img [ref=e711]
+                  - link "ถาม AI เกี่ยวกับ MSFT" [ref=e714] [cursor=pointer]:
+                    - /url: /ai?symbol=MSFT
+                    - img [ref=e715]
+                  - button "เพิ่ม MSFT เข้ารายการโปรด" [ref=e725] [cursor=pointer]:
+                    - img [ref=e726]
+            - row "NV NVDA NVIDIA Corporation NASDAQ เซมิคอนดักเตอร์ US$141.22 +4.16% 188.20M US$3,470,000,000,000.00 เปิดกราฟ NVDA ถาม AI เกี่ยวกับ NVDA เพิ่ม NVDA เข้ารายการโปรด" [ref=e277]:
+              - cell "NV NVDA" [ref=e278]:
+                - link "NV NVDA" [ref=e279] [cursor=pointer]:
+                  - /url: /stock/NVDA
+                  - generic [ref=e281]: NV
+                  - generic [ref=e282]: NVDA
+              - cell "NVIDIA Corporation" [ref=e283]:
+                - generic [ref=e284]: NVIDIA Corporation
+              - cell "NASDAQ" [ref=e285]:
+                - generic [ref=e286]: NASDAQ
+              - cell "เซมิคอนดักเตอร์" [ref=e287]:
+                - generic [ref=e288]: เซมิคอนดักเตอร์
+              - cell "US$141.22" [ref=e289]
+              - cell "+4.16%" [ref=e290]:
+                - generic [ref=e291]:
+                  - img [ref=e292]
+                  - generic [ref=e295]: +4.16%
+              - cell "188.20M" [ref=e296]
+              - cell "US$3,470,000,000,000.00" [ref=e297]
+              - cell "เปิดกราฟ NVDA ถาม AI เกี่ยวกับ NVDA เพิ่ม NVDA เข้ารายการโปรด" [ref=e298]:
+                - generic [ref=e299]:
+                  - link "เปิดกราฟ NVDA" [ref=e300] [cursor=pointer]:
+                    - /url: /stock/NVDA
+                    - img [ref=e301]
+                  - link "ถาม AI เกี่ยวกับ NVDA" [ref=e304] [cursor=pointer]:
+                    - /url: /ai?symbol=NVDA
+                    - img [ref=e305]
+                  - button "เพิ่ม NVDA เข้ารายการโปรด" [ref=e315] [cursor=pointer]:
+                    - img [ref=e316]
+            - row "AA AAPL Apple Inc. NASDAQ เทคโนโลยี US$196.58 +1.21% 52.40M US$3,010,000,000,000.00 เปิดกราฟ AAPL ถาม AI เกี่ยวกับ AAPL เพิ่ม AAPL เข้ารายการโปรด" [ref=e400]:
+              - cell "AA AAPL" [ref=e401]:
+                - link "AA AAPL" [ref=e402] [cursor=pointer]:
+                  - /url: /stock/AAPL
+                  - generic [ref=e404]: AA
+                  - generic [ref=e405]: AAPL
+              - cell "Apple Inc." [ref=e406]:
+                - generic [ref=e407]: Apple Inc.
+              - cell "NASDAQ" [ref=e408]:
+                - generic [ref=e409]: NASDAQ
+              - cell "เทคโนโลยี" [ref=e410]:
+                - generic [ref=e411]: เทคโนโลยี
+              - cell "US$196.58" [ref=e412]
+              - cell "+1.21%" [ref=e413]:
+                - generic [ref=e414]:
+                  - img [ref=e415]
+                  - generic [ref=e418]: +1.21%
+              - cell "52.40M" [ref=e419]
+              - cell "US$3,010,000,000,000.00" [ref=e420]
+              - cell "เปิดกราฟ AAPL ถาม AI เกี่ยวกับ AAPL เพิ่ม AAPL เข้ารายการโปรด" [ref=e421]:
+                - generic [ref=e422]:
+                  - link "เปิดกราฟ AAPL" [ref=e423] [cursor=pointer]:
+                    - /url: /stock/AAPL
+                    - img [ref=e424]
+                  - link "ถาม AI เกี่ยวกับ AAPL" [ref=e427] [cursor=pointer]:
+                    - /url: /ai?symbol=AAPL
+                    - img [ref=e428]
+                  - button "เพิ่ม AAPL เข้ารายการโปรด" [ref=e438] [cursor=pointer]:
+                    - img [ref=e439]
+            - row "GO GOOGL Alphabet Inc. NASDAQ อินเทอร์เน็ต US$176.30 +0.62% 28.90M US$2,170,000,000,000.00 เปิดกราฟ GOOGL ถาม AI เกี่ยวกับ GOOGL เพิ่ม GOOGL เข้ารายการโปรด" [ref=e564]:
+              - cell "GO GOOGL" [ref=e565]:
+                - link "GO GOOGL" [ref=e566] [cursor=pointer]:
+                  - /url: /stock/GOOGL
+                  - generic [ref=e568]: GO
+                  - generic [ref=e569]: GOOGL
+              - cell "Alphabet Inc." [ref=e570]:
+                - generic [ref=e571]: Alphabet Inc.
+              - cell "NASDAQ" [ref=e572]:
+                - generic [ref=e573]: NASDAQ
+              - cell "อินเทอร์เน็ต" [ref=e574]:
+                - generic [ref=e575]: อินเทอร์เน็ต
+              - cell "US$176.30" [ref=e576]
+              - cell "+0.62%" [ref=e577]:
+                - generic [ref=e578]:
+                  - img [ref=e579]
+                  - generic [ref=e582]: +0.62%
+              - cell "28.90M" [ref=e583]
+              - cell "US$2,170,000,000,000.00" [ref=e584]
+              - cell "เปิดกราฟ GOOGL ถาม AI เกี่ยวกับ GOOGL เพิ่ม GOOGL เข้ารายการโปรด" [ref=e585]:
+                - generic [ref=e586]:
+                  - link "เปิดกราฟ GOOGL" [ref=e587] [cursor=pointer]:
+                    - /url: /stock/GOOGL
+                    - img [ref=e588]
+                  - link "ถาม AI เกี่ยวกับ GOOGL" [ref=e591] [cursor=pointer]:
+                    - /url: /ai?symbol=GOOGL
+                    - img [ref=e592]
+                  - button "เพิ่ม GOOGL เข้ารายการโปรด" [ref=e602] [cursor=pointer]:
+                    - img [ref=e603]
+            - row "AM AMZN Amazon.com, Inc. NASDAQ อีคอมเมิร์ซ US$184.70 -0.46% 39.30M US$1,930,000,000,000.00 เปิดกราฟ AMZN ถาม AI เกี่ยวกับ AMZN เพิ่ม AMZN เข้ารายการโปรด" [ref=e482]:
+              - cell "AM AMZN" [ref=e483]:
+                - link "AM AMZN" [ref=e484] [cursor=pointer]:
+                  - /url: /stock/AMZN
+                  - generic [ref=e486]: AM
+                  - generic [ref=e487]: AMZN
+              - cell "Amazon.com, Inc." [ref=e488]:
+                - generic [ref=e489]: Amazon.com, Inc.
+              - cell "NASDAQ" [ref=e490]:
+                - generic [ref=e491]: NASDAQ
+              - cell "อีคอมเมิร์ซ" [ref=e492]:
+                - generic [ref=e493]: อีคอมเมิร์ซ
+              - cell "US$184.70" [ref=e494]
+              - cell "-0.46%" [ref=e495]:
+                - generic [ref=e496]:
+                  - img [ref=e497]
+                  - generic [ref=e500]: "-0.46%"
+              - cell "39.30M" [ref=e501]
+              - cell "US$1,930,000,000,000.00" [ref=e502]
+              - cell "เปิดกราฟ AMZN ถาม AI เกี่ยวกับ AMZN เพิ่ม AMZN เข้ารายการโปรด" [ref=e503]:
+                - generic [ref=e504]:
+                  - link "เปิดกราฟ AMZN" [ref=e505] [cursor=pointer]:
+                    - /url: /stock/AMZN
+                    - img [ref=e506]
+                  - link "ถาม AI เกี่ยวกับ AMZN" [ref=e509] [cursor=pointer]:
+                    - /url: /ai?symbol=AMZN
+                    - img [ref=e510]
+                  - button "เพิ่ม AMZN เข้ารายการโปรด" [ref=e520] [cursor=pointer]:
+                    - img [ref=e521]
+            - row "TS TSLA Tesla, Inc. NASDAQ EV US$181.45 -1.69% 91.60M US$579,000,000,000.00 เปิดกราฟ TSLA ถาม AI เกี่ยวกับ TSLA เพิ่ม TSLA เข้ารายการโปรด" [ref=e318]:
+              - cell "TS TSLA" [ref=e319]:
+                - link "TS TSLA" [ref=e320] [cursor=pointer]:
+                  - /url: /stock/TSLA
+                  - generic [ref=e322]: TS
+                  - generic [ref=e323]: TSLA
+              - cell "Tesla, Inc." [ref=e324]:
+                - generic [ref=e325]: Tesla, Inc.
+              - cell "NASDAQ" [ref=e326]:
+                - generic [ref=e327]: NASDAQ
+              - cell "EV" [ref=e328]:
+                - generic [ref=e329]: EV
+              - cell "US$181.45" [ref=e330]
+              - cell "-1.69%" [ref=e331]:
+                - generic [ref=e332]:
+                  - img [ref=e333]
+                  - generic [ref=e336]: "-1.69%"
+              - cell "91.60M" [ref=e337]
+              - cell "US$579,000,000,000.00" [ref=e338]
+              - cell "เปิดกราฟ TSLA ถาม AI เกี่ยวกับ TSLA เพิ่ม TSLA เข้ารายการโปรด" [ref=e339]:
+                - generic [ref=e340]:
+                  - link "เปิดกราฟ TSLA" [ref=e341] [cursor=pointer]:
+                    - /url: /stock/TSLA
+                    - img [ref=e342]
+                  - link "ถาม AI เกี่ยวกับ TSLA" [ref=e345] [cursor=pointer]:
+                    - /url: /ai?symbol=TSLA
+                    - img [ref=e346]
+                  - button "เพิ่ม TSLA เข้ารายการโปรด" [ref=e356] [cursor=pointer]:
+                    - img [ref=e357]
+            - row "BA BABA Alibaba Group Holding Limited NYSE อีคอมเมิร์ซ US$83.25 -1.36% 17.60M US$201,000,000,000.00 เปิดกราฟ BABA ถาม AI เกี่ยวกับ BABA เพิ่ม BABA เข้ารายการโปรด" [ref=e769]:
+              - cell "BA BABA" [ref=e770]:
+                - link "BA BABA" [ref=e771] [cursor=pointer]:
+                  - /url: /stock/BABA
+                  - generic [ref=e773]: BA
+                  - generic [ref=e774]: BABA
+              - cell "Alibaba Group Holding Limited" [ref=e775]:
+                - generic [ref=e776]: Alibaba Group Holding Limited
+              - cell "NYSE" [ref=e777]:
+                - generic [ref=e778]: NYSE
+              - cell "อีคอมเมิร์ซ" [ref=e779]:
+                - generic [ref=e780]: อีคอมเมิร์ซ
+              - cell "US$83.25" [ref=e781]
+              - cell "-1.36%" [ref=e782]:
+                - generic [ref=e783]:
+                  - img [ref=e784]
+                  - generic [ref=e787]: "-1.36%"
+              - cell "17.60M" [ref=e788]
+              - cell "US$201,000,000,000.00" [ref=e789]
+              - cell "เปิดกราฟ BABA ถาม AI เกี่ยวกับ BABA เพิ่ม BABA เข้ารายการโปรด" [ref=e790]:
+                - generic [ref=e791]:
+                  - link "เปิดกราฟ BABA" [ref=e792] [cursor=pointer]:
+                    - /url: /stock/BABA
+                    - img [ref=e793]
+                  - link "ถาม AI เกี่ยวกับ BABA" [ref=e796] [cursor=pointer]:
+                    - /url: /ai?symbol=BABA
+                    - img [ref=e797]
+                  - button "เพิ่ม BABA เข้ารายการโปรด" [ref=e807] [cursor=pointer]:
+                    - img [ref=e808]
+      - generic [ref=e211]:
+        - generic [ref=e212]:
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - img [ref=e216]
+              - generic [ref=e219]:
+                - heading "StockGuru" [level=2] [ref=e220]
+                - paragraph [ref=e221]: สต็อกกูรู
+            - paragraph [ref=e222]: เว็บไซต์วิเคราะห์หุ้นไทยด้วย AI ครบครันด้วยกราฟเทคนิค ข่าวสาร และเครื่องมือวิเคราะห์
+          - generic [ref=e223]:
+            - heading "ลิงก์ด่วน" [level=3] [ref=e224]
+            - list [ref=e225]:
+              - listitem [ref=e226]:
+                - link "หน้าแรก" [ref=e227] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e228]:
+                - link "Screener" [ref=e229] [cursor=pointer]:
+                  - /url: /screener
+              - listitem [ref=e230]:
+                - link "ข่าวสาร" [ref=e231] [cursor=pointer]:
+                  - /url: /news
+              - listitem [ref=e232]:
+                - link "รายการโปรด" [ref=e233] [cursor=pointer]:
+                  - /url: /watchlist
+          - generic [ref=e234]:
+            - heading "เครื่องมือ" [level=3] [ref=e235]
+            - list [ref=e236]:
+              - listitem [ref=e237]: กราฟเทคนิค
+              - listitem [ref=e238]: AI วิเคราะห์
+              - listitem [ref=e239]: Stock Screener
+              - listitem [ref=e240]: Market Overview
+          - generic [ref=e241]:
+            - heading "ข้อจำกัดความรับผิด" [level=3] [ref=e242]
+            - paragraph [ref=e243]: ข้อมูลในเว็บไซต์นี้จัดทำขึ้นเพื่อวัตถุประสงค์ทางการศึกษาเท่านั้น ไม่ถือเป็นคำแนะนำในการลงทุน การลงทุนมีความเสี่ยง ผู้ลงทุนควรศึกษาข้อมูลก่อนตัดสินใจลงทุน
+        - generic [ref=e244]:
+          - paragraph [ref=e245]: © 2026 StockGuru. สงวนลิขสิทธิ์
+          - generic [ref=e247]: ขับเคลื่อนโดย AI
+  - alert [ref=e1261]

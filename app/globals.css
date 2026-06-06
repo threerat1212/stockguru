@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --brand-bg: #0A0E1A;
+    --brand-bg-secondary: #111827;
+    --brand-card: #1E293B;
+    --brand-primary: #3B82F6;
+    --brand-success: #10B981;
+    --brand-danger: #F43F5E;
+    --brand-warning: #F59E0B;
+    --brand-accent: #8B5CF6;
+    --brand-text-primary: #F8FAFC;
+    --brand-text-secondary: #94A3B8;
+    --brand-text-muted: #64748B;
+    --brand-surface-hover: #27354F;
+    --brand-border: #334155;
+  }
+
+  * {
+    @apply border-brand-border;
+  }
+
+  body {
+    @apply bg-brand-bg text-brand-text-primary font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer components {
+  .divider {
+    @apply border-t border-brand-border;
+  }
+
+  .price-up {
+    @apply text-brand-success;
+  }
+
+  .price-down {
+    @apply text-brand-danger;
+  }
+
+  .price-neutral {
+    @apply text-brand-text-secondary;
+  }
+
+  .heading-balance {
+    text-wrap: balance;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 4px rgba(59, 130, 246, 0.12);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.12);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 4px rgba(244, 63, 94, 0.12);
+  }
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: var(--brand-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--brand-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-text-secondary);
+}
+
+/* Chart container */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Number formatting */
+.font-mono-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', monospace;
+}

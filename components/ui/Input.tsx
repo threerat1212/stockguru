@@ -1,0 +1,41 @@
+'use client'
+
+import { forwardRef, type InputHTMLAttributes } from 'react'
+import { cn } from '@/lib/utils/format'
+
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  icon?: React.ReactNode
+  error?: string
+}
+
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, icon, error, ...props }, ref) => {
+    return (
+      <div className="relative">
+        {icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary">
+            {icon}
+          </div>
+        )}
+        <input
+          ref={ref}
+          className={cn(
+            'w-full bg-brand-bg-secondary border border-brand-border rounded-lg text-brand-text-primary placeholder-brand-text-secondary',
+            'focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary',
+            'transition-all duration-200 text-sm',
+            icon ? 'pl-10 pr-4 py-2.5' : 'px-4 py-2.5',
+            error && 'border-brand-danger focus:ring-brand-danger/50',
+            className
+          )}
+          {...props}
+        />
+        {error && (
+          <p className="mt-1 text-xs text-brand-danger">{error}</p>
+        )}
+      </div>
+    )
+  }
+)
+
+Input.displayName = 'Input'
+export default Input
