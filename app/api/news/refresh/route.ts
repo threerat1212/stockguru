@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 const MIMO_API_URL = 'https://api.xiaomimimo.com/v1/chat/completions'
 const MIMO_MODEL = 'mimo-v2.5-pro'
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'MIMO_API_KEY not configured' }, { status: 503 })
   }
 
-  const supabase = createClient()
+  const supabase = createAdminClient()
 
   try {
     const aiResponse = await callMimo([

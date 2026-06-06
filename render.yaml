@@ -1,9 +1,9 @@
 services:
   - type: web
     name: stockguru-web
-    env: node
+    runtime: node
     plan: standard
-    buildCommand: npm run build
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     preDeployCommand: |
       echo "Seeding initial news articles..."
@@ -27,17 +27,28 @@ services:
         sync: false
       - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
         sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_FOUNDING_PRO
+        sync: false
+      - key: STRIPE_PRICE_TRADER
+        sync: false
       - key: CRON_SECRET
         generateValue: true
 
-cronJobs:
   - type: cron
     name: stockguru-news-refresh
+    runtime: node
     schedule: "*/30 * * * *"
-    env: node
     plan: starter
     buildCommand: ""
     startCommand: |
-      curl -X POST "https://$RENDER_EXTERNAL_HOSTNAME/api/news/refresh" \
+      curl -X POST "https://stockguru-web.onrender.com/api/news/refresh" \
         -H "Authorization: Bearer $CRON_SECRET" \
         -H "Content-Type: application/json"
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: stockguru-web
+          envVarKey: CRON_SECRET

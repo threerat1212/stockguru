@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const force = searchParams.get('force') === 'true'
 
@@ -31,7 +37,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.CRON_SECRET ?? 'dev'}`,
+        Authorization: `Bearer ${cronSecret ?? 'dev'}`,
       },
     })
 
