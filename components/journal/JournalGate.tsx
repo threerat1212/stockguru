@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useSubscription } from '@/lib/hooks/use-subscription'
-import { BookOpen, Lock, ArrowRight, Eye, Crown } from 'lucide-react'
+import { BookOpen, Lock, ArrowRight, Eye } from 'lucide-react'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
 
@@ -53,13 +53,6 @@ export default function JournalGate({ children }: { children: React.ReactNode })
               <span className="text-xs font-medium text-brand-text-primary">Free</span>
             </div>
             <p className="text-xs text-brand-text-secondary">ดูตัวอย่างระบบเท่านั้น ไม่สามารถบันทึกได้</p>
-          </div>
-          <div className="p-3 bg-brand-bg-secondary rounded-lg text-left border border-brand-primary/20">
-            <div className="flex items-center gap-2 mb-1">
-              <Crown size={14} className="text-brand-primary" />
-              <span className="text-xs font-medium text-brand-text-primary">Pro</span>
-            </div>
-            <p className="text-xs text-brand-text-secondary">บันทึกได้ 5 รายการ ดู Analytics พื้นฐาน</p>
           </div>
           <div className="p-3 bg-brand-bg-secondary rounded-lg text-left border border-brand-accent/20">
             <div className="flex items-center gap-2 mb-1">

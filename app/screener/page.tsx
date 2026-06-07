@@ -19,6 +19,9 @@ import {
 } from 'lucide-react'
 import { useTrending } from '@/lib/hooks/use-stock'
 import { useWatchlist } from '@/lib/hooks/use-watchlist'
+import { useSubscription } from '@/lib/hooks/use-subscription'
+import { canAccessFeature } from '@/lib/subscription/plan-utils'
+import FeatureGate from '@/components/auth/FeatureGate'
 import { useAppStore } from '@/lib/store/stockStore'
 import type { TrendingStock } from '@/types/stock'
 import {
@@ -118,6 +121,8 @@ function isUsStock(stock: TrendingStock) {
 export default function ScreenerPage() {
   const { data: trendingData, isLoading } = useTrending()
   const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
+  const { plan } = useSubscription()
+  const hasAdvancedScreener = canAccessFeature(plan, 'advancedScreener')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedMarket, setSelectedMarket] = useState('ทั้งหมด')
@@ -362,8 +367,13 @@ export default function ScreenerPage() {
           </Button>
         </div>
 
-        {/* Expanded Filters */}
-        {showFilters && (
+        {/* Expanded Filters — Pro+ */}
+        {showFilters && !hasAdvancedScreener && (
+          <div className="mt-4 pt-4 border-t border-brand-border">
+            <FeatureGate feature="advancedScreener" inline />
+          </div>
+        )}
+        {showFilters && hasAdvancedScreener && (
           <div className="mt-4 pt-4 border-t border-brand-border space-y-4">
             {/* Market */}
             <div>

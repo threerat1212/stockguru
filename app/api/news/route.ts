@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizeNewsArticle } from '@/lib/news/normalize'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -27,8 +28,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  const articles = (data ?? []).map((row: Record<string, unknown>) => normalizeNewsArticle(row))
+
   return NextResponse.json({
-    articles: data ?? [],
+    articles,
     total: count ?? 0,
     page,
     limit,

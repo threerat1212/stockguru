@@ -53,9 +53,12 @@ export function getEnv(): Env {
   if (!result.success) {
     const issues = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
     console.error('Environment validation failed:', issues)
-    // Don't throw in browser/build to avoid breaking stub mode
-    if (typeof window === 'undefined') {
-      // Server-side: log but don't crash for missing optional vars
+    if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+      const required = ['MIMO_API_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'CRON_SECRET']
+      const missing = required.filter((k) => !process.env[k])
+      if (missing.length > 0) {
+        console.error('[StockGuru] Missing required production env:', missing.join(', '))
+      }
     }
   }
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Clock } from 'lucide-react'
 import type { NewsArticle } from '@/types/stock'
+import { newsDetailPath } from '@/lib/news/normalize'
 import { timeAgo } from '@/lib/utils/format'
 import Badge from '@/components/ui/Badge'
 
@@ -31,7 +32,7 @@ const categoryVariants: Record<NewsArticle['category'], 'info' | 'success' | 'wa
 export default function NewsCard({ article, variant = 'default' }: NewsCardProps) {
   if (variant === 'compact') {
     return (
-      <Link href={`/news/${article.id}`} className="block group">
+      <Link href={newsDetailPath(article)} className="block group">
         <div className="flex gap-3 p-3 rounded-lg hover:bg-brand-bg-secondary transition-colors">
           {article.imageUrl && (
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-brand-bg-secondary">
@@ -55,7 +56,7 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
   }
 
   return (
-    <Link href={`/news/${article.id}`} className="group block overflow-hidden rounded-lg border border-brand-border bg-brand-card transition-colors duration-200 hover:border-brand-primary/30">
+    <Link href={newsDetailPath(article)} className="group block overflow-hidden rounded-lg border border-brand-border bg-brand-card transition-colors duration-200 hover:border-brand-primary/30">
         {article.imageUrl && (
           <div className="relative aspect-video overflow-hidden bg-brand-bg-secondary">
             <Image src={article.imageUrl} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-105" unoptimized />

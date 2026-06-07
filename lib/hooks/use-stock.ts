@@ -9,7 +9,14 @@ import type {
   ChatMessage,
   Timeframe,
   ApiResponse,
+  MarketDataMeta,
+  FundamentalData,
 } from '@/types/stock'
+
+export interface QuoteQueryResult {
+  quote: StockQuote
+  meta?: MarketDataMeta
+}
 
 // Generic fetch helper
 async function fetchApi<T>(url: string): Promise<T> {
@@ -17,6 +24,13 @@ async function fetchApi<T>(url: string): Promise<T> {
   const json: ApiResponse<T> = await res.json()
   if (!json.success) throw new Error(json.error || 'API request failed')
   return json.data as T
+}
+
+async function fetchApiWithMeta<T>(url: string): Promise<{ data: T; meta?: MarketDataMeta }> {
+  const res = await fetch(url)
+  const json: ApiResponse<T> = await res.json()
+  if (!json.success) throw new Error(json.error || 'API request failed')
+  return { data: json.data as T, meta: json.meta }
 }
 
 async function postApi<T>(url: string, body: unknown): Promise<T> {
@@ -32,13 +46,19 @@ async function postApi<T>(url: string, body: unknown): Promise<T> {
 
 // ─── Stock Quote ───────────────────────────────────────────
 export function useQuote(symbol: string | null) {
-  return useQuery<StockQuote>({
+  const query = useQuery({
     queryKey: ['quote', symbol],
-    queryFn: () => fetchApi<StockQuote>(`/api/stock/quote?symbol=${symbol}`),
+    queryFn: () => fetchApiWithMeta<StockQuote>(`/api/stock/quote?symbol=${symbol}`),
     enabled: !!symbol,
-    refetchInterval: 30_000, // refresh every 30s
+    refetchInterval: 30_000,
     staleTime: 15_000,
   })
+
+  return {
+    ...query,
+    data: query.data?.data,
+    meta: query.data?.meta,
+  }
 }
 
 // ─── Stock History (OHLCV) ─────────────────────────────────
@@ -66,11 +86,17 @@ export function useSearch(query: string) {
 
 // ─── Trending Stocks ───────────────────────────────────────
 export function useTrending() {
-  return useQuery<TrendingStock[]>({
+  const query = useQuery({
     queryKey: ['trending'],
-    queryFn: () => fetchApi<TrendingStock[]>('/api/stock/trending'),
+    queryFn: () => fetchApiWithMeta<TrendingStock[]>('/api/stock/trending'),
     staleTime: 120_000,
   })
+
+  return {
+    ...query,
+    data: query.data?.data,
+    meta: query.data?.meta,
+  }
 }
 
 // ─── Market Indices ────────────────────────────────────────
@@ -89,6 +115,16 @@ export function useMarketSummary() {
     queryKey: ['market-summary'],
     queryFn: () => fetchApi<{ summary: string }>('/api/market/summary'),
     staleTime: 600_000, // 10 min
+  })
+}
+
+// ─── Fundamentals ──────────────────────────────────────────
+export function useFundamentals(symbol: string | null) {
+  return useQuery<FundamentalData>({
+    queryKey: ['fundamentals', symbol],
+    queryFn: () => fetchApi<FundamentalData>(`/api/stock/fundamental?symbol=${symbol}`),
+    enabled: !!symbol,
+    staleTime: 600_000,
   })
 }
 

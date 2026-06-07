@@ -7,8 +7,8 @@ import { apiSuccess, apiError } from '@/lib/api/response'
  */
 export async function GET() {
   try {
-    const indices = await getMarketIndices()
-    return apiSuccess(indices)
+    const result = await getMarketIndices()
+    return apiSuccess(result.data, { meta: result.meta, cached: result.meta.source === 'cache' })
   } catch (error) {
     return apiError((error as Error).message)
   }

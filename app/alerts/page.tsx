@@ -172,7 +172,7 @@ export default function AlertsPage() {
       setFormSymbol('')
       setFormPrice('')
     } catch (err) {
-      setFormError('ไม่สามารถเพิ่มแจ้งเตือนได้ กรุณาลองใหม่')
+      setFormError(err instanceof Error ? err.message : 'ไม่สามารถเพิ่มแจ้งเตือนได้ กรุณาลองใหม่')
     }
   }
 
@@ -196,8 +196,8 @@ export default function AlertsPage() {
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">แจ้งเตือนราคา</h1>
             <p className="text-sm text-brand-text-secondary">
               {isAuthenticated
-                ? 'ตั้งแจ้งเตือนเมื่อราคาหุ้นถึงระดับที่ต้องการ'
-                : 'เข้าสู่ระบบเพื่อบันทึกแจ้งเตือนบนคลาวด์ (ขณะนี้ใช้ local อยู่)'}
+                ? 'ตั้งแจ้งเตือนเมื่อราคาหุ้นถึงระดับที่ต้องการ — ระบบส่งอีเมลเมื่อแตะเป้า (ต้องตั้งค่า RESEND_API_KEY)'
+                : 'เข้าสู่ระบบเพื่อตั้งแจ้งเตือน — แจ้งเตือน guest ไม่ทำงานกับ cron'}
             </p>
           </div>
         </div>

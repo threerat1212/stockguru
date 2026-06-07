@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const quote = await getQuote(parse.data.symbol.trim().toUpperCase())
-    return apiSuccess(quote)
+    const result = await getQuote(parse.data.symbol.trim().toUpperCase())
+    return apiSuccess(result.data, { meta: result.meta, cached: result.meta.source === 'cache' })
   } catch (error) {
     return apiError((error as Error).message)
   }

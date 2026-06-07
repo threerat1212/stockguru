@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef } from 'react'
-import { createChart, ColorType, CrosshairMode, type IChartApi } from 'lightweight-charts'
+import { createChart, ColorType, CrosshairMode, type IChartApi, type Time } from 'lightweight-charts'
 import type { StockCandle } from '@/types/stock'
 import { cn } from '@/lib/utils/format'
 
@@ -21,7 +21,7 @@ function normalizePerformance(data: StockCandle[]) {
   const firstClose = data[0].close
   if (!firstClose) return []
   return data.map((point) => ({
-    time: point.time as any,
+    time: point.time as Time,
     value: +(((point.close / firstClose) - 1) * 100).toFixed(2),
   }))
 }

@@ -82,7 +82,7 @@ QUALITY STANDARDS:
 `
 }
 
-function parseNewsJson(raw: string): any[] {
+function parseNewsJson(raw: string): Array<Record<string, unknown>> {
   let text = raw.trim()
   if (text.startsWith('```')) {
     text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
     const articles = parseNewsJson(aiResponse)
 
     const now = new Date().toISOString()
-    const toInsert = articles.map((a: any) => ({
+    const toInsert = articles.map((a: Record<string, unknown>) => ({
       slug: a.slug,
       title: a.title,
       summary: a.summary,
@@ -141,8 +141,9 @@ export async function POST(request: Request) {
     await supabase.rpc('cleanup_old_news')
 
     return NextResponse.json({ success: true, count: toInsert.length })
-  } catch (err: any) {
+  } catch (err) {
     console.error('News refresh error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

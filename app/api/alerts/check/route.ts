@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
     // Check each symbol
     for (const [symbol, symbolAlerts] of alertsBySymbol) {
       try {
-        const quote = await getQuote(symbol)
-        if (!quote || !quote.price) continue
+        const { data: quote } = await getQuote(symbol)
+        if (!quote?.price) continue
 
         const currentPrice = quote.price
 

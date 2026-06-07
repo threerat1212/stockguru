@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import {
   Building2,
@@ -237,6 +238,14 @@ export default function SectorPage() {
             <p className="text-sm text-brand-text-secondary">ภาพรวมผลการดำเนินงานของแต่ละกลุ่มอุตสาหกรรม</p>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-start gap-2 rounded-lg border border-brand-warning/30 bg-brand-warning/5 px-4 py-3 text-sm text-brand-text-secondary">
+        <AlertTriangle size={16} className="mt-0.5 shrink-0 text-brand-warning" />
+        <p>
+          ข้อมูลกลุ่มอุตสาหกรรมบนหน้านี้เป็นตัวอย่างเพื่อ UI demo เท่านั้น ยังไม่ได้เชื่อมแหล่งข้อมูล SET จริง
+          — ดู roadmap ใน START_HERE.md สำหรับแผนต่อ SET data provider
+        </p>
       </div>
 
       {/* Summary */}

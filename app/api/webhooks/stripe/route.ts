@@ -18,9 +18,10 @@ export async function POST(request: Request) {
 
   try {
     event = getStripe().webhooks.constructEvent(payload, signature, getWebhookSecret())
-  } catch (err: any) {
-    console.error('Stripe webhook signature verification failed:', err.message)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Invalid signature'
+    console.error('Stripe webhook signature verification failed:', message)
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 
   const supabase = createAdminClient()
@@ -123,8 +124,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ received: true })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Stripe webhook handler error:', err)
-    return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Handler failed'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createChart, ColorType, CrosshairMode, type IChartApi, type ISeriesApi } from 'lightweight-charts'
+import { createChart, ColorType, CrosshairMode, type IChartApi, type ISeriesApi, type Time } from 'lightweight-charts'
 import type { StockCandle, Timeframe, Indicator } from '@/types/stock'
 import { calculateSMA, calculateEMA, calculateRSI, calculateMACD } from '@/lib/utils/technical-indicators'
 import { useAppStore } from '@/lib/store/stockStore'
@@ -81,7 +81,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
 
     candleSeries.setData(
       data.map(d => ({
-        time: d.time as any,
+        time: d.time as Time,
         open: d.open,
         high: d.high,
         low: d.low,
@@ -101,7 +101,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
 
     volumeSeries.setData(
       data.map(d => ({
-        time: d.time as any,
+        time: d.time as Time,
         value: d.volume,
         color: d.close >= d.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
       }))
@@ -115,7 +115,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         lineWidth: 1,
         title: 'SMA 20',
       })
-      smaSeries.setData(smaData.map(d => ({ time: d.time as any, value: d.value })))
+      smaSeries.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })))
     }
 
     if (indicators.includes('EMA')) {
@@ -125,21 +125,21 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         lineWidth: 1,
         title: 'EMA 20',
       })
-      emaSeries.setData(emaData.map(d => ({ time: d.time as any, value: d.value })))
+      emaSeries.setData(emaData.map(d => ({ time: d.time as Time, value: d.value })))
     }
 
     if (indicators.includes('BB')) {
       const smaData = calculateSMA(data, 20)
-      const upperBB: { time: any; value: number }[] = []
-      const lowerBB: { time: any; value: number }[] = []
+      const upperBB: { time: Time; value: number }[] = []
+      const lowerBB: { time: Time; value: number }[] = []
 
       for (let i = 0; i < smaData.length; i++) {
         const slice = data.slice(i, i + 20)
         const mean = smaData[i].value
         const variance = slice.reduce((sum, d) => sum + Math.pow(d.close - mean, 2), 0) / 20
         const stdDev = Math.sqrt(variance)
-        upperBB.push({ time: smaData[i].time as any, value: mean + 2 * stdDev })
-        lowerBB.push({ time: smaData[i].time as any, value: mean - 2 * stdDev })
+        upperBB.push({ time: smaData[i].time as Time, value: mean + 2 * stdDev })
+        lowerBB.push({ time: smaData[i].time as Time, value: mean - 2 * stdDev })
       }
 
       const upperSeries = chart.addLineSeries({ color: 'rgba(139, 92, 246, 0.4)', lineWidth: 1, lineStyle: 2, title: 'BB Upper' })

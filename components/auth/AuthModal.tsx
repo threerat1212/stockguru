@@ -47,8 +47,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) throw error
       }
       onClose()
-    } catch (err: any) {
-      setError(err.message ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่')
     } finally {
       setLoading(false)
     }

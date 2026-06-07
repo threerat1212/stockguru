@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { PLAN_LIMITS } from '@/lib/hooks/use-subscription'
+import { effectivePlan } from '@/lib/subscription/plan-utils'
 
 export interface PriceAlert {
   id: string
@@ -59,6 +61,7 @@ export function useAlerts() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [plan, setPlan] = useState<'free' | 'pro' | 'founding_pro' | 'trader'>('free')
 
   const supabase = createClient()
 
@@ -82,13 +85,22 @@ export function useAlerts() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setAlerts(loadLocalAlerts())
+      setAlerts([])
       setIsLoading(false)
       return
     }
 
     const fetchAlerts = async () => {
       setIsLoading(true)
+
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('user_id', user!.id)
+        .single()
+
+      setPlan(effectivePlan(subData?.plan, subData?.status))
+
       const { data, error } = await supabase
         .from('alerts')
         .select('*')
@@ -114,23 +126,18 @@ export function useAlerts() {
     }
 
     fetchAlerts()
-  }, [isAuthenticated, supabase])
+  }, [isAuthenticated, supabase, user])
+
+  const alertsLimit = PLAN_LIMITS[plan]?.alerts ?? PLAN_LIMITS.free.alerts
 
   const addAlert = useCallback(
     async (symbol: string, targetPrice: number, condition: 'above' | 'below') => {
       if (!isAuthenticated || !user) {
-        const newAlert: PriceAlert = {
-          id: crypto.randomUUID(),
-          symbol,
-          targetPrice,
-          condition,
-          triggered: false,
-          createdAt: new Date().toISOString(),
-        }
-        const next = [...alerts, newAlert]
-        saveLocalAlerts(next)
-        setAlerts(next)
-        return
+        throw new Error('กรุณาเข้าสู่ระบบเพื่อตั้งการแจ้งเตือน — แจ้งเตือนจะส่งทางอีเมลเมื่อราคาแตะเป้า')
+      }
+
+      if (alerts.length >= alertsLimit) {
+        throw new Error(`ถึงขีดจำกัดการแจ้งเตือนแล้ว (${alertsLimit} รายการ) กรุณาอัพเกรดแผน`)
       }
 
       const { data, error } = await supabase
@@ -162,17 +169,12 @@ export function useAlerts() {
         setAlerts((prev) => [...prev, newAlert])
       }
     },
-    [isAuthenticated, user, alerts, supabase]
+    [isAuthenticated, user, alerts, supabase, alertsLimit]
   )
 
   const removeAlert = useCallback(
     async (id: string) => {
-      if (!isAuthenticated || !user) {
-        const next = alerts.filter((a) => a.id !== id)
-        saveLocalAlerts(next)
-        setAlerts(next)
-        return
-      }
+      if (!isAuthenticated || !user) return
 
       const { error } = await supabase.from('alerts').delete().eq('id', id)
 
@@ -183,16 +185,11 @@ export function useAlerts() {
 
       setAlerts((prev) => prev.filter((a) => a.id !== id))
     },
-    [isAuthenticated, user, alerts, supabase]
+    [isAuthenticated, user, supabase]
   )
 
   const clearTriggered = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      const next = alerts.filter((a) => !a.triggered)
-      saveLocalAlerts(next)
-      setAlerts(next)
-      return
-    }
+    if (!isAuthenticated || !user) return
 
     const triggeredIds = alerts.filter((a) => a.triggered).map((a) => a.id)
     if (triggeredIds.length === 0) return
@@ -207,5 +204,5 @@ export function useAlerts() {
     setAlerts((prev) => prev.filter((a) => !a.triggered))
   }, [isAuthenticated, user, alerts, supabase])
 
-  return { alerts, isLoading, isAuthenticated, addAlert, removeAlert, clearTriggered }
+  return { alerts, isLoading, isAuthenticated, alertsLimit, addAlert, removeAlert, clearTriggered }
 }

@@ -138,6 +138,6 @@ export function useSubscription() {
     isTrader: plan === 'trader',
     isFree: plan === 'free',
     hasJournalAccess: plan === 'trader',
-    journalLimit: plan === 'trader' ? 9999 : plan === 'pro' ? 5 : 0,
+    journalLimit: plan === 'trader' ? 9999 : 0,
   }
 }

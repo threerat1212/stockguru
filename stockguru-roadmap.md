@@ -2,10 +2,12 @@
 
 > ลำดับ: PR3 → PR4 → PR5 → PR6 → PR7 → PR8
 > แต่ละ PR แตก branch จาก main + ผ่าน CI ก่อน merge
+>
+> **สถานะล่าสุด: PR3–PR8 เสร็จสมบูรณ์ (มิถุนายน 2026)**
 
 ---
 
-## PR3 — Portfolio holdings เข้า Supabase
+## PR3 — Portfolio holdings เข้า Supabase ✅
 
 **Goal:** ย้าย portfolio จาก localStorage ไป Supabase แบบ real auth
 
@@ -46,7 +48,7 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ---
 
-## PR4 — Alerts ทำงานจริง
+## PR4 — Alerts ทำงานจริง ✅
 
 **Goal:** Cron job เช็คราคา + ส่ง email/web-push เมื่อแตะเป้า
 
@@ -71,7 +73,7 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ---
 
-## PR5 — Auth จริง + Stripe gating
+## PR5 — Auth จริง + Stripe gating ✅
 
 **Goal:** แทน demo flag ด้วย Supabase session + subscription check
 
@@ -90,7 +92,7 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ---
 
-## PR6 — Hardening
+## PR6 — Hardening ✅
 
 **Goal:** zod validate env + input, rate limiting, Sentry
 
@@ -114,7 +116,7 @@ npm install zod @sentry/nextjs
 
 ---
 
-## PR7 — Tests
+## PR7 — Tests ✅
 
 **Goal:** vitest + RTL + Playwright e2e golden path + CI
 
@@ -139,7 +141,7 @@ npm install -D @playwright/test
 
 ---
 
-## PR8 — Polish
+## PR8 — Polish ✅
 
 **Goal:** ลด any (~54 จุด), accessibility, mock data, i18n
 

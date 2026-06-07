@@ -4,6 +4,19 @@ import { createClient } from '@/lib/supabase/server'
 const MIMO_API_URL = 'https://api.xiaomimimo.com/v1/chat/completions'
 const MIMO_MODEL = 'mimo-v2.5-pro'
 
+interface TradeRecord {
+  symbol: string
+  direction: string
+  entry_price: number
+  exit_price: number | null
+  pnl: number | null
+  r_multiple: number | null
+  setup: string | null
+  emotion: string | null
+  mistake_tags: string[] | null
+  status: string
+}
+
 function getApiKey(): string | null {
   return process.env.MIMO_API_KEY ?? null
 }
@@ -79,28 +92,30 @@ export async function POST(request: Request) {
   }
 
   const total = trades.length
-  const wins = trades.filter((t: any) => (t.pnl ?? 0) > 0)
-  const losses = trades.filter((t: any) => (t.pnl ?? 0) <= 0)
+  const typedTrades = trades as TradeRecord[]
+  const wins = typedTrades.filter((t) => (t.pnl ?? 0) > 0)
+  const losses = typedTrades.filter((t) => (t.pnl ?? 0) <= 0)
   const winRate = total > 0 ? (wins.length / total) * 100 : 0
-  const totalPnL = trades.reduce((s: number, t: any) => s + (t.pnl ?? 0), 0)
-  const avgR = trades.filter((t: any) => t.r_multiple !== null).length > 0
-    ? trades.filter((t: any) => t.r_multiple !== null).reduce((s: number, t: any) => s + (t.r_multiple ?? 0), 0) / trades.filter((t: any) => t.r_multiple !== null).length
+  const totalPnL = typedTrades.reduce((s, t) => s + (t.pnl ?? 0), 0)
+  const tradesWithR = typedTrades.filter((t) => t.r_multiple !== null)
+  const avgR = tradesWithR.length > 0
+    ? tradesWithR.reduce((s, t) => s + (t.r_multiple ?? 0), 0) / tradesWithR.length
     : 0
 
   const mistakeCounts: Record<string, number> = {}
-  trades.forEach((t: any) => {
-    (t.mistake_tags ?? []).forEach((tag: string) => {
+  typedTrades.forEach((t) => {
+    (t.mistake_tags ?? []).forEach((tag) => {
       mistakeCounts[tag] = (mistakeCounts[tag] ?? 0) + 1
     })
   })
   const topMistakes = Object.entries(mistakeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
 
   const setupCounts: Record<string, number> = {}
-  trades.forEach((t: any) => {
+  typedTrades.forEach((t) => {
     if (t.setup) setupCounts[t.setup] = (setupCounts[t.setup] ?? 0) + 1
   })
 
-  const tradeSummary = trades.map((t: any, i: number) =>
+  const tradeSummary = typedTrades.map((t, i) =>
     `${i + 1}. ${t.symbol} ${t.direction.toUpperCase()} ${t.entry_price}→${t.exit_price ?? '-'} PnL:${t.pnl ?? '-'} R:${t.r_multiple ?? '-'} Setup:${t.setup ?? '-'} Emotion:${t.emotion ?? '-'} Mistakes:${(t.mistake_tags ?? []).join(',') || 'none'}`
   ).join('\n')
 
@@ -130,8 +145,8 @@ Respond with ONLY a valid JSON object:
       { role: 'system', content: 'You are a trading psychology assistant. You only review past behavior. You NEVER give future trading advice or buy/sell signals.' },
       { role: 'user', content: prompt },
     ])
-  } catch (err: any) {
-    error = err.message
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Unknown error'
   }
 
   // Log AI usage
@@ -151,7 +166,7 @@ Respond with ONLY a valid JSON object:
   }
 
   // Parse JSON
-  let parsed: any = {}
+  let parsed: Record<string, unknown> = {}
   try {
     let jsonStr = aiResponse.trim()
     if (jsonStr.startsWith('```')) {

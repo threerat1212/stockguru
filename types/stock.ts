@@ -152,12 +152,16 @@ export interface MarketIndex {
   changePercent: number
 }
 
+// Market data provenance (see lib/market-data/types.ts)
+export type { MarketDataMeta, MarketDataSource } from '@/lib/market-data/types'
+
 // API response wrapper
 export interface ApiResponse<T> {
   success: boolean
   data?: T
   error?: string
   cached?: boolean
+  meta?: import('@/lib/market-data/types').MarketDataMeta
 }
 
 // ============================================================

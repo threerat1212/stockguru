@@ -9,7 +9,7 @@ import { newsCache } from '@/lib/cache'
 export async function GET() {
   const cacheKey = 'market:summary'
   const cached = newsCache.get<string>(cacheKey)
-  if (cached) return apiSuccess({ summary: cached.data }, true)
+  if (cached) return apiSuccess({ summary: cached.data }, { cached: true })
 
   try {
     const summary = await generateMarketSummary()

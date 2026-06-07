@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createChart, ColorType, CrosshairMode, type IChartApi } from 'lightweight-charts'
 import {
   TrendingUp,
@@ -18,7 +18,8 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useQuote, useHistory, useAnalysis } from '@/lib/hooks/use-stock'
+import { useQuote, useHistory, useAnalysis, useFundamentals } from '@/lib/hooks/use-stock'
+import DataSourceBadge, { DataHonestyBanner } from '@/components/market/DataSourceBadge'
 import { useWatchlist } from '@/lib/hooks/use-watchlist'
 import type { StockCandle } from '@/types/stock'
 import {
@@ -43,8 +44,9 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
   const inWatchlist = isInWatchlist(symbol)
 
-  const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
+  const { data: quote, meta: quoteMeta, isLoading: quoteLoading } = useQuote(symbol)
   const { data: historyData, isLoading: historyLoading } = useHistory(symbol)
+  const { data: fundamentals } = useFundamentals(symbol)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const { data: analysis, isLoading: analysisLoading } = useAnalysis(showAnalysis ? symbol : null)
 
@@ -54,22 +56,24 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const volumeSeriesRef = useRef<any>(null)
 
   // Normalize & deduplicate history data for lightweight-charts
-  const chartData: StockCandle[] = historyData
-    ? Array.from(
-        historyData
-          .map(d => {
-            const timeStr =
-              typeof d.time === 'number'
-                ? new Date(d.time * 1000).toISOString().slice(0, 10)
-                : d.time.includes('T')
-                  ? d.time.slice(0, 10)
-                  : d.time
-            return { ...d, time: timeStr }
-          })
-          .reduce((map, d) => map.set(d.time, d), new Map<string, StockCandle>())
-          .values()
-      ).sort((a, b) => (a.time > b.time ? 1 : -1))
-    : []
+  const chartData: StockCandle[] = useMemo(() => {
+    if (!historyData) return []
+
+    return Array.from(
+      historyData
+        .map(d => {
+          const timeStr =
+            typeof d.time === 'number'
+              ? new Date(d.time * 1000).toISOString().slice(0, 10)
+              : d.time.includes('T')
+                ? d.time.slice(0, 10)
+                : d.time
+          return { ...d, time: timeStr }
+        })
+        .reduce((map, d) => map.set(d.time, d), new Map<string, StockCandle>())
+        .values()
+    ).sort((a, b) => (a.time > b.time ? 1 : -1))
+  }, [historyData])
 
   // Build chart once when data is ready
   useEffect(() => {
@@ -271,13 +275,18 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
         </div>
       </div>
 
+      <DataHonestyBanner meta={quoteMeta} />
+
       {/* Price & Quote Info */}
       {quote && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Card>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-                <PriceDisplay quote={quote} size="lg" />
+                <div className="space-y-2">
+                  <PriceDisplay quote={quote} size="lg" />
+                  <DataSourceBadge meta={quoteMeta} />
+                </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-xs text-brand-text-secondary">Volume</p>
@@ -431,11 +440,43 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                   <span className="text-sm text-brand-text-secondary">สกุลเงิน</span>
                   <span className="text-sm font-medium text-brand-text-primary">{quote.currency}</span>
                 </div>
-                {quote.pe && (
+                {(fundamentals?.sector || fundamentals?.industry) && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-brand-text-secondary">กลุ่มอุตสาหกรรม</span>
+                    <span className="text-sm font-medium text-brand-text-primary text-right">
+                      {[fundamentals.sector, fundamentals.industry].filter(Boolean).join(' · ')}
+                    </span>
+                  </div>
+                )}
+                {(fundamentals?.trailingPE ?? quote.pe) && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-brand-text-secondary">P/E Ratio</span>
                     <span className="text-sm font-mono-nums font-medium text-brand-text-primary">
-                      {formatNumber(quote.pe)}
+                      {formatNumber(fundamentals?.trailingPE ?? quote.pe!)}
+                    </span>
+                  </div>
+                )}
+                {fundamentals?.returnOnEquity != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-brand-text-secondary">ROE</span>
+                    <span className="text-sm font-mono-nums font-medium text-brand-text-primary">
+                      {formatNumber(fundamentals.returnOnEquity * 100)}%
+                    </span>
+                  </div>
+                )}
+                {fundamentals?.debtToEquity != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-brand-text-secondary">Debt/Equity</span>
+                    <span className="text-sm font-mono-nums font-medium text-brand-text-primary">
+                      {formatNumber(fundamentals.debtToEquity)}
+                    </span>
+                  </div>
+                )}
+                {fundamentals?.dividendYield != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-brand-text-secondary">Dividend Yield</span>
+                    <span className="text-sm font-mono-nums font-medium text-brand-text-primary">
+                      {formatNumber(fundamentals.dividendYield * 100)}%
                     </span>
                   </div>
                 )}

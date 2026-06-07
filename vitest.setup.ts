@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
 
 // Mock next/image
 vi.mock('next/image', () => ({
-  default: function MockImage(props: any) {
+  default: function MockImage(props: Record<string, unknown>) {
     return null
   },
 }))

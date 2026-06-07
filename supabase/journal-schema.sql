@@ -1,5 +1,6 @@
 -- StockGuru Trading Journal Schema Additions
--- Run this after the main schema.sql
+-- NOTE: These objects are now included in schema.sql (single source of truth).
+-- Keep this file for incremental migrations on existing databases only.
 
 -- Update profiles plan check to include trader
 alter table public.profiles drop constraint if exists profiles_plan_check;

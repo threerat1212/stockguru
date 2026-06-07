@@ -93,10 +93,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get optional stock context
-    let context: { symbol?: string; quote?: Awaited<ReturnType<typeof getQuote>> } | undefined
+    let context: { symbol?: string; quote?: import('@/types/stock').StockQuote } | undefined
     if (symbol) {
       try {
-        const quote = await getQuote(symbol.toUpperCase())
+        const { data: quote } = await getQuote(symbol.toUpperCase())
         context = { symbol: symbol.toUpperCase(), quote }
       } catch {
         // Quote fetch failed; continue without context

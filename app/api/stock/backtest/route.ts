@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const candles = await getHistory(symbol.trim().toUpperCase(), timeframe)
+    const { data: candles } = await getHistory(symbol.trim().toUpperCase(), timeframe)
 
     if (candles.length < 30) {
       return apiBadRequest('Insufficient historical data for backtesting (need at least 30 data points)')

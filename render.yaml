@@ -3,6 +3,7 @@ services:
     name: stockguru-web
     runtime: node
     plan: standard
+    healthCheckPath: /api/health
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     preDeployCommand: |
@@ -35,6 +36,13 @@ services:
         sync: false
       - key: CRON_SECRET
         generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: stockguru-web
+          property: host
 
   - type: cron
     name: stockguru-news-refresh
@@ -43,7 +51,7 @@ services:
     plan: starter
     buildCommand: ""
     startCommand: |
-      curl -X POST "https://stockguru-web.onrender.com/api/news/refresh" \
+      curl -X POST "https://$RENDER_EXTERNAL_HOSTNAME/api/news/refresh" \
         -H "Authorization: Bearer $CRON_SECRET" \
         -H "Content-Type: application/json"
     envVars:
@@ -52,6 +60,11 @@ services:
           type: web
           name: stockguru-web
           envVarKey: CRON_SECRET
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: stockguru-web
+          property: host
 
   - type: cron
     name: stockguru-alerts-check
@@ -60,7 +73,7 @@ services:
     plan: starter
     buildCommand: ""
     startCommand: |
-      curl -X POST "https://stockguru-web.onrender.com/api/alerts/check" \
+      curl -X POST "https://$RENDER_EXTERNAL_HOSTNAME/api/alerts/check" \
         -H "Authorization: Bearer $CRON_SECRET" \
         -H "Content-Type: application/json"
     envVars:
@@ -69,3 +82,8 @@ services:
           type: web
           name: stockguru-web
           envVarKey: CRON_SECRET
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: stockguru-web
+          property: host

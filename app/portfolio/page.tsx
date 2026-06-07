@@ -9,7 +9,6 @@ import {
   TrendingUp,
   TrendingDown,
   PieChart,
-  Lock,
 } from 'lucide-react'
 import { useQuote } from '@/lib/hooks/use-stock'
 import { useHoldings } from '@/lib/hooks/use-holdings'
@@ -18,7 +17,7 @@ import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/Loading'
-import AuthModal from '@/components/auth/AuthModal'
+import FeatureGate from '@/components/auth/FeatureGate'
 
 interface PortfolioItem {
   id: string
@@ -184,8 +183,7 @@ const PIE_COLORS = [
 ]
 
 export default function PortfolioPage() {
-  const { holdings, isLoading, isAuthenticated, addHolding, removeHolding } = useHoldings()
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const { holdings, isLoading, addHolding, removeHolding } = useHoldings()
   const [mounted, setMounted] = useState(false)
 
   // Form state
@@ -241,9 +239,8 @@ export default function PortfolioPage() {
   if (!mounted) return null
 
   return (
+    <FeatureGate feature="portfolio">
     <div className="space-y-6">
-      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -253,49 +250,12 @@ export default function PortfolioPage() {
           <div>
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">พอร์ตการลงทุน</h1>
             <p className="text-sm text-brand-text-secondary">
-              {isAuthenticated
-                ? `ติดตามผลกำไรขาดทุนของพอร์ตคุณ ${portfolio.length > 0 ? `(${portfolio.length} หุ้น)` : ''}`
-                : 'เข้าสู่ระบบเพื่อบันทึกพอร์ตบน Supabase'}
+              ติดตามผลกำไรขาดทุนของพอร์ตคุณ {portfolio.length > 0 ? `(${portfolio.length} หุ้น)` : ''}
             </p>
           </div>
         </div>
-        {!isAuthenticated && (
-          <button
-            type="button"
-            onClick={() => setAuthModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1.5 text-xs text-brand-primary transition-colors hover:bg-brand-primary/20"
-          >
-            <Lock size={13} />
-            เข้าสู่ระบบ
-          </button>
-        )}
       </div>
 
-      {isLoading && !isAuthenticated ? (
-        <Card>
-          <div className="flex items-center justify-center py-16">
-            <LoadingSpinner size="lg" />
-          </div>
-        </Card>
-      ) : !isAuthenticated ? (
-        <Card>
-          <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-primary/10">
-              <Lock size={28} className="text-brand-primary" />
-            </div>
-            <div>
-              <p className="mb-1 font-medium text-brand-text-primary">เข้าสู่ระบบเพื่อใช้งานพอร์ต</p>
-              <p className="max-w-md text-sm text-brand-text-secondary">
-                พอร์ตการลงทุนจะบันทึกแยกตามบัญชีผู้ใช้ด้วย Supabase เพื่อให้ข้อมูลยังอยู่หลัง refresh และใช้งานข้ามเครื่องได้
-              </p>
-            </div>
-            <Button type="button" onClick={() => setAuthModalOpen(true)}>
-              <Lock size={16} />
-              เข้าสู่ระบบ
-            </Button>
-          </div>
-        </Card>
-      ) : (
         <>
           {/* Add Stock Form */}
           <Card>
@@ -395,7 +355,7 @@ export default function PortfolioPage() {
             </div>
           )}
         </>
-      )}
     </div>
+    </FeatureGate>
   )
 }

@@ -2,6 +2,14 @@
 
 import { useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    TradingView?: {
+      widget: new (config: Record<string, unknown>) => void
+    }
+  }
+}
+
 interface TradingViewWidgetProps {
   symbol: string
   exchange?: string
@@ -30,8 +38,8 @@ export default function TradingViewWidget({ symbol, exchange = 'SET', height = 4
     script.src = 'https://s3.tradingview.com/tv.js'
     script.async = true
     script.onload = () => {
-      if ((window as any).TradingView) {
-        new (window as any).TradingView.widget({
+      if (window.TradingView) {
+        new window.TradingView.widget({
           container_id: widgetDiv.id,
           symbol: `${exchange}:${symbol}`,
           interval: 'D',

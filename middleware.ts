@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+const PROTECTED_ROUTES = ['/portfolio', '/compare', '/journal']
+
 export async function middleware(request: NextRequest) {
   // Skip if Supabase env vars are not set (build time or local dev without auth)
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -7,7 +9,19 @@ export async function middleware(request: NextRequest) {
   }
 
   const { updateSession } = await import('@/lib/supabase/middleware')
-  return await updateSession(request)
+  const { response, session } = await updateSession(request)
+
+  // Auth gate: protected routes require login
+  const path = request.nextUrl.pathname
+  const isProtected = PROTECTED_ROUTES.some((route) => path.startsWith(route))
+
+  if (isProtected && !session?.user) {
+    const redirect = new URL('/pricing', request.url)
+    redirect.searchParams.set('reason', 'auth_required')
+    return NextResponse.redirect(redirect)
+  }
+
+  return response
 }
 
 export const config = {

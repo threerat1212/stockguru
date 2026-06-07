@@ -67,7 +67,7 @@ async function fetchYahooEarningsCalendar(
 
   const earnings = data.earningsCalendar?.earnings || []
 
-  return earnings.map((item: any) => ({
+  return earnings.map((item: Record<string, unknown>) => ({
     symbol: item.symbol || '',
     name: item.companyShortName || undefined,
     earningsDate: item.startDateTime || item.earningsDate || '',

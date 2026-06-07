@@ -6,6 +6,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import AuthModal from '@/components/auth/AuthModal'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { useSubscription } from '@/lib/hooks/use-subscription'
 import { cn } from '@/lib/utils/format'
 
 type CheckoutPlan = 'pro' | 'founding_pro' | 'trader'
@@ -15,7 +16,7 @@ const freeFeatures = [
   'Watchlist 10 หุ้น',
   'การแจ้งเตือน 3 รายการ',
   'Screener พื้นฐาน',
-  'ข่าวสารหุ้น',
+  'AI Market Brief (สรุปข่าว)',
   'กราฟราคา',
 ]
 
@@ -60,8 +61,10 @@ function FeatureList({ items, mutedItems = [] }: { items: string[]; mutedItems?:
 
 export default function PricingPage() {
   const { isAuthenticated } = useAuth()
+  const { isPro, plan } = useSubscription()
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
   const [error, setError] = useState('')
 
   async function startCheckout(plan: CheckoutPlan) {
@@ -90,6 +93,21 @@ export default function PricingPage() {
     }
   }
 
+  async function openBillingPortal() {
+    setError('')
+    setPortalLoading(true)
+    try {
+      const res = await fetch('/api/billing/portal', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'ไม่สามารถเปิดหน้าจัดการแผนได้')
+      if (data.url) window.location.href = data.url
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="text-center space-y-3">
@@ -105,6 +123,22 @@ export default function PricingPage() {
       {error && (
         <div className="rounded-lg border border-brand-danger/30 bg-brand-danger/10 px-4 py-3 text-sm text-brand-danger">
           {error}
+        </div>
+      )}
+
+      {isAuthenticated && isPro && (
+        <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
+          <p className="text-sm text-brand-text-secondary">
+            แผนปัจจุบัน: <span className="font-medium text-brand-text-primary">{plan.toUpperCase()}</span>
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={openBillingPortal}
+            isLoading={portalLoading}
+          >
+            จัดการแผน / ยกเลิก subscription
+          </Button>
         </div>
       )}
 

@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { PLAN_LIMITS } from '@/lib/hooks/use-subscription'
+import { effectivePlan } from '@/lib/subscription/plan-utils'
 
 export interface WatchlistItemCloud {
   id: string
@@ -50,6 +52,7 @@ export function useWatchlist() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [plan, setPlan] = useState<'free' | 'pro' | 'founding_pro' | 'trader'>('free')
 
   const supabase = createClient()
 
@@ -87,6 +90,14 @@ export function useWatchlist() {
         .select('*')
         .order('added_at', { ascending: false })
 
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('plan, status')
+        .eq('user_id', user!.id)
+        .single()
+
+      setPlan(effectivePlan(subData?.plan, subData?.status))
+
       if (error) {
         console.error('Failed to fetch watchlist:', error)
         setItems(loadLocalWatchlist())
@@ -104,10 +115,16 @@ export function useWatchlist() {
     }
 
     fetchWatchlist()
-  }, [isAuthenticated, supabase])
+  }, [isAuthenticated, supabase, user])
+
+  const watchlistLimit = PLAN_LIMITS[plan]?.watchlist ?? PLAN_LIMITS.free.watchlist
 
   const addWatchlistItem = useCallback(
     async (symbol: string, notes?: string) => {
+      if (items.length >= watchlistLimit) {
+        throw new Error(`Watchlist เต็มแล้ว (สูงสุด ${watchlistLimit} หุ้น) กรุณาอัพเกรดแผน`)
+      }
+
       if (!isAuthenticated || !user) {
         const newItem: WatchlistItemCloud = {
           id: crypto.randomUUID(),
@@ -142,7 +159,7 @@ export function useWatchlist() {
         setItems((prev) => [...prev, newItem])
       }
     },
-    [isAuthenticated, user, items, supabase]
+    [isAuthenticated, user, items, supabase, watchlistLimit]
   )
 
   const removeWatchlistItem = useCallback(
@@ -179,6 +196,7 @@ export function useWatchlist() {
     watchlist: items,
     isLoading,
     isAuthenticated,
+    watchlistLimit,
     addWatchlistItem,
     removeWatchlistItem,
     isInWatchlist,

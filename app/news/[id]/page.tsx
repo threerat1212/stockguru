@@ -1,11 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, BarChart3, Clock, ExternalLink, Newspaper, ShieldAlert, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Clock, ExternalLink, Newspaper, AlertTriangle } from 'lucide-react'
+import NewsImpactPanel, { NewsImpactScore } from '@/components/news/NewsImpactPanel'
 import { createClient } from '@/lib/supabase/server'
 import Badge from '@/components/ui/Badge'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
-import { timeAgo, cn } from '@/lib/utils/format'
+import { timeAgo } from '@/lib/utils/format'
 
 const categoryLabels: Record<string, string> = {
   market: 'ตลาด',
@@ -25,11 +26,13 @@ export const revalidate = 0
 
 export default async function NewsDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
-  const { data: article } = await supabase
-    .from('news_articles')
-    .select('*')
-    .eq('slug', params.id)
-    .single()
+  const id = params.id
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+  const query = supabase.from('news_articles').select('*')
+  const { data: article } = isUuid
+    ? await query.eq('id', id).single()
+    : await query.eq('slug', id).single()
 
   if (!article) notFound()
 
@@ -73,37 +76,19 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
               {content.map((para: string, i: number) => (
                 <p key={i}>{para}</p>
               ))}
-              {article.market_impact_score && (
-                <div className="rounded-xl border border-brand-warning/30 bg-brand-warning/10 p-4">
-                  <div className="mb-1 flex items-center gap-2 font-semibold text-brand-text-primary">
-                    <ShieldAlert size={16} className="text-brand-warning" /> ผลกระทบต่อตลาด
-                  </div>
-                  <p>คะแนนผลกระทบ: {article.market_impact_score}/100</p>
-                </div>
+              {article.market_impact_score != null && (
+                <NewsImpactScore score={article.market_impact_score} />
               )}
             </div>
           </Card>
         </article>
 
         <aside className="space-y-4">
-          {impactPoints.length > 0 && (
-            <Card className={cn('border', toneClasses[impactPoints[0]?.sentiment ?? 'neutral'])}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <BarChart3 size={18} /> Impact Points
-                </CardTitle>
-              </CardHeader>
-              <div className="space-y-2">
-                {impactPoints.map((pt: any, i: number) => (
-                  <div key={i} className="flex items-center gap-2 rounded-lg bg-brand-card/60 p-2 text-sm text-brand-text-primary">
-                    <span className={`h-2 w-2 rounded-full ${pt.sentiment === 'positive' ? 'bg-brand-success' : pt.sentiment === 'negative' ? 'bg-brand-danger' : 'bg-brand-primary'}`} />
-                    <span className="font-medium">{pt.label}</span>
-                    <span className="text-brand-text-secondary">{pt.value}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
+          <NewsImpactPanel
+            marketImpactScore={article.market_impact_score}
+            impactPoints={impactPoints}
+            toneClasses={toneClasses}
+          />
 
           {relatedSymbols.length > 0 && (
             <Card>
@@ -123,9 +108,9 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
               <CardTitle className="flex items-center gap-2 text-base"><Newspaper size={16} /> References</CardTitle>
             </CardHeader>
             <div className="space-y-2">
-              {(references.length > 0 ? references : [{ url: article.url, title: 'Source', source: article.source }]).map((ref: any, i: number) => (
-                <a key={i} href={ref.url ?? article.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 break-all rounded-lg border border-brand-border p-2 text-xs text-brand-text-secondary hover:text-brand-primary">
-                  <ExternalLink size={13} className="shrink-0" /> {ref.title ?? ref.source ?? 'Reference'}
+              {(references.length > 0 ? references : [{ url: article.url, title: 'Source', source: article.source }]).map((ref: Record<string, unknown>, i: number) => (
+                <a key={i} href={String(ref.url ?? article.url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 break-all rounded-lg border border-brand-border p-2 text-xs text-brand-text-secondary hover:text-brand-primary">
+                  <ExternalLink size={13} className="shrink-0" /> {String(ref.title ?? ref.source ?? 'Reference')}
                 </a>
               ))}
             </div>

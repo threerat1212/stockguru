@@ -1,5 +1,7 @@
 import type { StockQuote, StockCandle, TrendingStock, StockSearchResult, MarketIndex, Timeframe } from '@/types/stock'
 import { quoteCache, historyCache, searchCache } from '@/lib/cache'
+import type { MarketDataMeta, MarketDataResult } from '@/lib/market-data/types'
+import { cacheMeta, demoMeta, liveMeta } from '@/lib/market-data/types'
 
 const YAHOO_BASE = 'https://query1.finance.yahoo.com'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -132,37 +134,15 @@ const FALLBACK_SECTORS: Record<string, string> = {
   BABA: 'อีคอมเมิร์ซ',
 }
 
-function getFallbackQuote(symbol: string): StockQuote {
+function getKnownFallbackQuote(symbol: string): StockQuote | null {
   const key = symbol.toUpperCase()
   const candidate = FALLBACK_QUOTES[key] || FALLBACK_QUOTES[`${key}.BK`]
-  if (candidate) return { ...candidate, timestamp: Date.now() }
-
-  const hash = [...key].reduce((sum, char) => sum + char.charCodeAt(0), 0)
-  const price = 25 + (hash % 180)
-  const change = ((hash % 19) - 9) / 2
-  const changePercent = (change / price) * 100
-
-  return {
-    symbol: key,
-    name: key.replace('.BK', ''),
-    price,
-    change,
-    changePercent,
-    open: price - change,
-    high: price + Math.abs(change) + 1.5,
-    low: price - Math.abs(change) - 1.5,
-    close: price,
-    previousClose: price - change,
-    volume: 5_000_000 + hash * 10_000,
-    marketCap: 20_000_000_000 + hash * 100_000_000,
-    pe: 8 + (hash % 24),
-    week52High: price * 1.18,
-    week52Low: price * 0.78,
-    currency: key.endsWith('.BK') ? 'THB' : 'USD',
-    exchange: key.endsWith('.BK') ? 'SET' : 'NASDAQ',
-    timestamp: Date.now(),
-  }
+  if (!candidate) return null
+  return { ...candidate, timestamp: Date.now() }
 }
+
+const DEMO_WARNING =
+  'ไม่สามารถดึงราคาสดได้ — กำลังแสดงข้อมูลตัวอย่างเท่านั้น อย่าใช้ตัดสินใจลงทุน'
 
 function normalizeExchange(symbol: string, exchange?: string, fullExchangeName?: string) {
   const raw = `${exchange ?? ''} ${fullExchangeName ?? ''}`.toUpperCase()
@@ -190,7 +170,8 @@ function getFallbackTrending(): TrendingStock[] {
 }
 
 function getFallbackHistory(symbol: string, timeframe: Timeframe): StockCandle[] {
-  const quote = getFallbackQuote(symbol)
+  const quote = getKnownFallbackQuote(symbol)
+  if (!quote) return []
   const days = timeframe === '1D' ? 1 : timeframe === '1W' ? 7 : timeframe === '1M' ? 30 : timeframe === '6M' ? 180 : timeframe === '1Y' ? 365 : 90
   const candles: StockCandle[] = []
   const now = new Date()
@@ -229,10 +210,12 @@ async function yfetch(path: string, params: Record<string, string> = {}) {
 }
 
 /** Fetch real-time stock quote */
-export async function getQuote(symbol: string): Promise<StockQuote> {
+export async function getQuote(symbol: string): Promise<MarketDataResult<StockQuote>> {
   const cacheKey = `quote:${symbol}`
   const cached = quoteCache.get<StockQuote>(cacheKey)
-  if (cached) return cached.data
+  if (cached) {
+    return { data: cached.data, meta: cacheMeta() }
+  }
 
   try {
     const data = await yfetch(`/v7/finance/quote`, { symbols: symbol })
@@ -261,19 +244,26 @@ export async function getQuote(symbol: string): Promise<StockQuote> {
     }
 
     quoteCache.set(cacheKey, quote)
-    return quote
+    return { data: quote, meta: liveMeta('yahoo') }
   } catch {
-    const quote = getFallbackQuote(symbol)
+    const quote = getKnownFallbackQuote(symbol)
+    if (!quote) {
+      throw new Error(`ไม่พบข้อมูลราคาสำหรับ ${symbol} และไม่มีข้อมูลตัวอย่าง`)
+    }
+    const meta = demoMeta(DEMO_WARNING)
     quoteCache.set(cacheKey, quote, 60)
-    return quote
+    return { data: quote, meta }
   }
 }
 
 /** Fetch historical OHLCV data */
-export async function getHistory(symbol: string, timeframe: Timeframe = '3M'): Promise<StockCandle[]> {
+export async function getHistory(
+  symbol: string,
+  timeframe: Timeframe = '3M'
+): Promise<MarketDataResult<StockCandle[]>> {
   const cacheKey = `history:${symbol}:${timeframe}`
   const cached = historyCache.get<StockCandle[]>(cacheKey)
-  if (cached) return cached.data
+  if (cached) return { data: cached.data, meta: cacheMeta() }
 
   const now = Math.floor(Date.now() / 1000)
   let period1: number
@@ -321,11 +311,14 @@ export async function getHistory(symbol: string, timeframe: Timeframe = '3M'): P
     }
 
     historyCache.set(cacheKey, candles)
-    return candles
+    return { data: candles, meta: liveMeta('yahoo') }
   } catch {
     const candles = getFallbackHistory(symbol, timeframe)
+    if (!candles.length) {
+      throw new Error(`ไม่พบข้อมูลกราฟสำหรับ ${symbol}`)
+    }
     historyCache.set(cacheKey, candles, 60)
-    return candles
+    return { data: candles, meta: demoMeta(DEMO_WARNING) }
   }
 }
 
@@ -341,13 +334,13 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
     const data = await yfetch('/v1/finance/search', { q: query, quotesCount: '10', newsCount: '0' })
 
     const results: StockSearchResult[] = (data.quotes || [])
-      .filter((q: any) => q.symbol && (q.quoteType === 'EQUITY' || q.quoteType === 'ETF'))
-      .map((q: any) => ({
-        symbol: q.symbol,
-        name: q.shortname || q.longname || q.symbol,
-        exchange: normalizeExchange(q.symbol, q.exchange, q.exchDisp),
-        type: q.quoteType ?? 'EQUITY',
-        sector: q.sector || FALLBACK_SECTORS[q.symbol] || undefined,
+      .filter((q: Record<string, unknown>) => q.symbol && (q.quoteType === 'EQUITY' || q.quoteType === 'ETF'))
+      .map((q: Record<string, unknown>) => ({
+        symbol: String(q.symbol),
+        name: String(q.shortname || q.longname || q.symbol),
+        exchange: normalizeExchange(String(q.symbol), q.exchange as string | undefined, q.exchDisp as string | undefined),
+        type: String(q.quoteType ?? 'EQUITY'),
+        sector: (q.sector as string) || FALLBACK_SECTORS[String(q.symbol)] || undefined,
       }))
 
     searchCache.set(cacheKey, results)
@@ -366,14 +359,19 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
 }
 
 /** Get trending stocks */
-export async function getTrending(): Promise<TrendingStock[]> {
+export async function getTrending(): Promise<MarketDataResult<TrendingStock[]>> {
   const cacheKey = 'trending:global'
   const cached = quoteCache.get<TrendingStock[]>(cacheKey)
-  if (cached) return cached.data
+  if (cached) return { data: cached.data, meta: cacheMeta() }
 
   const symbols = [
+    // SET / mai
     'PTT.BK', 'CPALL.BK', 'SCB.BK', 'AOT.BK', 'KBANK.BK', 'ADVANC.BK', 'TRUE.BK', 'DELTA.BK',
+    'BBL.BK', 'MINT.BK', 'TOP.BK', 'GULF.BK', 'EGCO.BK', 'SCC.BK', 'BDMS.BK', 'HMPRO.BK',
+    'INTUCH.BK', 'CPF.BK', 'BANPU.BK', 'TU.BK',
+    // US
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'AMD', 'JPM', 'BABA',
+    'NFLX', 'V', 'MA', 'WMT', 'COST',
   ]
 
   try {
@@ -381,34 +379,34 @@ export async function getTrending(): Promise<TrendingStock[]> {
     const quotes = data.quoteResponse?.result || []
 
     const trending: TrendingStock[] = quotes
-      .filter((q: any) => q.regularMarketPrice != null)
-      .map((q: any) => ({
-        symbol: q.symbol,
-        name: q.shortName || q.longName || q.symbol,
-        price: q.regularMarketPrice ?? 0,
-        change: q.regularMarketChange ?? 0,
-        changePercent: q.regularMarketChangePercent ?? 0,
-        volume: q.regularMarketVolume ?? 0,
-        marketCap: q.marketCap,
-        sector: q.sector || FALLBACK_SECTORS[q.symbol] || undefined,
-        exchange: normalizeExchange(q.symbol, q.exchange, q.fullExchangeName),
-        currency: q.currency ?? 'USD',
+      .filter((q: Record<string, unknown>) => q.regularMarketPrice != null)
+      .map((q: Record<string, unknown>) => ({
+        symbol: String(q.symbol),
+        name: String(q.shortName || q.longName || q.symbol),
+        price: Number(q.regularMarketPrice ?? 0),
+        change: Number(q.regularMarketChange ?? 0),
+        changePercent: Number(q.regularMarketChangePercent ?? 0),
+        volume: Number(q.regularMarketVolume ?? 0),
+        marketCap: q.marketCap as number | undefined,
+        sector: (q.sector as string) || FALLBACK_SECTORS[String(q.symbol)] || undefined,
+        exchange: normalizeExchange(String(q.symbol), q.exchange as string | undefined, q.fullExchangeName as string | undefined),
+        currency: String(q.currency ?? 'USD'),
       }))
 
     quoteCache.set(cacheKey, trending, 120)
-    return trending
+    return { data: trending, meta: liveMeta('yahoo') }
   } catch {
     const fallback = getFallbackTrending()
     quoteCache.set(cacheKey, fallback, 120)
-    return fallback
+    return { data: fallback, meta: demoMeta(DEMO_WARNING) }
   }
 }
 
 /** Get market indices */
-export async function getMarketIndices(): Promise<MarketIndex[]> {
+export async function getMarketIndices(): Promise<MarketDataResult<MarketIndex[]>> {
   const cacheKey = 'market:indices'
   const cached = quoteCache.get<MarketIndex[]>(cacheKey)
-  if (cached) return cached.data
+  if (cached) return { data: cached.data, meta: cacheMeta() }
 
   const indices = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^SET.BK']
 
@@ -416,18 +414,18 @@ export async function getMarketIndices(): Promise<MarketIndex[]> {
     const data = await yfetch('/v7/finance/quote', { symbols: indices.join(',') })
     const quotes = data.quoteResponse?.result || []
 
-    const result: MarketIndex[] = quotes.map((q: any) => ({
-      symbol: q.symbol,
-      name: q.shortName || q.longName || q.symbol,
-      price: q.regularMarketPrice ?? 0,
-      change: q.regularMarketChange ?? 0,
-      changePercent: q.regularMarketChangePercent ?? 0,
+    const result: MarketIndex[] = quotes.map((q: Record<string, unknown>) => ({
+      symbol: String(q.symbol),
+      name: String(q.shortName || q.longName || q.symbol),
+      price: Number(q.regularMarketPrice ?? 0),
+      change: Number(q.regularMarketChange ?? 0),
+      changePercent: Number(q.regularMarketChangePercent ?? 0),
     }))
 
     quoteCache.set(cacheKey, result, 60)
-    return result
+    return { data: result, meta: liveMeta('yahoo') }
   } catch {
     quoteCache.set(cacheKey, FALLBACK_MARKET_INDICES, 60)
-    return FALLBACK_MARKET_INDICES
+    return { data: FALLBACK_MARKET_INDICES, meta: demoMeta(DEMO_WARNING) }
   }
 }

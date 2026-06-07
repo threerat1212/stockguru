@@ -11,7 +11,7 @@ function supabaseNotConfigured() {
 }
 
 export function createQueryStub() {
-  const query: any = {}
+  const query: Record<string, unknown> = {}
   const chain = () => query
 
   Object.assign(query, {
@@ -41,9 +41,9 @@ export function createQueryStub() {
     throwOnError: chain,
     single: async () => emptySingleResult(),
     maybeSingle: async () => emptySingleResult(),
-    then: (resolve: any, reject: any) => Promise.resolve(emptyQueryResult()).then(resolve, reject),
-    catch: (reject: any) => Promise.resolve(emptyQueryResult()).catch(reject),
-    finally: (onFinally: any) => Promise.resolve(emptyQueryResult()).finally(onFinally),
+    then: (resolve: (value: unknown) => void, reject: (reason?: unknown) => void) => Promise.resolve(emptyQueryResult()).then(resolve, reject),
+    catch: (reject: (reason?: unknown) => void) => Promise.resolve(emptyQueryResult()).catch(reject),
+    finally: (onFinally: () => void) => Promise.resolve(emptyQueryResult()).finally(onFinally),
   })
 
   return query
@@ -62,5 +62,5 @@ export function createSupabaseStub() {
     },
     from: () => createQueryStub(),
     rpc: async () => ({ data: null, error: null }),
-  } as any
+  } as unknown as import('@supabase/supabase-js').SupabaseClient
 }

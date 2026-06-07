@@ -13,9 +13,11 @@ Rules:
 
 ## StockGuru project skills
 
+**Read `START_HERE.md` first — every time, before any code change.**
+
 This repo keeps project-local skills in `skills/` and selected agent-runtime skills in `.agents/skills/`.
 
-For StockGuru work, read `SKILLS.md` first. Use the specific skill that matches the task before editing code.
+For StockGuru work, read `START_HERE.md`, then `SKILLS.md`. Use the specific skill that matches the task before editing code.
 
 For UX/UI work:
 

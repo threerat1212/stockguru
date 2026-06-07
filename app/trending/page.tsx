@@ -17,6 +17,7 @@ import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { LoadingPage } from '@/components/ui/Loading'
+import DataSourceBadge, { DataHonestyBanner } from '@/components/market/DataSourceBadge'
 
 type SortField = 'symbol' | 'price' | 'changePercent' | 'volume'
 type SortDir = 'asc' | 'desc'
@@ -30,7 +31,7 @@ function getExchange(symbol: string, exchange?: string) {
 }
 
 export default function TrendingPage() {
-  const { data: trending, isLoading, refetch, isFetching } = useTrending()
+  const { data: trending, meta, isLoading, refetch, isFetching } = useTrending()
   const [sortField, setSortField] = useState<SortField>('changePercent')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
 
@@ -107,6 +108,11 @@ export default function TrendingPage() {
           <RefreshCw size={14} />
           รีเฟรช
         </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <DataHonestyBanner meta={meta} />
+        <DataSourceBadge meta={meta} />
       </div>
 
       {/* Top Gainers / Losers Summary */}

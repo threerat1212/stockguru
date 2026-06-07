@@ -391,9 +391,9 @@ export default function HomePage() {
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-brand-text-primary">
                   <Newspaper size={20} className="text-brand-primary" />
-                  ข่าวที่กระทบตลาด
+                  AI Market Brief
                 </h2>
-                <p className="text-sm text-brand-text-secondary">อ่านเฉพาะข่าวที่มี ticker หรือ sector ให้ตามต่อ</p>
+                <p className="text-sm text-brand-text-secondary">สรุปแนวโน้มตลาดโดย AI — ไม่ใช่ wire ข่าวจริง</p>
               </div>
               <Link href="/news" className="inline-flex items-center gap-1 text-sm text-brand-primary transition-colors hover:text-blue-400">
                 ดูทั้งหมด <ArrowRight size={14} />

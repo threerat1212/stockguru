@@ -4,6 +4,8 @@ This is a project-local skill library for StockGuru only. Do not copy these skil
 
 ## How to Use
 
+**Always read `START_HERE.md` first** — it covers architecture, gating rules, data honesty, and what was already fixed.
+
 Before starting a StockGuru task, pick the relevant skill folder and read its `SKILL.md`.
 
 Use multiple skills when the task crosses boundaries. For example:

@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   Loader2,
 } from 'lucide-react'
-import { useNewsPaginated } from '@/lib/hooks/useStock'
+import { useNewsPaginated } from '@/lib/hooks/use-news'
 import { cn } from '@/lib/utils/format'
 import NewsCard from '@/components/news/NewsCard'
 import Card from '@/components/ui/Card'
@@ -55,8 +55,10 @@ export default function NewsPage() {
             <Newspaper size={20} className="text-brand-primary" />
           </div>
           <div>
-            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">ข่าวสาร</h1>
-            <p className="text-sm text-brand-text-secondary">ข่าวสารตลาดหุ้นและเศรษฐกิจล่าสุด</p>
+            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">AI Market Brief</h1>
+            <p className="text-sm text-brand-text-secondary">
+              สรุปแนวโน้มตลาดโดย AI อัปเดตทุก ~30 นาที — ไม่ใช่ข่าวจากสำนักข่าว
+            </p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={() => refetch()} className="gap-1">

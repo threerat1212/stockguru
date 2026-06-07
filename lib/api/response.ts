@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import type { ApiResponse } from '@/types/stock'
+import type { MarketDataMeta } from '@/lib/market-data/types'
 
-export function apiSuccess<T>(data: T, cached = false): NextResponse<ApiResponse<T>> {
-  return NextResponse.json({ success: true, data, cached })
+export function apiSuccess<T>(
+  data: T,
+  options?: { cached?: boolean; meta?: MarketDataMeta }
+): NextResponse<ApiResponse<T>> {
+  const cached = options?.cached ?? false
+  const meta = options?.meta
+  return NextResponse.json({ success: true, data, cached, ...(meta ? { meta } : {}) })
 }
 
 export function apiError(error: string, status = 500): NextResponse<ApiResponse<never>> {

@@ -20,10 +20,12 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
 import { LoadingSpinner } from '@/components/ui/Loading'
+import FeatureGate from '@/components/auth/FeatureGate'
 import type { StockQuote } from '@/types/stock'
 
 const MAX_COMPARE = 3
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
+const COMPARE_CHART_COLORS = ['#3b82f6', '#22c55e', '#f97316']
 
 interface CompareRow {
   label: string
@@ -90,10 +92,8 @@ function CompareChart({ symbols }: { symbols: string[] }) {
   const h2 = useHistory(symbols[1] ?? null, '3M')
   const h3 = useHistory(symbols[2] ?? null, '3M')
 
-  const histories = [h1.data, h2.data, h3.data]
+  const histories = useMemo(() => [h1.data, h2.data, h3.data], [h1.data, h2.data, h3.data])
   const isLoading = h1.isLoading || h2.isLoading || h3.isLoading
-
-  const colors = ['#3b82f6', '#22c55e', '#f97316']
 
   useEffect(() => {
     if (!chartContainerRef.current || symbols.length < 2) return
@@ -134,7 +134,7 @@ function CompareChart({ symbols }: { symbols: string[] }) {
       }))
 
       const lineSeries = chart.addLineSeries({
-        color: colors[idx],
+        color: COMPARE_CHART_COLORS[idx],
         lineWidth: 2,
         title: symbols[idx].replace('.BK', ''),
       })
@@ -178,7 +178,7 @@ function CompareChart({ symbols }: { symbols: string[] }) {
         <div className="flex flex-wrap gap-3">
           {symbols.map((sym, i) => (
             <div key={sym} className="flex items-center gap-2 text-xs text-brand-text-secondary">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors[i] }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COMPARE_CHART_COLORS[i] }} />
               <span className="font-semibold text-brand-text-primary">{sym.replace('.BK', '')}</span>
             </div>
           ))}
@@ -287,6 +287,7 @@ export default function ComparePage() {
   }
 
   return (
+    <FeatureGate feature="compare">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -485,5 +486,6 @@ export default function ComparePage() {
         </Card>
       )}
     </div>
+    </FeatureGate>
   )
 }

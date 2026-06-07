@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const candles = await getHistory(parse.data.symbol.trim().toUpperCase(), parse.data.timeframe)
-    return apiSuccess(candles)
+    const result = await getHistory(parse.data.symbol.trim().toUpperCase(), parse.data.timeframe)
+    return apiSuccess(result.data, { meta: result.meta, cached: result.meta.source === 'cache' })
   } catch (error) {
     return apiError((error as Error).message)
   }

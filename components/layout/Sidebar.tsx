@@ -14,7 +14,7 @@ const sidebarLinks = [
   { href: '/journal', label: 'Trading Journal', icon: NotebookPen },
   { href: '/watchlist', label: 'รายการโปรด', icon: Star },
   { href: '/alerts', label: 'แจ้งเตือนราคา', icon: Bell },
-  { href: '/news', label: 'ข่าวสาร', icon: Newspaper },
+  { href: '/news', label: 'AI Brief', icon: Newspaper },
   { href: '/earnings', label: 'ปฏิทินงบ', icon: Calendar },
   { href: '/sector', label: 'วิเคราะห์กลุ่ม', icon: PieChart },
   { href: '/compare', label: 'เปรียบเทียบหุ้น', icon: GitCompare },
@@ -115,7 +115,7 @@ export default function Sidebar() {
             <div className="space-y-0.5">
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-brand-text-secondary">
                 <Zap size={16} className="text-brand-warning" />
-                <span>อัปเดตเรียลไทม์</span>
+                <span>อัปเดตทุก ~30 วินาที</span>
               </div>
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-brand-text-secondary">
                 <Brain size={16} className="text-brand-accent" />
