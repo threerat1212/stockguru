@@ -5,6 +5,22 @@ description: Use for StockGuru UX/UI design work, DESIGN.md updates, Thai-first 
 
 # StockGuru UI Design
 
+## Impeccable Requirement
+
+For UX/UI work, use the project-local Impeccable skill:
+
+```text
+.agents/skills/impeccable/SKILL.md
+```
+
+Run its context step once per session:
+
+```bash
+node .agents/skills/impeccable/scripts/context.mjs
+```
+
+Then read `reference/product.md` because StockGuru is a product UI, not a brand-only landing page.
+
 ## Required First Step
 
 Before UX/UI implementation, write or update `DESIGN.md`.
