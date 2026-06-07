@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   Loader2,
 } from 'lucide-react'
-import { useNewsPaginated } from '@/lib/hooks/useStock'
+import { useNewsPaginated } from '@/lib/hooks/use-news'
 import { cn } from '@/lib/utils/format'
 import NewsCard from '@/components/news/NewsCard'
 import Card from '@/components/ui/Card'

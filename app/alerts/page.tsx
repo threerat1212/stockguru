@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   Bell,
   Plus,
@@ -11,25 +11,17 @@ import {
   BellRing,
   CheckCircle,
   X,
+  Cloud,
+  HardDrive,
 } from 'lucide-react'
 import { useQuote } from '@/lib/hooks/use-stock'
+import { useAlerts, type PriceAlert } from '@/lib/hooks/use-alerts'
 import { formatCurrency, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
 
-interface PriceAlert {
-  id: string
-  symbol: string
-  targetPrice: number
-  condition: 'above' | 'below'
-  createdAt: number
-  triggered: boolean
-  triggeredAt?: number
-}
-
-const STORAGE_KEY = 'stockguru-alerts'
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
 
 function normalizeSymbol(symbol: string) {
@@ -39,47 +31,44 @@ function normalizeSymbol(symbol: string) {
   return FOREIGN_SYMBOLS.has(upper) ? upper : `${upper}.BK`
 }
 
-function loadAlerts(): PriceAlert[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
+function SymbolWatcher({
+  symbol,
+  alerts,
+  onTrigger,
+}: {
+  symbol: string
+  alerts: PriceAlert[]
+  onTrigger: (id: string) => void
+}) {
+  const { data: quote } = useQuote(symbol)
 
-function saveAlerts(alerts: PriceAlert[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts))
+  useEffect(() => {
+    if (!quote) return
+    for (const alert of alerts) {
+      if (alert.symbol !== symbol || alert.triggered) continue
+      if (
+        (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
+        (alert.condition === 'below' && quote.price <= alert.targetPrice)
+      ) {
+        onTrigger(alert.id)
+      }
+    }
+  }, [quote, symbol, alerts, onTrigger])
+
+  return null
 }
 
 function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: (id: string) => void }) {
+  // One stable child hook-set per symbol keeps React's hook count consistent
+  // even as alerts are triggered and the active-symbol list changes.
   const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
-  const prevPrices = useRef<Record<string, number>>({})
-
-  // Poll each symbol
-  for (const sym of symbols) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: quote } = useQuote(sym)
-    if (quote) {
-      const prev = prevPrices.current[sym]
-      if (prev !== quote.price) {
-        prevPrices.current[sym] = quote.price
-        // Check all alerts for this symbol
-        for (const alert of alerts) {
-          if (alert.symbol !== sym || alert.triggered) continue
-          if (
-            (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
-            (alert.condition === 'below' && quote.price <= alert.targetPrice)
-          ) {
-            onTrigger(alert.id)
-          }
-        }
-      }
-    }
-  }
-
-  return null
+  return (
+    <>
+      {symbols.map(sym => (
+        <SymbolWatcher key={sym} symbol={sym} alerts={alerts} onTrigger={onTrigger} />
+      ))}
+    </>
+  )
 }
 
 function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => void }) {
@@ -152,8 +141,7 @@ function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => voi
 }
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<PriceAlert[]>([])
-  const [mounted, setMounted] = useState(false)
+  const { alerts, addAlert, removeAlert, triggerAlert, clearTriggered, loading, isCloud } = useAlerts()
 
   // Form state
   const [formSymbol, setFormSymbol] = useState('')
@@ -161,36 +149,9 @@ export default function AlertsPage() {
   const [formCondition, setFormCondition] = useState<'above' | 'below'>('above')
   const [formError, setFormError] = useState('')
 
-  useEffect(() => {
-    setAlerts(loadAlerts())
-    setMounted(true)
-  }, [])
-
   const handleTrigger = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.map(a =>
-        a.id === id ? { ...a, triggered: true, triggeredAt: Date.now() } : a
-      )
-      saveAlerts(next)
-      return next
-    })
-  }, [])
-
-  const removeAlert = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.filter(a => a.id !== id)
-      saveAlerts(next)
-      return next
-    })
-  }, [])
-
-  const clearTriggered = useCallback(() => {
-    setAlerts(prev => {
-      const next = prev.filter(a => !a.triggered)
-      saveAlerts(next)
-      return next
-    })
-  }, [])
+    void triggerAlert(id)
+  }, [triggerAlert])
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -202,26 +163,13 @@ export default function AlertsPage() {
     if (!symbol) { setFormError('กรุณาใส่ชื่อหุ้น'); return }
     if (isNaN(targetPrice) || targetPrice <= 0) { setFormError('กรุณาใส่ราคาที่ถูกต้อง'); return }
 
-    const newAlert: PriceAlert = {
-      id: Date.now().toString(),
-      symbol,
-      targetPrice,
-      condition: formCondition,
-      createdAt: Date.now(),
-      triggered: false,
-    }
-
-    setAlerts(prev => {
-      const next = [...prev, newAlert]
-      saveAlerts(next)
-      return next
-    })
+    void addAlert(symbol, targetPrice, formCondition)
 
     setFormSymbol('')
     setFormPrice('')
   }
 
-  if (!mounted) return null
+  if (loading) return null
 
   const activeAlerts = alerts.filter(a => !a.triggered)
   const triggeredAlerts = alerts.filter(a => a.triggered)
@@ -235,7 +183,13 @@ export default function AlertsPage() {
             <Bell size={20} className="text-brand-danger" />
           </div>
           <div>
-            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">แจ้งเตือนราคา</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">แจ้งเตือนราคา</h1>
+              <Badge variant={isCloud ? 'info' : 'outline'} size="sm" className="gap-1">
+                {isCloud ? <Cloud size={12} /> : <HardDrive size={12} />}
+                {isCloud ? 'ซิงค์คลาวด์' : 'บันทึกในเครื่อง'}
+              </Badge>
+            </div>
             <p className="text-sm text-brand-text-secondary">
               ตั้งแจ้งเตือนเมื่อราคาหุ้นถึงระดับที่ต้องการ {activeAlerts.length > 0 && `(${activeAlerts.length} รายการ)`}
             </p>
@@ -250,7 +204,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Hidden alert checker - polls prices in background */}
-      {mounted && alerts.length > 0 && (
+      {alerts.length > 0 && (
         <AlertChecker alerts={alerts} onTrigger={handleTrigger} />
       )}
 
@@ -376,7 +330,7 @@ export default function AlertsPage() {
           <AlertTriangle size={18} className="text-brand-warning mt-0.5 flex-shrink-0" />
           <div className="text-sm text-brand-text-secondary">
             <p className="font-medium text-brand-text-primary mb-1">หมายเหตุ</p>
-            <p>การแจ้งเตือนจะทำงานเมื่อหน้าเว็บเปิดอยู่และมีการอัพเดทราคาทุก 30 วินาที ข้อมูลจะถูกบันทึกในเบราว์เซอร์ของคุณ</p>
+            <p>การแจ้งเตือนจะทำงานเมื่อหน้าเว็บเปิดอยู่และมีการอัพเดทราคาทุก 30 วินาที {isCloud ? 'ข้อมูลถูกบันทึกในบัญชีของคุณ (ซิงค์ข้ามอุปกรณ์)' : 'ข้อมูลจะถูกบันทึกในเบราว์เซอร์ของคุณ — เข้าสู่ระบบเพื่อซิงค์ข้ามอุปกรณ์'}</p>
           </div>
         </div>
       </Card>

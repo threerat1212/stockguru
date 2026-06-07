@@ -1,6 +1,6 @@
 'use client'
 
-import { useNews } from '@/lib/hooks/useStock'
+import { useNews } from '@/lib/hooks/use-news'
 import NewsCard from './NewsCard'
 import { LoadingCard } from '@/components/ui/Loading'
 

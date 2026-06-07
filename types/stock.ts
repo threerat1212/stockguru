@@ -105,6 +105,7 @@ export interface AIAnalysis {
   riskAssessment: string
   keyPoints: string[]
   disclaimer: string
+  simulated?: boolean // true when generated locally (no AI provider configured), not from the AI model
 }
 
 // AI Chat message

@@ -193,7 +193,7 @@ create table if not exists public.news_articles (
   related_symbols text[] default '{}',
   market_impact_score int check (market_impact_score >= 0 and market_impact_score <= 100),
   impact_points jsonb default '[]',
-  references jsonb default '[]',
+  "references" jsonb default '[]',
   created_at timestamptz default now()
 );
 
