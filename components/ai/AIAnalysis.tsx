@@ -53,8 +53,23 @@ export default function AIAnalysisPanel({ symbol }: AIAnalysisPanelProps) {
               <span className="text-sm">🤖</span>
             </div>
             AI วิเคราะห์
+            {analysis.simulated && (
+              <Badge variant="warning" className="ml-1 gap-1">
+                <AlertTriangle size={12} />
+                ผลจำลอง (Demo)
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
+
+        {analysis.simulated && (
+          <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-brand-warning/5 border border-brand-warning/20">
+            <AlertTriangle size={16} className="text-brand-warning shrink-0 mt-0.5" />
+            <p className="text-xs text-brand-text-secondary leading-relaxed">
+              ผลนี้สร้างจากสูตรเทคนิคเบื้องต้นบนเครื่อง (ยังไม่ได้ตั้งค่า AI provider) ไม่ใช่บทวิเคราะห์จากโมเดล AI จริง โปรดใช้เป็นข้อมูลอ้างอิงเท่านั้น
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-4 mb-5">
           {/* Trend */}

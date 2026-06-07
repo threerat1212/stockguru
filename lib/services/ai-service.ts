@@ -140,6 +140,7 @@ function generateMockAnalysis(symbol: string, quote: StockQuote, candles: StockC
     riskAssessment: risks[trend],
     keyPoints: trend === 'bullish' ? keyPointsBullish : trend === 'bearish' ? keyPointsBearish : keyPointsNeutral,
     disclaimer: 'ข้อมูลนี้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและใช้วิจารณญาณก่อนตัดสินใจ',
+    simulated: true,
   }
 }
 
@@ -216,6 +217,7 @@ Respond with ONLY a valid JSON object (no markdown, no code fences) with these e
       riskAssessment: String(parsed.riskAssessment || 'Risk assessment unavailable.'),
       keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.slice(0, 6) : [],
       disclaimer: String(parsed.disclaimer || 'ข้อมูลนี้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน'),
+      simulated: false,
     }
 
     analysisCache.set(cacheKey, analysis)
