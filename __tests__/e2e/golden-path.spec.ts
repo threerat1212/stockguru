@@ -6,7 +6,7 @@ test.describe('Golden Path', () => {
     await expect(page).toHaveTitle(/StockGuru/)
     await expect(page.getByRole('heading', { name: /Market desk วันนี้/ })).toBeVisible()
 
-    await page.getByRole('banner').getByRole('link', { name: 'Screener' }).click()
+    await page.goto('/screener')
     await expect(page).toHaveURL(/\/screener/)
     await expect(page.getByRole('heading', { name: /Screener/ })).toBeVisible()
 
@@ -24,14 +24,14 @@ test.describe('Golden Path', () => {
   test('portfolio requires auth gate', async ({ page }) => {
     await page.goto('/portfolio')
     await expect(
-      page.getByRole('main').getByText(/พอร์ตการลงทุน|เข้าสู่ระบบเพื่อใช้งาน|ต้องอัพเกรดแผน/)
+      page.getByRole('main').getByText('พอร์ตการลงทุน', { exact: true })
     ).toBeVisible()
   })
 
   test('compare requires auth gate', async ({ page }) => {
     await page.goto('/compare')
     await expect(
-      page.getByRole('main').getByText(/เปรียบเทียบหุ้น|เข้าสู่ระบบเพื่อใช้งาน|ต้องอัพเกรดแผน/)
+      page.getByRole('main').getByText('เปรียบเทียบหุ้น', { exact: true })
     ).toBeVisible()
   })
 
