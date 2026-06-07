@@ -10,6 +10,7 @@ interface AppState {
   addToWatchlist: (symbol: string, notes?: string) => void
   removeFromWatchlist: (symbol: string) => void
   isInWatchlist: (symbol: string) => boolean
+  setWatchlist: (items: WatchlistItem[]) => void
 
   // Chart settings
   timeframe: Timeframe
@@ -46,6 +47,7 @@ export const useAppStore = create<AppState>()(
         })),
       isInWatchlist: (symbol) =>
         get().watchlist.some((item) => item.symbol === symbol),
+      setWatchlist: (items) => set({ watchlist: items }),
 
       // Chart settings
       timeframe: '1M',

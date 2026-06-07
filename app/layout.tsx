@@ -4,6 +4,7 @@ import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
 import Footer from '@/components/layout/Footer'
 import { QueryProvider } from '@/lib/providers/query-provider'
+import CloudSync from '@/components/system/CloudSync'
 import { SITE_URL, SITE_NAME } from '@/lib/site'
 
 const TITLE = 'StockGuru - วิเคราะห์หุ้นไทยด้วย AI'
@@ -44,6 +45,7 @@ export default function RootLayout({
     <html lang="th" className="dark">
       <body className="min-h-screen bg-brand-bg text-brand-text-primary antialiased">
         <QueryProvider>
+          <CloudSync />
           <Header />
           <div className="flex min-w-0">
             <Sidebar />
