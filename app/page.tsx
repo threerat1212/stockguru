@@ -26,7 +26,7 @@ import NewsFeed from '@/components/news/NewsFeed'
 import AIChat from '@/components/ai/AIChat'
 import Button from '@/components/ui/Button'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
-import { useTrendingStocks } from '@/lib/hooks/useStock'
+import { useTrending } from '@/lib/hooks/use-stock'
 import { useAppStore } from '@/lib/store/stockStore'
 import {
   cn,
@@ -106,7 +106,7 @@ function formatDisplaySymbol(symbol: string) {
 }
 
 export default function HomePage() {
-  const { data: stocks, loading } = useTrendingStocks()
+  const { data: stocks = [], isLoading: loading } = useTrending()
   const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useAppStore()
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useTrendingStocks } from '@/lib/hooks/useStock'
+import { useTrending } from '@/lib/hooks/use-stock'
 import StockCard from './StockCard'
 import { LoadingCard } from '@/components/ui/Loading'
 
@@ -9,7 +9,7 @@ interface TrendingStocksProps {
 }
 
 export default function TrendingStocks({ limit = 6 }: TrendingStocksProps) {
-  const { data: stocks, loading } = useTrendingStocks()
+  const { data: stocks = [], isLoading: loading } = useTrending()
 
   if (loading) {
     return (
