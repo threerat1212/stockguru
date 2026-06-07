@@ -11,25 +11,17 @@ import {
   BellRing,
   CheckCircle,
   X,
+  Lock,
 } from 'lucide-react'
 import { useQuote } from '@/lib/hooks/use-stock'
+import { useAlerts } from '@/lib/hooks/use-alerts'
 import { formatCurrency, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
+import AuthModal from '@/components/auth/AuthModal'
 
-interface PriceAlert {
-  id: string
-  symbol: string
-  targetPrice: number
-  condition: 'above' | 'below'
-  createdAt: number
-  triggered: boolean
-  triggeredAt?: number
-}
-
-const STORAGE_KEY = 'stockguru-alerts'
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
 
 function normalizeSymbol(symbol: string) {
@@ -39,21 +31,7 @@ function normalizeSymbol(symbol: string) {
   return FOREIGN_SYMBOLS.has(upper) ? upper : `${upper}.BK`
 }
 
-function loadAlerts(): PriceAlert[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function saveAlerts(alerts: PriceAlert[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts))
-}
-
-function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: (id: string) => void }) {
+function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; triggered: boolean; targetPrice: number; condition: 'above' | 'below' }[]; onTrigger: (symbol: string) => void }) {
   const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
   const prevPrices = useRef<Record<string, number>>({})
 
@@ -72,7 +50,7 @@ function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: 
             (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
             (alert.condition === 'below' && quote.price <= alert.targetPrice)
           ) {
-            onTrigger(alert.id)
+            onTrigger(sym)
           }
         }
       }
@@ -82,7 +60,7 @@ function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: 
   return null
 }
 
-function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => void }) {
+function AlertItem({ alert, onRemove }: { alert: { id: string; symbol: string; targetPrice: number; condition: 'above' | 'below'; triggered: boolean; triggeredAt?: string }; onRemove: () => void }) {
   const { data: quote, isLoading } = useQuote(alert.symbol)
   const displaySym = alert.symbol.replace('.BK', '')
   const currentPrice = quote?.price ?? 0
@@ -134,7 +112,7 @@ function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => voi
             {isLoading ? '...' : formatCurrency(currentPrice, currency)}
           </p>
           {!isLoading && currentPrice > 0 && !alert.triggered && (
-            <p className={cn('text-xs font-mono-nums', diffPct > 0 ? 'text-brand-text-secondary' : 'text-brand-text-secondary')}>
+            <p className="text-xs font-mono-nums text-brand-text-secondary">
               {isAbove ? 'เหลืออีก' : 'เหลืออีก'} {formatCurrency(Math.abs(diff), currency)} ({diffPct.toFixed(1)}%)
             </p>
           )}
@@ -152,7 +130,8 @@ function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => voi
 }
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<PriceAlert[]>([])
+  const { alerts, isLoading, isAuthenticated, addAlert, removeAlert, clearTriggered } = useAlerts()
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   // Form state
@@ -162,37 +141,23 @@ export default function AlertsPage() {
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
-    setAlerts(loadAlerts())
     setMounted(true)
   }, [])
 
-  const handleTrigger = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.map(a =>
-        a.id === id ? { ...a, triggered: true, triggeredAt: Date.now() } : a
-      )
-      saveAlerts(next)
-      return next
-    })
+  const handleTrigger = useCallback((symbol: string) => {
+    // Visual trigger only; cron job handles backend trigger
+    console.log(`Alert triggered for ${symbol}`)
   }, [])
 
-  const removeAlert = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.filter(a => a.id !== id)
-      saveAlerts(next)
-      return next
-    })
-  }, [])
+  const handleRemove = useCallback(async (id: string) => {
+    try {
+      await removeAlert(id)
+    } catch (err) {
+      console.error('Failed to remove alert:', err)
+    }
+  }, [removeAlert])
 
-  const clearTriggered = useCallback(() => {
-    setAlerts(prev => {
-      const next = prev.filter(a => !a.triggered)
-      saveAlerts(next)
-      return next
-    })
-  }, [])
-
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
 
@@ -202,23 +167,13 @@ export default function AlertsPage() {
     if (!symbol) { setFormError('กรุณาใส่ชื่อหุ้น'); return }
     if (isNaN(targetPrice) || targetPrice <= 0) { setFormError('กรุณาใส่ราคาที่ถูกต้อง'); return }
 
-    const newAlert: PriceAlert = {
-      id: Date.now().toString(),
-      symbol,
-      targetPrice,
-      condition: formCondition,
-      createdAt: Date.now(),
-      triggered: false,
+    try {
+      await addAlert(symbol, targetPrice, formCondition)
+      setFormSymbol('')
+      setFormPrice('')
+    } catch (err) {
+      setFormError('ไม่สามารถเพิ่มแจ้งเตือนได้ กรุณาลองใหม่')
     }
-
-    setAlerts(prev => {
-      const next = [...prev, newAlert]
-      saveAlerts(next)
-      return next
-    })
-
-    setFormSymbol('')
-    setFormPrice('')
   }
 
   if (!mounted) return null
@@ -228,6 +183,9 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <AlertChecker alerts={alerts} onTrigger={handleTrigger} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -237,22 +195,23 @@ export default function AlertsPage() {
           <div>
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">แจ้งเตือนราคา</h1>
             <p className="text-sm text-brand-text-secondary">
-              ตั้งแจ้งเตือนเมื่อราคาหุ้นถึงระดับที่ต้องการ {activeAlerts.length > 0 && `(${activeAlerts.length} รายการ)`}
+              {isAuthenticated
+                ? 'ตั้งแจ้งเตือนเมื่อราคาหุ้นถึงระดับที่ต้องการ'
+                : 'เข้าสู่ระบบเพื่อบันทึกแจ้งเตือนบนคลาวด์ (ขณะนี้ใช้ local อยู่)'}
             </p>
           </div>
         </div>
-        {triggeredAlerts.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={clearTriggered}>
-            <X size={14} />
-            ล้างที่แจ้งแล้ว
-          </Button>
+        {!isAuthenticated && (
+          <button
+            type="button"
+            onClick={() => setAuthModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1.5 text-xs text-brand-primary transition-colors hover:bg-brand-primary/20"
+          >
+            <Lock size={13} />
+            เข้าสู่ระบบ
+          </button>
         )}
       </div>
-
-      {/* Hidden alert checker - polls prices in background */}
-      {mounted && alerts.length > 0 && (
-        <AlertChecker alerts={alerts} onTrigger={handleTrigger} />
-      )}
 
       {/* Add Alert Form */}
       <Card>
@@ -271,7 +230,7 @@ export default function AlertsPage() {
               icon={<Bell size={16} />}
             />
           </div>
-          <div className="w-full sm:w-40">
+          <div className="w-full sm:w-36">
             <Input
               type="number"
               placeholder="ราคาเป้าหมาย"
@@ -286,10 +245,10 @@ export default function AlertsPage() {
               type="button"
               onClick={() => setFormCondition('above')}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all',
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
                 formCondition === 'above'
-                  ? 'bg-brand-success/10 border-brand-success/30 text-brand-success'
-                  : 'bg-brand-card border-brand-border text-brand-text-secondary hover:text-brand-text-primary'
+                  ? 'bg-brand-success/10 text-brand-success border border-brand-success/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
               )}
             >
               <ArrowUp size={14} />
@@ -299,19 +258,19 @@ export default function AlertsPage() {
               type="button"
               onClick={() => setFormCondition('below')}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all',
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
                 formCondition === 'below'
-                  ? 'bg-brand-danger/10 border-brand-danger/30 text-brand-danger'
-                  : 'bg-brand-card border-brand-border text-brand-text-secondary hover:text-brand-text-primary'
+                  ? 'bg-brand-danger/10 text-brand-danger border border-brand-danger/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
               )}
             >
               <ArrowDown size={14} />
               ลงถึง
             </button>
           </div>
-          <Button type="submit" className="sm:w-auto">
+          <Button type="submit" className="sm:w-auto" isLoading={isLoading}>
             <Plus size={16} />
-            ตั้งแจ้งเตือน
+            เพิ่ม
           </Button>
         </form>
         {formError && (
@@ -319,67 +278,73 @@ export default function AlertsPage() {
         )}
       </Card>
 
-      {/* Active Alerts */}
-      {activeAlerts.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-brand-text-secondary flex items-center gap-2">
-            <Bell size={14} className="text-brand-primary" />
-            แจ้งเตือนที่กำลังทำงาน ({activeAlerts.length})
-          </h2>
-          {activeAlerts.map(alert => (
-            <AlertItem
-              key={alert.id}
-              alert={alert}
-              onRemove={() => removeAlert(alert.id)}
-            />
-          ))}
-        </div>
-      )}
-
       {/* Triggered Alerts */}
       {triggeredAlerts.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-brand-text-secondary flex items-center gap-2">
-            <CheckCircle size={14} className="text-brand-warning" />
-            แจ้งเตือนที่ทำงานแล้ว ({triggeredAlerts.length})
-          </h2>
-          {triggeredAlerts.map(alert => (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="text-brand-warning" />
+              <h2 className="text-sm font-semibold text-brand-text-primary">
+                แจ้งเตือนที่แตะเป้าแล้ว ({triggeredAlerts.length})
+              </h2>
+            </div>
+            <button
+              onClick={() => clearTriggered()}
+              className="text-xs text-brand-text-secondary hover:text-brand-danger flex items-center gap-1 transition-colors"
+            >
+              <X size={14} />
+              ลบทั้งหมด
+            </button>
+          </div>
+          {triggeredAlerts.map((alert) => (
             <AlertItem
               key={alert.id}
               alert={alert}
-              onRemove={() => removeAlert(alert.id)}
+              onRemove={() => handleRemove(alert.id)}
             />
           ))}
         </div>
       )}
 
-      {/* Empty State */}
-      {alerts.length === 0 && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="w-16 h-16 bg-brand-danger/10 rounded-full flex items-center justify-center">
-              <Bell size={28} className="text-brand-danger" />
-            </div>
-            <div className="text-center">
-              <p className="text-brand-text-primary font-medium mb-1">ยังไม่มีการแจ้งเตือน</p>
-              <p className="text-sm text-brand-text-secondary">
-                ตั้งแจ้งเตือนเพื่อไม่พลาดจังหวะสำคัญในการซื้อขาย
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Info */}
-      <Card className="border-brand-warning/20 bg-brand-warning/5">
-        <div className="flex items-start gap-3">
-          <AlertTriangle size={18} className="text-brand-warning mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-brand-text-secondary">
-            <p className="font-medium text-brand-text-primary mb-1">หมายเหตุ</p>
-            <p>การแจ้งเตือนจะทำงานเมื่อหน้าเว็บเปิดอยู่และมีการอัพเดทราคาทุก 30 วินาที ข้อมูลจะถูกบันทึกในเบราว์เซอร์ของคุณ</p>
-          </div>
+      {/* Active Alerts */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <CheckCircle size={16} className="text-brand-success" />
+          <h2 className="text-sm font-semibold text-brand-text-primary">
+            แจ้งเตือนที่รออยู่ ({activeAlerts.length})
+          </h2>
         </div>
-      </Card>
+
+        {isLoading ? (
+          <Card>
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-brand-text-secondary">กำลังโหลด...</p>
+            </div>
+          </Card>
+        ) : activeAlerts.length === 0 ? (
+          <Card>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="w-12 h-12 bg-brand-bg-secondary rounded-full flex items-center justify-center">
+                <Bell size={20} className="text-brand-text-muted" />
+              </div>
+              <div className="text-center">
+                <p className="text-brand-text-primary font-medium text-sm">ยังไม่มีแจ้งเตือน</p>
+                <p className="text-xs text-brand-text-secondary mt-1">
+                  ตั้งแจ้งเตือนราคาหุ้นด้วยฟอร์มด้านบน
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          activeAlerts.map((alert) => (
+            <AlertItem
+              key={alert.id}
+              alert={alert}
+              onRemove={() => handleRemove(alert.id)}
+            />
+          ))
+        )}
+      </div>
     </div>
   )
 }

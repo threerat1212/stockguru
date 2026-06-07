@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const config = planConfig[plan] ?? planConfig.pro
     const envPriceId = process.env[config.priceIdEnv]
 
-    const lineItem = envPriceId
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = envPriceId
       ? { price: envPriceId, quantity: 1 }
       : {
           price_data: {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       customer: customerId,
       mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [lineItem as any],
+      line_items: [lineItem],
       subscription_data: {
         metadata: { user_id: user.id, plan },
       },

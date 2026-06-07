@@ -7,3 +7,7 @@ next-env.d.ts
 graphify-out/
 .obsidian/
 .codex/hooks.json
+output/
+playwright-report/
+test-results/
+coverage/

@@ -226,3 +226,25 @@ begin
   );
 end;
 $$ language plpgsql security definer;
+
+-- Holdings table (portfolio positions)
+create table if not exists public.holdings (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  symbol text not null,
+  quantity int not null check (quantity > 0),
+  buy_price numeric not null check (buy_price > 0),
+  currency text not null default 'THB',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.holdings enable row level security;
+
+create policy "Users can CRUD own holdings"
+  on public.holdings for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create index if not exists idx_holdings_user_id on public.holdings(user_id);
+create index if not exists idx_holdings_symbol on public.holdings(symbol);

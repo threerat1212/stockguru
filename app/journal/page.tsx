@@ -19,7 +19,8 @@ export default function JournalPage() {
     if (!trades || trades.length === 0) return
     const headers = ['symbol', 'market', 'direction', 'entry_price', 'exit_price', 'quantity', 'fees', 'pnl', 'opened_at', 'closed_at', 'setup', 'emotion', 'mistake_tags', 'result_note']
     const rows = trades.map((t) => headers.map((h) => {
-      const v = (t as any)[h]
+      const key = h as keyof typeof t
+      const v = t[key]
       if (Array.isArray(v)) return `"${v.join(',')}"`
       if (v === null || v === undefined) return ''
       return `"${String(v).replace(/"/g, '""')}"`

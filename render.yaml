@@ -52,3 +52,20 @@ services:
           type: web
           name: stockguru-web
           envVarKey: CRON_SECRET
+
+  - type: cron
+    name: stockguru-alerts-check
+    runtime: node
+    schedule: "*/5 * * * *"
+    plan: starter
+    buildCommand: ""
+    startCommand: |
+      curl -X POST "https://stockguru-web.onrender.com/api/alerts/check" \
+        -H "Authorization: Bearer $CRON_SECRET" \
+        -H "Content-Type: application/json"
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: stockguru-web
+          envVarKey: CRON_SECRET

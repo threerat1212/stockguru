@@ -12,7 +12,7 @@ import {
   BarChart3,
   ArrowRight,
 } from 'lucide-react'
-import { createChart, ColorType } from 'lightweight-charts'
+import { createChart, ColorType, type Time } from 'lightweight-charts'
 import { useQuote, useSearch, useHistory } from '@/lib/hooks/use-stock'
 import { formatNumber, formatPercent, formatVolume, formatCurrency, formatMarketCapUsd, getPriceColor, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
@@ -129,7 +129,7 @@ function CompareChart({ symbols }: { symbols: string[] }) {
     validHistories.forEach((history, idx) => {
       const firstClose = history[0].close
       const normalized = history.map((c) => ({
-        time: c.time as any,
+        time: c.time as Time,
         value: +((c.close / firstClose) * 100).toFixed(2),
       }))
 
