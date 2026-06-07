@@ -255,7 +255,7 @@ export default function PortfolioPage() {
             <p className="text-sm text-brand-text-secondary">
               {isAuthenticated
                 ? `ติดตามผลกำไรขาดทุนของพอร์ตคุณ ${portfolio.length > 0 ? `(${portfolio.length} หุ้น)` : ''}`
-                : 'เข้าสู่ระบบเพื่อบันทึกพอร์ตบนคลาวด์ (ขณะนี้ใช้ local อยู่)'}
+                : 'เข้าสู่ระบบเพื่อบันทึกพอร์ตบน Supabase'}
             </p>
           </div>
         </div>
@@ -271,102 +271,130 @@ export default function PortfolioPage() {
         )}
       </div>
 
-      {/* Add Stock Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Plus size={18} className="text-brand-primary" />
-            เพิ่มหุ้นในพอร์ต
-          </CardTitle>
-        </CardHeader>
-        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <Input
-              placeholder="ชื่อหุ้น (เช่น PTT, AAPL)"
-              value={formSymbol}
-              onChange={(e) => setFormSymbol(e.target.value)}
-              icon={<Briefcase size={16} />}
-            />
-          </div>
-          <div className="w-full sm:w-32">
-            <Input
-              type="number"
-              placeholder="จำนวน"
-              value={formQty}
-              onChange={(e) => setFormQty(e.target.value)}
-              min="1"
-            />
-          </div>
-          <div className="w-full sm:w-36">
-            <Input
-              type="number"
-              placeholder="ราคาซื้อ"
-              value={formPrice}
-              onChange={(e) => setFormPrice(e.target.value)}
-              min="0.01"
-              step="0.01"
-            />
-          </div>
-          <Button type="submit" className="sm:w-auto" isLoading={isLoading}>
-            <Plus size={16} />
-            เพิ่ม
-          </Button>
-        </form>
-        {formError && (
-          <p className="mt-2 text-xs text-brand-danger">{formError}</p>
-        )}
-      </Card>
-
-      {/* Portfolio Summary */}
-      {portfolio.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <PieChart size={18} className="text-brand-accent" />
-              สัดส่วนพอร์ต
-            </CardTitle>
-          </CardHeader>
-          <PieChartSVG
-            data={portfolio.map((item, i) => ({
-              label: item.symbol.replace('.BK', ''),
-              value: item.quantity * item.buyPrice,
-              color: PIE_COLORS[i % PIE_COLORS.length],
-            }))}
-          />
-        </Card>
-      )}
-
-      {/* Portfolio List */}
-      {isLoading ? (
+      {isLoading && !isAuthenticated ? (
         <Card>
           <div className="flex items-center justify-center py-16">
             <LoadingSpinner size="lg" />
           </div>
         </Card>
-      ) : portfolio.length === 0 ? (
+      ) : !isAuthenticated ? (
         <Card>
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="w-16 h-16 bg-brand-accent/10 rounded-full flex items-center justify-center">
-              <Briefcase size={28} className="text-brand-accent" />
+          <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-primary/10">
+              <Lock size={28} className="text-brand-primary" />
             </div>
-            <div className="text-center">
-              <p className="text-brand-text-primary font-medium mb-1">ยังไม่มีหุ้นในพอร์ต</p>
-              <p className="text-sm text-brand-text-secondary">
-                เพิ่มหุ้นด้วยฟอร์มด้านบนเพื่อเริ่มติดตามผลกำไรขาดทุน
+            <div>
+              <p className="mb-1 font-medium text-brand-text-primary">เข้าสู่ระบบเพื่อใช้งานพอร์ต</p>
+              <p className="max-w-md text-sm text-brand-text-secondary">
+                พอร์ตการลงทุนจะบันทึกแยกตามบัญชีผู้ใช้ด้วย Supabase เพื่อให้ข้อมูลยังอยู่หลัง refresh และใช้งานข้ามเครื่องได้
               </p>
             </div>
+            <Button type="button" onClick={() => setAuthModalOpen(true)}>
+              <Lock size={16} />
+              เข้าสู่ระบบ
+            </Button>
           </div>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {portfolio.map((item) => (
-            <PortfolioStock
-              key={item.id}
-              item={item}
-              onRemove={() => handleRemove(item.id)}
-            />
-          ))}
-        </div>
+        <>
+          {/* Add Stock Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Plus size={18} className="text-brand-primary" />
+                เพิ่มหุ้นในพอร์ต
+              </CardTitle>
+            </CardHeader>
+            <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  placeholder="ชื่อหุ้น (เช่น PTT, AAPL)"
+                  value={formSymbol}
+                  onChange={(e) => setFormSymbol(e.target.value)}
+                  icon={<Briefcase size={16} />}
+                />
+              </div>
+              <div className="w-full sm:w-32">
+                <Input
+                  type="number"
+                  placeholder="จำนวน"
+                  value={formQty}
+                  onChange={(e) => setFormQty(e.target.value)}
+                  min="1"
+                />
+              </div>
+              <div className="w-full sm:w-36">
+                <Input
+                  type="number"
+                  placeholder="ราคาซื้อ"
+                  value={formPrice}
+                  onChange={(e) => setFormPrice(e.target.value)}
+                  min="0.01"
+                  step="0.01"
+                />
+              </div>
+              <Button type="submit" className="sm:w-auto" isLoading={isLoading}>
+                <Plus size={16} />
+                เพิ่ม
+              </Button>
+            </form>
+            {formError && (
+              <p className="mt-2 text-xs text-brand-danger">{formError}</p>
+            )}
+          </Card>
+
+          {/* Portfolio Summary */}
+          {portfolio.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <PieChart size={18} className="text-brand-accent" />
+                  สัดส่วนพอร์ต
+                </CardTitle>
+              </CardHeader>
+              <PieChartSVG
+                data={portfolio.map((item, i) => ({
+                  label: item.symbol.replace('.BK', ''),
+                  value: item.quantity * item.buyPrice,
+                  color: PIE_COLORS[i % PIE_COLORS.length],
+                }))}
+              />
+            </Card>
+          )}
+
+          {/* Portfolio List */}
+          {isLoading ? (
+            <Card>
+              <div className="flex items-center justify-center py-16">
+                <LoadingSpinner size="lg" />
+              </div>
+            </Card>
+          ) : portfolio.length === 0 ? (
+            <Card>
+              <div className="flex flex-col items-center justify-center py-16 gap-4">
+                <div className="w-16 h-16 bg-brand-accent/10 rounded-full flex items-center justify-center">
+                  <Briefcase size={28} className="text-brand-accent" />
+                </div>
+                <div className="text-center">
+                  <p className="text-brand-text-primary font-medium mb-1">ยังไม่มีหุ้นในพอร์ต</p>
+                  <p className="text-sm text-brand-text-secondary">
+                    เพิ่มหุ้นด้วยฟอร์มด้านบนเพื่อเริ่มติดตามผลกำไรขาดทุน
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {portfolio.map((item) => (
+                <PortfolioStock
+                  key={item.id}
+                  item={item}
+                  onRemove={() => handleRemove(item.id)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

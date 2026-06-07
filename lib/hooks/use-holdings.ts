@@ -13,42 +13,10 @@ export interface Holding {
   createdAt: string
 }
 
-const STORAGE_KEY = 'stockguru-portfolio'
-
-function loadLocalHoldings(): Holding[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed: Array<Record<string, unknown>> = JSON.parse(raw)
-    return parsed.map((item) => ({
-      id: String(item.id ?? crypto.randomUUID()),
-      symbol: String(item.symbol),
-      quantity: Number(item.quantity),
-      buyPrice: Number(item.buyPrice),
-      currency: String(item.currency ?? 'THB'),
-      createdAt: item.addedAt ? new Date(Number(item.addedAt)).toISOString() : new Date().toISOString(),
-    }))
-  } catch {
-    return []
-  }
-}
-
-function saveLocalHoldings(items: Holding[]) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items.map(h => ({
-    id: h.id,
-    symbol: h.symbol,
-    quantity: h.quantity,
-    buyPrice: h.buyPrice,
-    currency: h.currency,
-    addedAt: new Date(h.createdAt).getTime(),
-  }))))
-}
-
 export function useHoldings() {
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -59,12 +27,14 @@ export function useHoldings() {
       const { data } = await supabase.auth.getUser()
       setUser(data.user)
       setIsAuthenticated(!!data.user)
+      setIsAuthLoading(false)
     }
     getUser()
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event: string, session: { user: User | null } | null) => {
       setUser(session?.user ?? null)
       setIsAuthenticated(!!session?.user)
+      setIsAuthLoading(false)
     })
 
     return () => {
@@ -73,8 +43,10 @@ export function useHoldings() {
   }, [supabase])
 
   useEffect(() => {
+    if (isAuthLoading) return
+
     if (!isAuthenticated) {
-      setHoldings(loadLocalHoldings())
+      setHoldings([])
       setIsLoading(false)
       return
     }
@@ -88,7 +60,7 @@ export function useHoldings() {
 
       if (error) {
         console.error('Failed to fetch holdings:', error)
-        setHoldings(loadLocalHoldings())
+        setHoldings([])
       } else {
         setHoldings(
           (data ?? []).map((row: Record<string, unknown>) => ({
@@ -105,23 +77,12 @@ export function useHoldings() {
     }
 
     fetchHoldings()
-  }, [isAuthenticated, supabase])
+  }, [isAuthLoading, isAuthenticated, supabase])
 
   const addHolding = useCallback(
     async (symbol: string, quantity: number, buyPrice: number, currency = 'THB') => {
       if (!isAuthenticated || !user) {
-        const newHolding: Holding = {
-          id: crypto.randomUUID(),
-          symbol,
-          quantity,
-          buyPrice,
-          currency,
-          createdAt: new Date().toISOString(),
-        }
-        const next = [...holdings, newHolding]
-        saveLocalHoldings(next)
-        setHoldings(next)
-        return
+        throw new Error('Sign in required to save holdings')
       }
 
       const { data, error } = await supabase
@@ -153,16 +114,13 @@ export function useHoldings() {
         setHoldings((prev) => [...prev, newHolding])
       }
     },
-    [isAuthenticated, user, holdings, supabase]
+    [isAuthenticated, user, supabase]
   )
 
   const removeHolding = useCallback(
     async (id: string) => {
       if (!isAuthenticated || !user) {
-        const next = holdings.filter((h) => h.id !== id)
-        saveLocalHoldings(next)
-        setHoldings(next)
-        return
+        throw new Error('Sign in required to remove holdings')
       }
 
       const { error } = await supabase.from('holdings').delete().eq('id', id)
@@ -174,8 +132,8 @@ export function useHoldings() {
 
       setHoldings((prev) => prev.filter((h) => h.id !== id))
     },
-    [isAuthenticated, user, holdings, supabase]
+    [isAuthenticated, user, supabase]
   )
 
-  return { holdings, isLoading, isAuthenticated, addHolding, removeHolding }
+  return { holdings, isLoading: isAuthLoading || isLoading, isAuthenticated, addHolding, removeHolding }
 }
