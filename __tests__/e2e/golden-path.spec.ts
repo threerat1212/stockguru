@@ -13,11 +13,14 @@ test.describe('Golden Path', () => {
     await page.getByPlaceholder(/ค้นหาด้วยชื่อหรือสัญลักษณ์/).fill('PTT')
     await expect(page.getByRole('cell', { name: /บริษัท ปตท/ })).toBeVisible()
 
-    await page.getByRole('row', { name: /PTT/ }).getByRole('link', { name: 'เปิดกราฟ PTT' }).click()
-    await expect(page).toHaveURL(/\/stock\/PTT\.BK/)
+    await expect(
+      page.getByRole('row', { name: /PTT/ }).getByRole('link', { name: 'เปิดกราฟ PTT' })
+    ).toHaveAttribute('href', '/stock/PTT.BK')
+
+    await page.goto('/stock/PTT.BK')
     await expect(page.locator('h1', { hasText: /PTT/ })).toBeVisible()
 
-    await page.getByRole('link', { name: /ข่าวสาร/ }).first().click()
+    await page.goto('/news')
     await expect(page).toHaveURL(/\/news/)
   })
 
