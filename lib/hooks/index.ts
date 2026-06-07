@@ -10,3 +10,4 @@ export {
 } from './use-stock'
 export { useHoldings } from './use-holdings'
 export { useAlerts } from './use-alerts'
+export { useWatchlist } from './use-watchlist'

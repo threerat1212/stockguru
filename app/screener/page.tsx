@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { useTrending } from '@/lib/hooks/use-stock'
+import { useWatchlist } from '@/lib/hooks/use-watchlist'
 import { useAppStore } from '@/lib/store/stockStore'
 import type { TrendingStock } from '@/types/stock'
 import {
@@ -116,7 +117,7 @@ function isUsStock(stock: TrendingStock) {
 
 export default function ScreenerPage() {
   const { data: trendingData, isLoading } = useTrending()
-  const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useAppStore()
+  const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedMarket, setSelectedMarket] = useState('ทั้งหมด')
@@ -632,9 +633,9 @@ export default function ScreenerPage() {
                           <button
                             onClick={() => {
                               if (inWatchlist) {
-                                removeFromWatchlist(stock.symbol)
+                                removeWatchlistItem(stock.symbol)
                               } else {
-                                addToWatchlist(stock.symbol)
+                                addWatchlistItem(stock.symbol)
                               }
                             }}
                             aria-label={inWatchlist ? `ลบ ${displaySym} จากรายการโปรด` : `เพิ่ม ${displaySym} เข้ารายการโปรด`}

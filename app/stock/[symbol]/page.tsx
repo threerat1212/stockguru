@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useQuote, useHistory, useAnalysis } from '@/lib/hooks/use-stock'
+import { useWatchlist } from '@/lib/hooks/use-watchlist'
 import type { StockCandle } from '@/types/stock'
 import {
   formatNumber,
@@ -39,7 +40,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const symbol = decodeURIComponent(params.symbol)
   const displaySymbol = symbol.replace('.BK', '')
 
-  const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useAppStore()
+  const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
   const inWatchlist = isInWatchlist(symbol)
 
   const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
@@ -211,9 +212,9 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
 
   function toggleWatchlist() {
     if (inWatchlist) {
-      removeFromWatchlist(symbol)
+      removeWatchlistItem(symbol)
     } else {
-      addToWatchlist(symbol)
+      addWatchlistItem(symbol)
     }
   }
 

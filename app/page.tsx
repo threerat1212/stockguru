@@ -27,6 +27,7 @@ import AIChat from '@/components/ai/AIChat'
 import Button from '@/components/ui/Button'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import { useTrending } from '@/lib/hooks/use-stock'
+import { useWatchlist } from '@/lib/hooks/use-watchlist'
 import { useAppStore } from '@/lib/store/stockStore'
 import {
   cn,
@@ -107,7 +108,7 @@ function formatDisplaySymbol(symbol: string) {
 
 export default function HomePage() {
   const { data: stocks = [], isLoading: loading } = useTrending()
-  const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useAppStore()
+  const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -361,8 +362,8 @@ export default function HomePage() {
                           <button
                             type="button"
                             onClick={() => {
-                              if (inWatchlist) removeFromWatchlist(stock.symbol)
-                              else addToWatchlist(stock.symbol)
+                              if (inWatchlist) removeWatchlistItem(stock.symbol)
+                              else addWatchlistItem(stock.symbol)
                             }}
                             aria-label={inWatchlist ? `ลบ ${displaySymbol} จากรายการโปรด` : `เพิ่ม ${displaySymbol} เข้ารายการโปรด`}
                             className={cn(

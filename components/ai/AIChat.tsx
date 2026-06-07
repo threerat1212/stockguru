@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Send, Bot, User, Sparkles, Lock, TrendingUp, ShieldAlert, Newspaper, BarChart3, Target, Zap } from 'lucide-react'
+import { Send, Bot, User, Sparkles, Lock, TrendingUp, ShieldAlert, Newspaper, BarChart3, Target, Zap, AlertTriangle } from 'lucide-react'
 import type { ChatMessage } from '@/types/stock'
 import { cn } from '@/lib/utils/format'
 import { useAuth } from '@/lib/hooks/use-auth'
@@ -193,6 +193,10 @@ export default function AIChat() {
               {item.label}
             </button>
           ))}
+        </div>
+        <div className="mb-2 flex items-center gap-1.5 text-xs text-brand-text-muted">
+          <AlertTriangle size={12} />
+          <span>ผลลัพธ์จาก AI เป็นการจำลองเพื่อการศึกษา ไม่ใช่คำแนะนำซื้อขาย</span>
         </div>
         <div className="flex items-center gap-2">
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} placeholder={isAuthenticated ? 'พิมพ์คำถามเกี่ยวกับหุ้น...' : 'เข้าสู่ระบบเพื่อถาม AI'} className="flex-1 rounded-lg border border-brand-border bg-brand-bg-secondary px-4 py-2.5 text-sm text-brand-text-primary outline-none placeholder:text-brand-text-secondary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30" disabled={isLoading} />

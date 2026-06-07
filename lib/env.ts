@@ -20,6 +20,9 @@ const envSchema = z.object({
   // Cron
   CRON_SECRET: z.string().min(16).optional(),
 
+  // Email (Resend)
+  RESEND_API_KEY: z.string().min(1).optional(),
+
   // Optional proxy
   YAHOO_FINANCE_PROXY: z.string().url().optional(),
 })
@@ -43,6 +46,7 @@ export function getEnv(): Env {
     STRIPE_PRICE_FOUNDING_PRO: process.env.STRIPE_PRICE_FOUNDING_PRO,
     STRIPE_PRICE_TRADER: process.env.STRIPE_PRICE_TRADER,
     CRON_SECRET: process.env.CRON_SECRET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
     YAHOO_FINANCE_PROXY: process.env.YAHOO_FINANCE_PROXY,
   })
 

@@ -5,23 +5,23 @@ test.describe('Golden Path', () => {
     // 1. Home page loads
     await page.goto('/')
     await expect(page).toHaveTitle(/StockGuru/)
-    await expect(page.getByRole('heading', { name: /ภาพรวมตลาด/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Market desk วันนี้/ })).toBeVisible()
 
-    // 2. Navigate to screener
-    await page.getByRole('link', { name: /คัดกรองหุ้น/ }).click()
+    // 2. Navigate to screener via sidebar
+    await page.getByRole('link', { name: /Screener/ }).click()
     await expect(page).toHaveURL(/\/screener/)
-    await expect(page.getByRole('heading', { name: /คัดกรองหุ้น/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Screener/ })).toBeVisible()
 
     // 3. Search for a stock
-    await page.getByPlaceholder(/ค้นหาหุ้น/).fill('PTT')
+    await page.getByPlaceholder(/ค้นหาด้วยชื่อหรือสัญลักษณ์/).fill('PTT')
     await page.keyboard.press('Enter')
 
     // 4. View stock detail
     await page.waitForURL(/\/stock\/PTT\.BK/)
-    await expect(page.getByRole('heading', { name: /PTT/ })).toBeVisible()
+    await expect(page.locator('h1', { hasText: /PTT\.BK/ })).toBeVisible()
 
     // 5. Navigate to news
-    await page.getByRole('link', { name: /ข่าว/ }).first().click()
+    await page.getByRole('link', { name: /ข่าวสาร/ }).first().click()
     await expect(page).toHaveURL(/\/news/)
   })
 
@@ -36,6 +36,7 @@ test.describe('Golden Path', () => {
     await page.getByPlaceholder('ราคาซื้อ').fill('35')
     await page.getByRole('button', { name: /เพิ่ม/ }).click()
 
-    await expect(page.getByText(/PTT/)).toBeVisible()
+    // Use more specific locator to avoid multiple matches
+    await expect(page.locator('p', { hasText: /^PTT$/ })).toBeVisible()
   })
 })
