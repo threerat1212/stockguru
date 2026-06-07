@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   Bell,
   Plus,
@@ -31,33 +31,44 @@ function normalizeSymbol(symbol: string) {
   return FOREIGN_SYMBOLS.has(upper) ? upper : `${upper}.BK`
 }
 
-function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: (id: string) => void }) {
-  const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
-  const prevPrices = useRef<Record<string, number>>({})
+function SymbolWatcher({
+  symbol,
+  alerts,
+  onTrigger,
+}: {
+  symbol: string
+  alerts: PriceAlert[]
+  onTrigger: (id: string) => void
+}) {
+  const { data: quote } = useQuote(symbol)
 
-  // Poll each symbol
-  for (const sym of symbols) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: quote } = useQuote(sym)
-    if (quote) {
-      const prev = prevPrices.current[sym]
-      if (prev !== quote.price) {
-        prevPrices.current[sym] = quote.price
-        // Check all alerts for this symbol
-        for (const alert of alerts) {
-          if (alert.symbol !== sym || alert.triggered) continue
-          if (
-            (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
-            (alert.condition === 'below' && quote.price <= alert.targetPrice)
-          ) {
-            onTrigger(alert.id)
-          }
-        }
+  useEffect(() => {
+    if (!quote) return
+    for (const alert of alerts) {
+      if (alert.symbol !== symbol || alert.triggered) continue
+      if (
+        (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
+        (alert.condition === 'below' && quote.price <= alert.targetPrice)
+      ) {
+        onTrigger(alert.id)
       }
     }
-  }
+  }, [quote, symbol, alerts, onTrigger])
 
   return null
+}
+
+function AlertChecker({ alerts, onTrigger }: { alerts: PriceAlert[]; onTrigger: (id: string) => void }) {
+  // One stable child hook-set per symbol keeps React's hook count consistent
+  // even as alerts are triggered and the active-symbol list changes.
+  const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
+  return (
+    <>
+      {symbols.map(sym => (
+        <SymbolWatcher key={sym} symbol={sym} alerts={alerts} onTrigger={onTrigger} />
+      ))}
+    </>
+  )
 }
 
 function AlertItem({ alert, onRemove }: { alert: PriceAlert; onRemove: () => void }) {
