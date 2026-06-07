@@ -9,17 +9,16 @@ import {
   TrendingUp,
   TrendingDown,
   PieChart,
-  ArrowRight,
-  Edit3,
-  Check,
-  X,
+  Lock,
 } from 'lucide-react'
 import { useQuote } from '@/lib/hooks/use-stock'
+import { useHoldings } from '@/lib/hooks/use-holdings'
 import { formatPercent, formatCurrency, getPriceColor, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { LoadingSpinner } from '@/components/ui/Loading'
+import AuthModal from '@/components/auth/AuthModal'
 
 interface PortfolioItem {
   id: string
@@ -29,7 +28,6 @@ interface PortfolioItem {
   addedAt: number
 }
 
-const STORAGE_KEY = 'stockguru-portfolio'
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
 
 function normalizeSymbol(symbol: string) {
@@ -37,20 +35,6 @@ function normalizeSymbol(symbol: string) {
   if (!upper) return ''
   if (upper.includes('.')) return upper
   return FOREIGN_SYMBOLS.has(upper) ? upper : `${upper}.BK`
-}
-
-function loadPortfolio(): PortfolioItem[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function savePortfolio(items: PortfolioItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
 function PortfolioStock({ item, onRemove }: { item: PortfolioItem; onRemove: () => void }) {
@@ -200,7 +184,8 @@ const PIE_COLORS = [
 ]
 
 export default function PortfolioPage() {
-  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
+  const { holdings, isLoading, isAuthenticated, addHolding, removeHolding } = useHoldings()
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   // Form state
@@ -210,19 +195,28 @@ export default function PortfolioPage() {
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
-    setPortfolio(loadPortfolio())
     setMounted(true)
   }, [])
 
-  const removeItem = useCallback((id: string) => {
-    setPortfolio(prev => {
-      const next = prev.filter(item => item.id !== id)
-      savePortfolio(next)
-      return next
-    })
-  }, [])
+  const portfolio: PortfolioItem[] = useMemo(() => {
+    return holdings.map(h => ({
+      id: h.id,
+      symbol: h.symbol,
+      quantity: h.quantity,
+      buyPrice: h.buyPrice,
+      addedAt: new Date(h.createdAt).getTime(),
+    }))
+  }, [holdings])
 
-  function handleAdd(e: React.FormEvent) {
+  const handleRemove = useCallback(async (id: string) => {
+    try {
+      await removeHolding(id)
+    } catch (err) {
+      console.error('Failed to remove holding:', err)
+    }
+  }, [removeHolding])
+
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
 
@@ -234,35 +228,22 @@ export default function PortfolioPage() {
     if (isNaN(quantity) || quantity <= 0) { setFormError('จำนวนหุ้นต้องมากกว่า 0'); return }
     if (isNaN(buyPrice) || buyPrice <= 0) { setFormError('ราคาซื้อต้องมากกว่า 0'); return }
 
-    const newItem: PortfolioItem = {
-      id: Date.now().toString(),
-      symbol,
-      quantity,
-      buyPrice,
-      addedAt: Date.now(),
+    try {
+      await addHolding(symbol, quantity, buyPrice)
+      setFormSymbol('')
+      setFormQty('')
+      setFormPrice('')
+    } catch (err) {
+      setFormError('ไม่สามารถเพิ่มหุ้นได้ กรุณาลองใหม่')
     }
-
-    setPortfolio(prev => {
-      const next = [...prev, newItem]
-      savePortfolio(next)
-      return next
-    })
-
-    setFormSymbol('')
-    setFormQty('')
-    setFormPrice('')
   }
-
-  // Calculate totals (only when mounted on client)
-  const portfolioWithValues = useMemo(() => {
-    // We'll use a simple approach — the actual current prices are fetched by each component
-    return portfolio
-  }, [portfolio])
 
   if (!mounted) return null
 
   return (
     <div className="space-y-6">
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -272,10 +253,22 @@ export default function PortfolioPage() {
           <div>
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">พอร์ตการลงทุน</h1>
             <p className="text-sm text-brand-text-secondary">
-              ติดตามผลกำไรขาดทุนของพอร์ตคุณ {portfolio.length > 0 && `(${portfolio.length} หุ้น)`}
+              {isAuthenticated
+                ? `ติดตามผลกำไรขาดทุนของพอร์ตคุณ ${portfolio.length > 0 ? `(${portfolio.length} หุ้น)` : ''}`
+                : 'เข้าสู่ระบบเพื่อบันทึกพอร์ตบนคลาวด์ (ขณะนี้ใช้ local อยู่)'}
             </p>
           </div>
         </div>
+        {!isAuthenticated && (
+          <button
+            type="button"
+            onClick={() => setAuthModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/10 px-3 py-1.5 text-xs text-brand-primary transition-colors hover:bg-brand-primary/20"
+          >
+            <Lock size={13} />
+            เข้าสู่ระบบ
+          </button>
+        )}
       </div>
 
       {/* Add Stock Form */}
@@ -314,7 +307,7 @@ export default function PortfolioPage() {
               step="0.01"
             />
           </div>
-          <Button type="submit" className="sm:w-auto">
+          <Button type="submit" className="sm:w-auto" isLoading={isLoading}>
             <Plus size={16} />
             เพิ่ม
           </Button>
@@ -344,7 +337,13 @@ export default function PortfolioPage() {
       )}
 
       {/* Portfolio List */}
-      {portfolio.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <div className="flex items-center justify-center py-16">
+            <LoadingSpinner size="lg" />
+          </div>
+        </Card>
+      ) : portfolio.length === 0 ? (
         <Card>
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <div className="w-16 h-16 bg-brand-accent/10 rounded-full flex items-center justify-center">
@@ -364,7 +363,7 @@ export default function PortfolioPage() {
             <PortfolioStock
               key={item.id}
               item={item}
-              onRemove={() => removeItem(item.id)}
+              onRemove={() => handleRemove(item.id)}
             />
           ))}
         </div>

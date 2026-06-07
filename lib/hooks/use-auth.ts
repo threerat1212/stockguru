@@ -19,7 +19,7 @@ export function useAuth() {
 
     getUser()
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event: string, session: { user: User | null } | null) => {
       setUser(session?.user ?? null)
       setIsLoading(false)
     })

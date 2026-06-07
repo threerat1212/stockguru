@@ -26,11 +26,12 @@ export async function POST(request: Request) {
   const supabase = createAdminClient()
 
   // Log billing event
+  const eventObj = event.data.object as unknown as Record<string, unknown>
   await supabase.from('billing_events').insert({
-    user_id: (event.data.object as any)?.metadata?.user_id ?? null,
+    user_id: (eventObj?.metadata as Record<string, string> | undefined)?.user_id ?? null,
     event_type: event.type,
     stripe_event_id: event.id,
-    payload: event.data.object as any,
+    payload: eventObj,
   })
 
   try {
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
         if (!userId) break
 
         const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
+        const subObj = subscription as unknown as Record<string, number>
 
         await supabase.from('subscriptions').upsert({
           user_id: userId,
@@ -52,8 +54,8 @@ export async function POST(request: Request) {
           status: 'active',
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
-          current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-          current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+          current_period_start: new Date((subObj.current_period_start ?? 0) * 1000).toISOString(),
+          current_period_end: new Date((subObj.current_period_end ?? 0) * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
 
@@ -108,7 +110,7 @@ export async function POST(request: Request) {
           const status = subscription.status === 'active' ? 'active' : subscription.status === 'canceled' ? 'canceled' : 'past_due'
           await supabase.from('subscriptions').update({
             status,
-            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+            current_period_end: new Date(((subscription as unknown as Record<string, number>).current_period_end ?? 0) * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           }).eq('user_id', sub.user_id)
 

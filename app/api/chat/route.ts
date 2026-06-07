@@ -1,20 +1,35 @@
 import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { getQuote } from '@/lib/services/stock-service'
 import { chatCompletion } from '@/lib/services/ai-service'
 import { apiSuccess, apiBadRequest, apiError } from '@/lib/api/response'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/middleware/rate-limit'
 import type { ChatMessage } from '@/types/stock'
+
+const chatSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant']),
+      content: z.string().min(1).max(4000),
+    })
+  ).min(1).max(20),
+  symbol: z.string().min(1).max(20).optional(),
+})
 
 /**
  * POST /api/chat
- * AI chat with StockGuru (DeepSeek-powered)
- * 
- * Body: {
- *   messages: ChatMessage[],
- *   symbol?: string  // optional context about what stock user is viewing
- * }
+ * AI chat with StockGuru (MiMo-powered)
+ *
+ * Body: { messages: { role: 'user'|'assistant', content: string }[], symbol?: string }
  */
 export async function POST(request: NextRequest) {
+  const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown'
+  const rate = rateLimit(`chat:${ip}`, { limit: 30, windowMs: 60_000 })
+  if (!rate.allowed) {
+    return apiError('Rate limit exceeded', 429)
+  }
+
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -33,28 +48,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { messages, symbol } = body as {
-      messages?: { role: string; content: string }[]
-      symbol?: string
+    const parse = chatSchema.safeParse(body)
+
+    if (!parse.success) {
+      return apiBadRequest(parse.error.issues.map((i) => i.message).join('; '))
     }
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return apiBadRequest('Missing or empty messages array')
-    }
+    const { messages, symbol } = parse.data
 
-    // Validate message format
-    const validMessages: ChatMessage[] = messages
-      .filter((m) => m.content && (m.role === 'user' || m.role === 'assistant'))
-      .map((m, i) => ({
-        id: `msg-${i}`,
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-        timestamp: Date.now(),
-      }))
-
-    if (validMessages.length === 0) {
-      return apiBadRequest('No valid messages provided')
-    }
+    const validMessages: ChatMessage[] = messages.map((m, i) => ({
+      id: `msg-${i}`,
+      role: m.role,
+      content: m.content,
+      timestamp: Date.now(),
+    }))
 
     userPrompt = validMessages.filter((m) => m.role === 'user').slice(-1)[0]?.content ?? ''
 

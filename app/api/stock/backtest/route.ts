@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   let timeframe: '6M' | '1Y' | '3M' = '1Y'
 
   // Accept either startDate/endDate or period shorthand
-  const period = (body as any).period as string | undefined
+  const period = (body as BacktestRequest & { period?: string }).period
   if (period) {
     switch (period.toLowerCase()) {
       case '3m': case '3month': case '3months': timeframe = '3M'; break
