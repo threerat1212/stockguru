@@ -64,14 +64,20 @@ export function useQuote(symbol: string | null) {
 // ─── Stock History (OHLCV) ─────────────────────────────────
 export function useHistory(symbol: string | null, timeframe: Timeframe = '3M') {
   const isIntraday = timeframe === '1D' || timeframe === '1W'
-  return useQuery<StockCandle[]>({
+  const query = useQuery({
     queryKey: ['history', symbol, timeframe],
     queryFn: () =>
-      fetchApi<StockCandle[]>(`/api/stock/history?symbol=${symbol}&timeframe=${timeframe}`),
+      fetchApiWithMeta<StockCandle[]>(`/api/stock/history?symbol=${symbol}&timeframe=${timeframe}`),
     enabled: !!symbol,
     staleTime: isIntraday ? 15_000 : 60_000,
     refetchInterval: isIntraday ? 30_000 : false,
   })
+
+  return {
+    ...query,
+    data: query.data?.data,
+    meta: query.data?.meta,
+  }
 }
 
 // ─── Stock Search ──────────────────────────────────────────

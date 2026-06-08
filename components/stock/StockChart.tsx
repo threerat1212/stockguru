@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { createChart, ColorType, CrosshairMode, type IChartApi, type ISeriesApi, type Time } from 'lightweight-charts'
 import type { StockCandle, Timeframe, Indicator } from '@/types/stock'
-import { calculateSMA, calculateEMA, calculateRSI, calculateMACD } from '@/lib/utils/technical-indicators'
+import { calculateSMA, calculateEMA } from '@/lib/utils/technical-indicators'
 import { useAppStore } from '@/lib/store/stockStore'
 import { cn } from '@/lib/utils/format'
 
@@ -16,6 +16,9 @@ interface StockChartProps {
 export default function StockChart({ data, symbol, height = 400 }: StockChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
+  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+  const indicatorSeriesRefs = useRef<ISeriesApi<'Line'>[]>([])
   const { timeframe, setTimeframe, indicators, toggleIndicator } = useAppStore()
 
   const timeframes: Timeframe[] = ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL']
@@ -27,15 +30,13 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
     { value: 'BB', label: 'Bollinger' },
   ]
 
+  function toChartTime(value: string): Time {
+    if (value.includes('T')) return Math.floor(new Date(value).getTime() / 1000) as Time
+    return value as Time
+  }
+
   useEffect(() => {
-    if (!chartContainerRef.current || data.length === 0) return
-
-    // Clear existing chart
-    if (chartRef.current) {
-      chartRef.current.remove()
-      chartRef.current = null
-    }
-
+    if (!chartContainerRef.current) return
     const container = chartContainerRef.current
 
     const chart = createChart(container, {
@@ -63,14 +64,13 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         timeVisible: true,
         secondsVisible: false,
       },
-      width: container.clientWidth,
+      width: Math.max(container.clientWidth, 320),
       height,
     })
 
     chartRef.current = chart
 
-    // Candlestick series
-    const candleSeries = chart.addCandlestickSeries({
+    candleSeriesRef.current = chart.addCandlestickSeries({
       upColor: '#10B981',
       downColor: '#F43F5E',
       borderUpColor: '#10B981',
@@ -79,18 +79,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
       wickDownColor: '#F43F5E',
     })
 
-    candleSeries.setData(
-      data.map(d => ({
-        time: d.time as Time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close,
-      }))
-    )
-
-    // Volume series
-    const volumeSeries = chart.addHistogramSeries({
+    volumeSeriesRef.current = chart.addHistogramSeries({
       priceFormat: { type: 'volume' },
       priceScaleId: 'volume',
     })
@@ -99,9 +88,43 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
       scaleMargins: { top: 0.8, bottom: 0 },
     })
 
+    const resizeObserver = new ResizeObserver(() => {
+      chart.applyOptions({ width: Math.max(container.clientWidth, 320), height })
+    })
+    resizeObserver.observe(container)
+
+    return () => {
+      resizeObserver.disconnect()
+      chart.remove()
+      chartRef.current = null
+      candleSeriesRef.current = null
+      volumeSeriesRef.current = null
+      indicatorSeriesRefs.current = []
+    }
+  }, [height])
+
+  useEffect(() => {
+    const chart = chartRef.current
+    const candleSeries = candleSeriesRef.current
+    const volumeSeries = volumeSeriesRef.current
+    if (!chart || !candleSeries || !volumeSeries) return
+
+    indicatorSeriesRefs.current.forEach((series) => chart.removeSeries(series))
+    indicatorSeriesRefs.current = []
+
+    candleSeries.setData(
+      data.map(d => ({
+        time: toChartTime(d.time),
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close,
+      }))
+    )
+
     volumeSeries.setData(
       data.map(d => ({
-        time: d.time as Time,
+        time: toChartTime(d.time),
         value: d.volume,
         color: d.close >= d.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
       }))
@@ -115,7 +138,8 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         lineWidth: 1,
         title: 'SMA 20',
       })
-      smaSeries.setData(smaData.map(d => ({ time: d.time as Time, value: d.value })))
+      indicatorSeriesRefs.current.push(smaSeries)
+      smaSeries.setData(smaData.map(d => ({ time: toChartTime(d.time), value: d.value })))
     }
 
     if (indicators.includes('EMA')) {
@@ -125,7 +149,8 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         lineWidth: 1,
         title: 'EMA 20',
       })
-      emaSeries.setData(emaData.map(d => ({ time: d.time as Time, value: d.value })))
+      indicatorSeriesRefs.current.push(emaSeries)
+      emaSeries.setData(emaData.map(d => ({ time: toChartTime(d.time), value: d.value })))
     }
 
     if (indicators.includes('BB')) {
@@ -138,33 +163,19 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
         const mean = smaData[i].value
         const variance = slice.reduce((sum, d) => sum + Math.pow(d.close - mean, 2), 0) / 20
         const stdDev = Math.sqrt(variance)
-        upperBB.push({ time: smaData[i].time as Time, value: mean + 2 * stdDev })
-        lowerBB.push({ time: smaData[i].time as Time, value: mean - 2 * stdDev })
+        upperBB.push({ time: toChartTime(smaData[i].time), value: mean + 2 * stdDev })
+        lowerBB.push({ time: toChartTime(smaData[i].time), value: mean - 2 * stdDev })
       }
 
       const upperSeries = chart.addLineSeries({ color: 'rgba(139, 92, 246, 0.4)', lineWidth: 1, lineStyle: 2, title: 'BB Upper' })
       const lowerSeries = chart.addLineSeries({ color: 'rgba(139, 92, 246, 0.4)', lineWidth: 1, lineStyle: 2, title: 'BB Lower' })
+      indicatorSeriesRefs.current.push(upperSeries, lowerSeries)
       upperSeries.setData(upperBB)
       lowerSeries.setData(lowerBB)
     }
 
-    chart.timeScale().fitContent()
-
-    // Resize handler
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth })
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      chart.remove()
-      chartRef.current = null
-    }
-  }, [data, height, indicators])
+    if (data.length > 0) chart.timeScale().fitContent()
+  }, [data, indicators])
 
   return (
     <div className="w-full">
@@ -210,6 +221,8 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
       {/* Chart container */}
       <div
         ref={chartContainerRef}
+        data-testid="stock-price-chart"
+        aria-label={`${symbol} price chart`}
         className="w-full rounded-lg overflow-hidden"
         style={{ height: `${height}px` }}
       />
