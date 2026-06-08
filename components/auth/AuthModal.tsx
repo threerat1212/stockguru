@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Mail, Lock, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/format'
@@ -13,6 +14,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  const [mounted, setMounted] = useState(false)
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +24,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const supabase = createClient()
 
-  if (!isOpen) return null
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!isOpen || !mounted) return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,9 +60,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4 bg-brand-card border border-brand-border rounded-xl shadow-2xl p-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-brand-card border border-brand-border rounded-xl shadow-2xl p-6">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-bg-secondary transition-colors"
@@ -119,6 +125,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
