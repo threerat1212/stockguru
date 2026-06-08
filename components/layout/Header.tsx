@@ -50,7 +50,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 bg-brand-bg/80 backdrop-blur-xl border-b border-brand-border">
+    <header className="sticky top-0 z-header bg-brand-bg/80 backdrop-blur-xl border-b border-brand-border">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo + Nav */}
@@ -122,7 +122,7 @@ export default function Header() {
 
             {/* Search dropdown */}
             {searchOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-brand-card border border-brand-border rounded-lg shadow-xl shadow-black/30 overflow-hidden max-h-80 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-brand-card border border-brand-border rounded-lg shadow-xl shadow-black/30 overflow-hidden max-h-80 overflow-y-auto z-dropdown">
                 {searchQuery.length === 0 && searchHistory.length > 0 && (
                   <div className="p-3">
                     <p className="text-xs text-brand-text-secondary mb-2">ค้นหาล่าสุด</p>
@@ -188,7 +188,7 @@ export default function Header() {
                   <button className="p-2 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-card transition-colors">
                     <User size={20} />
                   </button>
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-brand-card border border-brand-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-brand-card border border-brand-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-dropdown">
                     <div className="p-3 border-b border-brand-border">
                       <p className="text-sm font-medium text-brand-text-primary truncate">{user?.email}</p>
                       <p className="text-xs text-brand-text-secondary">{plan === 'trader' ? 'Trader' : isPro ? 'Pro' : 'Free'}</p>

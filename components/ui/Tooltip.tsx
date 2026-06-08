@@ -20,7 +20,7 @@ export default function Tooltip({ children, content, className, position = 'top'
       {children}
       <div
         className={cn(
-          'absolute z-50 px-2 py-1 text-xs font-medium text-brand-text-primary bg-brand-bg-secondary border border-brand-border rounded-md shadow-lg',
+          'absolute z-tooltip px-2 py-1 text-xs font-medium text-brand-text-primary bg-brand-bg-secondary border border-brand-border rounded-md shadow-lg',
           'opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200',
           'whitespace-nowrap pointer-events-none',
           positions[position]

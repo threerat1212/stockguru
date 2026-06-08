@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Mail, Lock, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { cn } from '@/lib/utils/format'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
@@ -27,6 +26,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (!isOpen) return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose])
 
   if (!isOpen || !mounted) return null
 
@@ -61,16 +80,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-brand-card border border-brand-border rounded-xl shadow-2xl p-6">
+    <div
+      className="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm"
+      onMouseDown={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        className="relative w-full max-w-md rounded-xl border border-brand-border bg-brand-card p-6 shadow-xl shadow-black/30"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
         <button
           onClick={onClose}
+          aria-label="ปิดหน้าต่างเข้าสู่ระบบ"
           className="absolute top-4 right-4 p-1 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-bg-secondary transition-colors"
         >
           <X size={18} />
         </button>
 
-        <h2 className="text-xl font-bold text-brand-text-primary mb-1">
+        <h2 id="auth-modal-title" className="text-xl font-bold text-brand-text-primary mb-1">
           {mode === 'signin' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
         </h2>
         <p className="text-sm text-brand-text-secondary mb-6">
@@ -87,6 +116,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               icon={<User size={16} className="text-brand-text-muted" />}
+              autoFocus
               required
             />
           )}
@@ -96,6 +126,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             icon={<Mail size={16} className="text-brand-text-muted" />}
+            autoFocus={mode === 'signin'}
             required
           />
           <Input
@@ -108,7 +139,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           />
 
           {error && (
-            <p className="text-sm text-brand-danger">{error}</p>
+            <p role="alert" className="text-sm text-brand-danger">{error}</p>
           )}
 
           <Button type="submit" className="w-full" isLoading={loading}>

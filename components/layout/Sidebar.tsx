@@ -39,14 +39,14 @@ export default function Sidebar() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-sidebar-backdrop bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          'fixed top-16 left-0 bottom-0 z-40 w-64 bg-brand-bg-secondary border-r border-brand-border',
+          'fixed top-16 left-0 bottom-0 z-sidebar w-64 bg-brand-bg-secondary border-r border-brand-border',
           'transform transition-transform duration-300 lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}

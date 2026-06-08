@@ -65,12 +65,14 @@ The brand is a data tool, not a campaign. The surface is dominated by deep navy 
 ### Z-Index Scale
 | Layer | Value |
 |---|---|
-| Tooltip / Popover | 50 |
+| Tooltip / Popover | 70 |
+| Modal backdrop + content | 60 |
+| Dropdown menu | 50 |
 | Sticky header | 40 |
-| Modal backdrop | 30 |
-| Modal content | 31 |
-| Dropdown menu | 20 |
-| Sidebar | 10 |
+| Sidebar | 30 |
+| Mobile sidebar backdrop | 20 |
+
+Use semantic Tailwind classes from `tailwind.config.ts` (`z-modal`, `z-header`, `z-dropdown`, etc.). Avoid arbitrary z-index values because modals and dropdowns must escape header/sidebar stacking contexts predictably.
 
 ## Components
 
