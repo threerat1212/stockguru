@@ -36,6 +36,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { LoadingSpinner, LoadingPage } from '@/components/ui/Loading'
 import PriceDisplay, { PriceStats } from '@/components/stock/PriceDisplay'
+import AuthModal from '@/components/auth/AuthModal'
 
 export default function StockDetailPage({ params }: { params: { symbol: string } }) {
   const symbol = decodeURIComponent(params.symbol)
@@ -48,7 +49,16 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const { data: historyData, isLoading: historyLoading } = useHistory(symbol)
   const { data: fundamentals } = useFundamentals(symbol)
   const [showAnalysis, setShowAnalysis] = useState(false)
-  const { data: analysis, isLoading: analysisLoading } = useAnalysis(showAnalysis ? symbol : null)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const {
+    data: analysis,
+    isLoading: analysisLoading,
+    error: analysisError,
+    refetch: refetchAnalysis,
+  } = useAnalysis(showAnalysis ? symbol : null)
+  const analysisAuthRequired = /เข้าสู่ระบบ|sign in|log in|login|unauthor/i.test(
+    (analysisError as Error | null)?.message ?? ''
+  )
 
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
@@ -347,6 +357,9 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                 <CardTitle className="text-base flex items-center gap-2">
                   <Brain size={16} className="text-brand-accent" />
                   AI วิเคราะห์
+                  {analysis?.isDemo && (
+                    <Badge variant="warning" size="sm" className="ml-auto">ผลจำลอง (Demo)</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               {!showAnalysis ? (
@@ -416,8 +429,27 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                     ))}
                   </ul>
                 </div>
+              ) : analysisError ? (
+                <div className="text-center py-4 space-y-3">
+                  <AlertTriangle size={22} className="text-brand-warning mx-auto" />
+                  <p className="text-sm text-brand-text-secondary">
+                    {(analysisError as Error).message || 'ไม่สามารถวิเคราะห์ได้ในขณะนี้'}
+                  </p>
+                  {analysisAuthRequired ? (
+                    <Button size="sm" onClick={() => setAuthModalOpen(true)}>
+                      <Brain size={16} />
+                      เข้าสู่ระบบเพื่อใช้ AI
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="secondary" onClick={() => refetchAnalysis()}>
+                      ลองใหม่อีกครั้ง
+                    </Button>
+                  )}
+                </div>
               ) : null}
             </Card>
+
+            <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
             {/* Company Info */}
             <Card>
