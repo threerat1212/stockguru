@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   TrendingUp,
   TrendingDown,
@@ -17,11 +17,9 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useQuote, useAnalysis, useFundamentals, useHistory } from '@/lib/hooks/use-stock'
-import { useRealtimePrice, type RealtimeTick } from '@/lib/hooks/use-realtime-price'
+import { useQuote, useAnalysis, useFundamentals } from '@/lib/hooks/use-stock'
 import DataSourceBadge, { DataHonestyBanner } from '@/components/market/DataSourceBadge'
 import { useWatchlist } from '@/lib/hooks/use-watchlist'
-import { useAppStore } from '@/lib/store/stockStore'
 import {
   formatNumber,
   formatCurrency,
@@ -34,9 +32,8 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { LoadingSpinner } from '@/components/ui/Loading'
 import PriceDisplay, { PriceStats } from '@/components/stock/PriceDisplay'
-import type { StockCandle, StockQuote, Timeframe } from '@/types/stock'
+import type { StockQuote } from '@/types/stock'
 import TradingViewWidget from '@/components/stock/TradingViewWidget'
-import StockChart from '@/components/stock/StockChart'
 import AuthModal from '@/components/auth/AuthModal'
 
 function normalizeRouteSymbol(value: string) {
@@ -72,85 +69,14 @@ function getDisplayExchange(symbol: string, quote?: StockQuote | null) {
   return 'TradingView'
 }
 
-function isIntradayTimeframe(timeframe: Timeframe) {
-  return timeframe === '1D' || timeframe === '1W'
-}
-
-function bucketTickTime(timestamp: number, timeframe: Timeframe) {
-  const date = new Date(timestamp)
-  if (!isIntradayTimeframe(timeframe)) return date.toISOString().split('T')[0]
-
-  const minutes = timeframe === '1D' ? 5 : 15
-  date.setSeconds(0, 0)
-  date.setMinutes(Math.floor(date.getMinutes() / minutes) * minutes)
-  return date.toISOString()
-}
-
-function tickMatchesQuote(tick: RealtimeTick | null, symbol: string) {
-  if (!tick) return false
-  const tickSymbol = tick.symbol.toUpperCase()
-  const quoteSymbol = symbol.toUpperCase()
-  if (tickSymbol === quoteSymbol) return true
-  if (quoteSymbol.endsWith('.BK') && tickSymbol === quoteSymbol.replace(/\.BK$/, '')) return true
-  return false
-}
-
-function mergeRealtimeTick(
-  history: StockCandle[],
-  tick: RealtimeTick | null,
-  symbol: string | null,
-  timeframe: Timeframe
-) {
-  if (!symbol || !tickMatchesQuote(tick, symbol) || !tick?.price || history.length === 0) return history
-
-  const next = [...history]
-  const tickTime = bucketTickTime(tick.timestamp, timeframe)
-  const last = next[next.length - 1]
-  const sameBucket = last.time === tickTime || (!isIntradayTimeframe(timeframe) && last.time.split('T')[0] === tickTime)
-
-  if (sameBucket) {
-    next[next.length - 1] = {
-      ...last,
-      close: tick.price,
-      high: Math.max(last.high, tick.price),
-      low: Math.min(last.low, tick.price),
-      volume: tick.volume ? Math.max(last.volume, tick.volume) : last.volume,
-    }
-    return next
-  }
-
-  next.push({
-    time: tickTime,
-    open: last.close,
-    high: Math.max(last.close, tick.price),
-    low: Math.min(last.close, tick.price),
-    close: tick.price,
-    volume: tick.volume ?? 0,
-  })
-  return next
-}
-
 export default function StockDetailPage({ params }: { params: { symbol: string } }) {
   const symbol = normalizeRouteSymbol(decodeURIComponent(params.symbol))
   const quoteLookupSymbol = toQuoteLookupSymbol(symbol)
-  const { timeframe } = useAppStore()
 
   const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
   const inWatchlist = isInWatchlist(symbol)
 
   const { data: quote, meta: quoteMeta, isLoading: quoteLoading } = useQuote(quoteLookupSymbol)
-  const historySymbol = quote?.symbol ?? null
-  const {
-    data: historyData,
-    meta: historyMeta,
-    isLoading: historyLoading,
-    error: historyError,
-  } = useHistory(historySymbol, timeframe)
-  const realtime = useRealtimePrice(historySymbol, Boolean(historySymbol))
-  const chartData = useMemo(
-    () => mergeRealtimeTick(historyData ?? [], realtime.tick, historySymbol, timeframe),
-    [historyData, historySymbol, realtime.tick, timeframe]
-  )
   const { data: fundamentals } = useFundamentals(quote?.symbol ?? null)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -166,18 +92,6 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const displaySymbol = getDisplaySymbol(symbol, quote)
   const displayExchange = getDisplayExchange(symbol, quote)
   const peRatio = fundamentals?.trailingPE ?? quote?.pe
-  const shouldWaitForQuote = Boolean(quoteLookupSymbol) && quoteLoading
-  const realtimeBadge =
-    realtime.tick && tickMatchesQuote(realtime.tick, historySymbol ?? '')
-      ? {
-          label: realtime.tick.source === 'finnhub' ? 'Realtime Finnhub' : 'Live polling Yahoo',
-          variant: 'success' as const,
-        }
-      : realtime.status === 'connecting'
-        ? { label: 'กำลังเชื่อมต่อ realtime', variant: 'info' as const }
-        : realtime.status === 'error'
-          ? { label: 'Realtime offline', variant: 'warning' as const }
-          : { label: 'Realtime standby', variant: 'outline' as const }
 
   function toggleWatchlist() {
     if (inWatchlist) {
@@ -291,43 +205,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
             </div>
 
             {/* Chart */}
-            {quote ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-brand-text-primary">
-                    <BarChart3 size={16} className="text-brand-primary" />
-                    กราฟราคา
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <DataSourceBadge meta={historyMeta ?? quoteMeta} compact />
-                    <Badge variant={realtimeBadge.variant} size="sm">{realtimeBadge.label}</Badge>
-                  </div>
-                </div>
-                <DataHonestyBanner meta={historyMeta} />
-                {historyLoading ? (
-                  <div className="flex h-[520px] flex-col items-center justify-center gap-3 rounded-lg border border-brand-border bg-brand-bg-secondary">
-                    <LoadingSpinner size="md" />
-                    <p className="text-sm text-brand-text-secondary">กำลังโหลดข้อมูลกราฟ...</p>
-                  </div>
-                ) : chartData.length > 0 ? (
-                  <StockChart data={chartData} symbol={quote.symbol} height={520} />
-                ) : (
-                  <div className="flex h-[520px] flex-col items-center justify-center gap-3 rounded-lg border border-brand-border bg-brand-bg-secondary px-4 text-center">
-                    <AlertTriangle size={22} className="text-brand-warning" />
-                    <p className="text-sm text-brand-text-secondary">
-                      {(historyError as Error | null)?.message ?? 'ไม่มีข้อมูลกราฟสำหรับ symbol นี้'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : shouldWaitForQuote ? (
-              <div className="flex h-[520px] flex-col items-center justify-center gap-3 rounded-lg border border-brand-border bg-brand-bg-secondary">
-                <LoadingSpinner size="md" />
-                <p className="text-sm text-brand-text-secondary">กำลังตรวจสอบข้อมูลราคา...</p>
-              </div>
-            ) : (
-              <TradingViewWidget symbol={symbol} height={520} />
-            )}
+            <TradingViewWidget symbol={symbol} exchange={quote?.exchange} height={520} />
           </Card>
         </div>
 
