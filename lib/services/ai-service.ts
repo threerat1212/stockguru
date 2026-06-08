@@ -1,7 +1,10 @@
 import type { AIAnalysis, ChatMessage, StockQuote, StockCandle } from '@/types/stock'
 import { analysisCache } from '@/lib/cache'
 
-const MIMO_API_URL = 'https://api.xiaomimimo.com/v1/chat/completions'
+// Pay-as-you-go (sk-) keys use api.xiaomimimo.com; Token Plan (tp-) keys use a
+// cluster-specific host (e.g. token-plan-sgp.xiaomimimo.com). Override via env.
+const MIMO_BASE_URL = (process.env.MIMO_BASE_URL ?? 'https://api.xiaomimimo.com/v1').replace(/\/$/, '')
+const MIMO_API_URL = `${MIMO_BASE_URL}/chat/completions`
 const MIMO_MODEL = 'mimo-v2.5-pro'
 
 function getApiKey(): string | null {
@@ -140,6 +143,7 @@ function generateMockAnalysis(symbol: string, quote: StockQuote, candles: StockC
     riskAssessment: risks[trend],
     keyPoints: trend === 'bullish' ? keyPointsBullish : trend === 'bearish' ? keyPointsBearish : keyPointsNeutral,
     disclaimer: 'ข้อมูลนี้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและใช้วิจารณญาณก่อนตัดสินใจ',
+    isDemo: true,
   }
 }
 
@@ -216,6 +220,7 @@ Respond with ONLY a valid JSON object (no markdown, no code fences) with these e
       riskAssessment: String(parsed.riskAssessment || 'Risk assessment unavailable.'),
       keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.slice(0, 6) : [],
       disclaimer: String(parsed.disclaimer || 'ข้อมูลนี้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน'),
+      isDemo: false,
     }
 
     analysisCache.set(cacheKey, analysis)

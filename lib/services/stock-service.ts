@@ -157,6 +157,15 @@ function getKnownFallbackQuote(symbol: string): StockQuote | null {
 const DEMO_WARNING =
   'ไม่สามารถดึงราคาสดได้ — กำลังแสดงข้อมูลตัวอย่างเท่านั้น อย่าใช้ตัดสินใจลงทุน'
 
+// Yahoo's shortName for SET (.BK) tickers is an awkward "PTT_PTT" form, so prefer
+// a curated Thai name, then the clean longName, before falling back to shortName.
+function resolveName(symbol: string, shortName?: string, longName?: string): string {
+  const curated = FALLBACK_QUOTES[symbol.toUpperCase()]?.name
+  if (curated) return curated
+  if (symbol.toUpperCase().endsWith('.BK') && longName) return longName
+  return shortName || longName || symbol
+}
+
 function normalizeExchange(symbol: string, exchange?: string, fullExchangeName?: string) {
   const raw = `${exchange ?? ''} ${fullExchangeName ?? ''}`.toUpperCase()
   if (symbol.toUpperCase().endsWith('.BK') || raw.includes('THAILAND') || raw.includes(' SET')) return 'SET'
@@ -214,10 +223,61 @@ function getFallbackHistory(symbol: string, timeframe: Timeframe): StockCandle[]
   return candles
 }
 
-async function yfetch(path: string, params: Record<string, string> = {}) {
-  const qs = new URLSearchParams(params).toString()
-  const url = `${YAHOO_BASE}${path}${qs ? '?' + qs : ''}`
-  const res = await fetch(url, { headers: YAHOO_HEADERS })
+// Yahoo's /v7/finance/quote endpoint requires a session cookie + crumb token.
+// We seed a cookie from a finance page, exchange it for a crumb, and cache both.
+const CRUMB_TTL_MS = 30 * 60 * 1000
+let crumbCache: { crumb: string; cookie: string; expires: number } | null = null
+
+function joinCookies(setCookies: string[]): string {
+  return setCookies.map((c) => c.split(';')[0].trim()).filter(Boolean).join('; ')
+}
+
+async function fetchCrumb(): Promise<{ crumb: string; cookie: string } | null> {
+  try {
+    // fc.yahoo.com sets the consent cookie (A3) with a tiny response — the full
+    // finance.yahoo.com page overflows undici's header limit and throws.
+    const seed = await fetch('https://fc.yahoo.com', {
+      headers: { 'User-Agent': UA },
+    })
+    const cookie = joinCookies(seed.headers.getSetCookie())
+    if (!cookie) return null
+    const crumbRes = await fetch(`${YAHOO_BASE}/v1/test/getcrumb`, {
+      headers: { 'User-Agent': UA, Cookie: cookie },
+    })
+    if (!crumbRes.ok) return null
+    const crumb = (await crumbRes.text()).trim()
+    if (!crumb || crumb.startsWith('{')) return null
+    return { crumb, cookie }
+  } catch {
+    return null
+  }
+}
+
+async function getCrumb(force = false): Promise<{ crumb: string; cookie: string } | null> {
+  if (!force && crumbCache && crumbCache.expires > Date.now()) {
+    return { crumb: crumbCache.crumb, cookie: crumbCache.cookie }
+  }
+  const fresh = await fetchCrumb()
+  crumbCache = fresh ? { ...fresh, expires: Date.now() + CRUMB_TTL_MS } : null
+  return fresh
+}
+
+async function yfetch(path: string, params: Record<string, string> = {}, useCrumb = false) {
+  const request = async (cred: { crumb: string; cookie: string } | null) => {
+    const merged = cred ? { ...params, crumb: cred.crumb } : params
+    const qs = new URLSearchParams(merged).toString()
+    const url = `${YAHOO_BASE}${path}${qs ? '?' + qs : ''}`
+    const headers = cred ? { ...YAHOO_HEADERS, Cookie: cred.cookie } : YAHOO_HEADERS
+    return { res: await fetch(url, { headers }), url }
+  }
+
+  let cred = useCrumb ? await getCrumb() : null
+  let { res, url } = await request(cred)
+  // A stale crumb/cookie returns 401 — refresh once and retry.
+  if (res.status === 401 && useCrumb) {
+    cred = await getCrumb(true)
+    ;({ res, url } = await request(cred))
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     console.error(`[Yahoo] ${res.status} ${url} body=${body.slice(0, 200)}`)
@@ -235,13 +295,13 @@ export async function getQuote(symbol: string): Promise<MarketDataResult<StockQu
   }
 
   try {
-    const data = await yfetch(`/v7/finance/quote`, { symbols: symbol })
+    const data = await yfetch(`/v7/finance/quote`, { symbols: symbol }, true)
     const q = data.quoteResponse?.result?.[0]
     if (!q) throw new Error(`No data for ${symbol}`)
 
     const quote: StockQuote = {
       symbol: q.symbol,
-      name: q.shortName || q.longName || symbol,
+      name: resolveName(q.symbol || symbol, q.shortName, q.longName),
       price: q.regularMarketPrice ?? 0,
       change: q.regularMarketChange ?? 0,
       changePercent: q.regularMarketChangePercent ?? 0,
@@ -395,14 +455,14 @@ export async function getTrending(): Promise<MarketDataResult<TrendingStock[]>> 
   ]
 
   try {
-    const data = await yfetch('/v7/finance/quote', { symbols: symbols.join(',') })
+    const data = await yfetch('/v7/finance/quote', { symbols: symbols.join(',') }, true)
     const quotes = data.quoteResponse?.result || []
 
     const trending: TrendingStock[] = quotes
       .filter((q: Record<string, unknown>) => q.regularMarketPrice != null)
       .map((q: Record<string, unknown>) => ({
         symbol: String(q.symbol),
-        name: String(q.shortName || q.longName || q.symbol),
+        name: resolveName(String(q.symbol), q.shortName as string | undefined, q.longName as string | undefined),
         price: Number(q.regularMarketPrice ?? 0),
         change: Number(q.regularMarketChange ?? 0),
         changePercent: Number(q.regularMarketChangePercent ?? 0),
@@ -432,7 +492,7 @@ export async function getMarketIndices(): Promise<MarketDataResult<MarketIndex[]
   const indices = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^SET.BK']
 
   try {
-    const data = await yfetch('/v7/finance/quote', { symbols: indices.join(',') })
+    const data = await yfetch('/v7/finance/quote', { symbols: indices.join(',') }, true)
     const quotes = data.quoteResponse?.result || []
 
     const result: MarketIndex[] = quotes.map((q: Record<string, unknown>) => ({

@@ -16,6 +16,8 @@ services:
         value: production
       - key: MIMO_API_KEY
         sync: false
+      - key: MIMO_BASE_URL
+        sync: false
       - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
