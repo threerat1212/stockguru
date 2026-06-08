@@ -20,6 +20,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -79,6 +80,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }
 
+  async function handleGoogleAuth() {
+    setError('')
+    setOauthLoading(true)
+
+    try {
+      const next = `${window.location.pathname}${window.location.search}`
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next || '/')}`
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      })
+
+      if (error) throw error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้')
+      setOauthLoading(false)
+    }
+  }
+
   return createPortal(
     <div
       className="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm"
@@ -107,6 +129,24 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             ? 'เข้าใช้งาน StockGuru ด้วยบัญชีของคุณ'
             : 'เริ่มใช้งาน StockGuru ฟรี พร้อมอัพเกรดเมื่อต้องการ'}
         </p>
+
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          onClick={handleGoogleAuth}
+          isLoading={oauthLoading}
+          disabled={loading}
+        >
+          {!oauthLoading && <GoogleIcon />}
+          ดำเนินการต่อด้วย Google
+        </Button>
+
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-brand-border" />
+          <span className="text-xs text-brand-text-secondary">หรือใช้อีเมล</span>
+          <div className="h-px flex-1 bg-brand-border" />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
@@ -142,7 +182,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <p role="alert" className="text-sm text-brand-danger">{error}</p>
           )}
 
-          <Button type="submit" className="w-full" isLoading={loading}>
+          <Button type="submit" className="w-full" isLoading={loading} disabled={oauthLoading}>
             {mode === 'signin' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
           </Button>
         </form>
@@ -158,5 +198,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       </div>
     </div>,
     document.body
+  )
+}
+
+function GoogleIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.1 3.5-8.8Z" />
+      <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3a7.3 7.3 0 0 1-10.8-3.8h-4v3.1A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.2 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1Z" />
+      <path fill="#EA4335" d="M12 4.8c1.7 0 3.3.6 4.5 1.8L20 3.2A12 12 0 0 0 1.2 6.6l4 3.1A7.2 7.2 0 0 1 12 4.8Z" />
+    </svg>
   )
 }

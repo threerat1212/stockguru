@@ -72,6 +72,18 @@ Redirect URL:
 https://stockguru-web.onrender.com/auth/callback
 ```
 
+For Google OAuth, configure the Google provider in Supabase Auth. Google Client ID and Client Secret live in Supabase Dashboard, not in this repo. Add the app callback route to the Supabase redirect allow list:
+
+```text
+https://stockguru-web.onrender.com/auth/callback
+http://localhost:3000/auth/callback
+http://localhost:3001/auth/callback
+http://127.0.0.1:3000/auth/callback
+http://127.0.0.1:3001/auth/callback
+```
+
+In Google Cloud OAuth client settings, use the Supabase project's callback URL from the Supabase Google provider page as the Authorized redirect URI.
+
 ## RLS Expectations
 
 - User-owned tables must use `auth.uid() = user_id`.

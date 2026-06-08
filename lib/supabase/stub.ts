@@ -58,6 +58,7 @@ export function createSupabaseStub() {
       signOut: async () => ({ error: null }),
       signUp: async () => supabaseNotConfigured(),
       signInWithPassword: async () => supabaseNotConfigured(),
+      signInWithOAuth: async () => supabaseNotConfigured(),
       exchangeCodeForSession: async () => ({ data: null, error: null }),
     },
     from: () => createQueryStub(),
