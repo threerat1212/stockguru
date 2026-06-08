@@ -1,5 +1,6 @@
 import type { FundamentalData } from '@/types/stock'
 import { fundamentalCache } from '@/lib/cache'
+import { getQuote } from '@/lib/services/stock-service'
 
 const YAHOO_BASE = 'https://query1.finance.yahoo.com'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -127,6 +128,24 @@ export async function getFundamentalData(symbol: string): Promise<FundamentalDat
     fundamentalCache.set(cacheKey, fundamental)
     return fundamental
   } catch (error) {
-    throw new Error(`Failed to fetch fundamental data for ${upper}: ${(error as Error).message}`)
+    console.warn(`[getFundamentalData] ${upper} quoteSummary failed:`, error)
+
+    try {
+      const quoteResult = await getQuote(upper)
+      const quote = quoteResult.data
+      const fallback: FundamentalData = {
+        symbol: quote.symbol,
+        name: quote.name,
+        marketCap: quote.marketCap,
+        trailingPE: quote.pe,
+        fiftyTwoWeekHigh: quote.week52High,
+        fiftyTwoWeekLow: quote.week52Low,
+      }
+
+      fundamentalCache.set(cacheKey, fallback, 60)
+      return fallback
+    } catch (fallbackError) {
+      throw new Error(`Failed to fetch fundamental data for ${upper}: ${(fallbackError as Error).message}`)
+    }
   }
 }

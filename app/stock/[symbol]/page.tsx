@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { createChart, ColorType, CrosshairMode, type IChartApi } from 'lightweight-charts'
+import { useState } from 'react'
 import {
   TrendingUp,
   TrendingDown,
@@ -18,10 +17,9 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useQuote, useHistory, useAnalysis, useFundamentals } from '@/lib/hooks/use-stock'
+import { useQuote, useAnalysis, useFundamentals } from '@/lib/hooks/use-stock'
 import DataSourceBadge, { DataHonestyBanner } from '@/components/market/DataSourceBadge'
 import { useWatchlist } from '@/lib/hooks/use-watchlist'
-import type { StockCandle } from '@/types/stock'
 import {
   formatNumber,
   formatCurrency,
@@ -29,13 +27,12 @@ import {
   formatMarketCapUsd,
   cn,
 } from '@/lib/utils/format'
-import { calculateSMA, calculateEMA, calculateRSI, calculateMACD } from '@/lib/utils/technical-indicators'
-import { useAppStore } from '@/lib/store/stockStore'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { LoadingSpinner, LoadingPage } from '@/components/ui/Loading'
 import PriceDisplay, { PriceStats } from '@/components/stock/PriceDisplay'
+import TradingViewWidget from '@/components/stock/TradingViewWidget'
 import AuthModal from '@/components/auth/AuthModal'
 
 export default function StockDetailPage({ params }: { params: { symbol: string } }) {
@@ -46,7 +43,6 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const inWatchlist = isInWatchlist(symbol)
 
   const { data: quote, meta: quoteMeta, isLoading: quoteLoading } = useQuote(symbol)
-  const { data: historyData, isLoading: historyLoading } = useHistory(symbol)
   const { data: fundamentals } = useFundamentals(symbol)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -59,170 +55,6 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const analysisAuthRequired = /เข้าสู่ระบบ|sign in|log in|login|unauthor/i.test(
     (analysisError as Error | null)?.message ?? ''
   )
-
-  const chartContainerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
-  const candleSeriesRef = useRef<any>(null)
-  const volumeSeriesRef = useRef<any>(null)
-
-  // Normalize & deduplicate history data for lightweight-charts
-  const chartData: StockCandle[] = useMemo(() => {
-    if (!historyData) return []
-
-    return Array.from(
-      historyData
-        .map(d => {
-          const timeStr =
-            typeof d.time === 'number'
-              ? new Date(d.time * 1000).toISOString().slice(0, 10)
-              : d.time.includes('T')
-                ? d.time.slice(0, 10)
-                : d.time
-          return { ...d, time: timeStr }
-        })
-        .reduce((map, d) => map.set(d.time, d), new Map<string, StockCandle>())
-        .values()
-    ).sort((a, b) => (a.time > b.time ? 1 : -1))
-  }, [historyData])
-
-  // Build chart once when data is ready
-  useEffect(() => {
-    if (!chartContainerRef.current || chartData.length === 0) return
-
-    if (chartRef.current) {
-      chartRef.current.remove()
-      chartRef.current = null
-      candleSeriesRef.current = null
-      volumeSeriesRef.current = null
-    }
-
-    const container = chartContainerRef.current
-    const chart = createChart(container, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#94A3B8',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-      },
-      grid: {
-        vertLines: { color: 'rgba(51, 65, 85, 0.3)' },
-        horzLines: { color: 'rgba(51, 65, 85, 0.3)' },
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: { color: 'rgba(59, 130, 246, 0.4)', width: 1, style: 2 },
-        horzLine: { color: 'rgba(59, 130, 246, 0.4)', width: 1, style: 2 },
-      },
-      rightPriceScale: {
-        borderColor: '#334155',
-        scaleMargins: { top: 0.1, bottom: 0.25 },
-      },
-      timeScale: {
-        borderColor: '#334155',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      width: container.clientWidth,
-      height: 420,
-    })
-
-    chartRef.current = chart
-
-    const candleSeries = chart.addCandlestickSeries({
-      upColor: '#10B981',
-      downColor: '#F43F5E',
-      borderUpColor: '#10B981',
-      borderDownColor: '#F43F5E',
-      wickUpColor: '#10B981',
-      wickDownColor: '#F43F5E',
-    })
-    candleSeriesRef.current = candleSeries
-
-    candleSeries.setData(
-      chartData.map(d => ({
-        time: d.time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close,
-      }))
-    )
-
-    const volumeSeries = chart.addHistogramSeries({
-      priceFormat: { type: 'volume' },
-      priceScaleId: 'volume',
-    })
-    volumeSeriesRef.current = volumeSeries
-
-    chart.priceScale('volume').applyOptions({
-      scaleMargins: { top: 0.8, bottom: 0 },
-    })
-
-    volumeSeries.setData(
-      chartData.map(d => ({
-        time: d.time,
-        value: d.volume,
-        color: d.close >= d.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
-      }))
-    )
-
-    const smaData = calculateSMA(chartData, 20)
-    const smaSeries = chart.addLineSeries({ color: '#F59E0B', lineWidth: 1, title: 'SMA 20' })
-    smaSeries.setData(smaData.map(d => ({ time: d.time, value: d.value })))
-
-    const emaData = calculateEMA(chartData, 20)
-    const emaSeries = chart.addLineSeries({ color: '#8B5CF6', lineWidth: 1, title: 'EMA 20' })
-    emaSeries.setData(emaData.map(d => ({ time: d.time, value: d.value })))
-
-    const { macd, signal } = calculateMACD(chartData)
-    const macdSeries = chart.addLineSeries({ color: '#3B82F6', lineWidth: 1, title: 'MACD', priceScaleId: 'macd' })
-    const signalSeries = chart.addLineSeries({ color: '#F97316', lineWidth: 1, title: 'Signal', priceScaleId: 'macd' })
-    chart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } })
-    macdSeries.setData(macd.map(d => ({ time: d.time, value: d.value })))
-    signalSeries.setData(signal.map(d => ({ time: d.time, value: d.value })))
-
-    const rsiData = calculateRSI(chartData)
-    const rsiSeries = chart.addLineSeries({ color: '#06B6D4', lineWidth: 1, title: 'RSI', priceScaleId: 'rsi' })
-    chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } })
-    rsiSeries.setData(rsiData.map(d => ({ time: d.time, value: d.value })))
-
-    chart.timeScale().fitContent()
-
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth })
-      }
-    }
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      chart.remove()
-      chartRef.current = null
-      candleSeriesRef.current = null
-      volumeSeriesRef.current = null
-    }
-  }, [chartData])
-
-  // Live price update on last candle
-  useEffect(() => {
-    if (!quote || !candleSeriesRef.current || chartData.length === 0) return
-    const last = chartData[chartData.length - 1]
-    candleSeriesRef.current.update({
-      time: last.time,
-      open: last.open,
-      high: Math.max(last.high, quote.price),
-      low: Math.min(last.low, quote.price),
-      close: quote.price,
-    })
-    if (volumeSeriesRef.current) {
-      volumeSeriesRef.current.update({
-        time: last.time,
-        value: last.volume,
-        color: quote.price >= last.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)',
-      })
-    }
-  }, [quote, chartData])
 
   function toggleWatchlist() {
     if (inWatchlist) {
@@ -324,17 +156,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
               </div>
 
               {/* Chart */}
-              {historyLoading ? (
-                <div className="flex items-center justify-center h-[420px]">
-                  <LoadingSpinner size="lg" />
-                </div>
-              ) : chartData.length > 0 ? (
-                <div ref={chartContainerRef} className="w-full rounded-lg overflow-hidden" style={{ height: '420px' }} />
-              ) : (
-                <div className="flex items-center justify-center h-[420px] text-brand-text-secondary">
-                  ไม่มีข้อมูลกราฟ
-                </div>
-              )}
+              <TradingViewWidget symbol={symbol} exchange={quote.exchange} height={520} />
             </Card>
           </div>
 

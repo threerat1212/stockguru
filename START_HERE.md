@@ -34,7 +34,7 @@
 | Billing | Stripe |
 | AI | MiMo (`MIMO_API_KEY`) |
 | Market data | Yahoo Finance (proxy) + fallback ตัวอย่าง |
-| Charts | lightweight-charts |
+| Charts | TradingView widget (stock detail) + lightweight-charts (internal compare charts) |
 | Deploy | Render (`render.yaml`) |
 
 ---

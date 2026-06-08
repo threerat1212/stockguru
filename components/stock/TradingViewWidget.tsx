@@ -1,14 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-
-declare global {
-  interface Window {
-    TradingView?: {
-      widget: new (config: Record<string, unknown>) => void
-    }
-  }
-}
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 
 interface TradingViewWidgetProps {
   symbol: string
@@ -16,84 +8,95 @@ interface TradingViewWidgetProps {
   height?: number
 }
 
+function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
+  const cleanSymbol = symbol.trim().toUpperCase()
+  const cleanExchange = exchange?.trim().toUpperCase()
+
+  if (cleanSymbol.includes(':')) return cleanSymbol
+  if (cleanSymbol.endsWith('.BK')) return `SET:${cleanSymbol.replace(/\.BK$/, '')}`
+  if (cleanExchange === 'SET') return `SET:${cleanSymbol.replace(/\.BK$/, '')}`
+  if (cleanExchange === 'NYSE') return `NYSE:${cleanSymbol}`
+  if (cleanExchange === 'NASDAQ') return `NASDAQ:${cleanSymbol}`
+  if (cleanExchange) return `${cleanExchange}:${cleanSymbol}`
+  return `NASDAQ:${cleanSymbol}`
+}
+
 export default function TradingViewWidget({ symbol, exchange = 'SET', height = 420 }: TradingViewWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const scriptLoaded = useRef(false)
-
-  const isSupported = exchange === 'NASDAQ' || exchange === 'NYSE'
+  const reactId = useId()
+  const widgetId = useMemo(() => `tradingview-${reactId.replace(/:/g, '')}`, [reactId])
+  const tradingViewSymbol = useMemo(() => normalizeTradingViewSymbol(symbol, exchange), [symbol, exchange])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!isSupported || !containerRef.current || scriptLoaded.current) return
+    if (!containerRef.current) return
 
     const container = containerRef.current
     container.innerHTML = ''
+    setIsLoading(true)
 
     const widgetDiv = document.createElement('div')
-    widgetDiv.id = `tv-widget-${symbol}`
+    widgetDiv.id = widgetId
+    widgetDiv.className = 'tradingview-widget-container__widget'
     widgetDiv.style.width = '100%'
-    widgetDiv.style.height = `${height}px`
+    widgetDiv.style.height = '100%'
     container.appendChild(widgetDiv)
 
     const script = document.createElement('script')
-    script.src = 'https://s3.tradingview.com/tv.js'
+    script.type = 'text/javascript'
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
     script.async = true
-    script.onload = () => {
-      if (window.TradingView) {
-        new window.TradingView.widget({
-          container_id: widgetDiv.id,
-          symbol: `${exchange}:${symbol}`,
-          interval: 'D',
-          timezone: 'Asia/Bangkok',
-          theme: 'dark',
-          style: '1',
-          locale: 'th',
-          toolbar_bg: '#0f172a',
-          enable_publishing: false,
-          withdateranges: true,
-          hide_side_toolbar: false,
-          allow_symbol_change: true,
-          details: true,
-          hotlist: false,
-          calendar: false,
-          studies: ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies'],
-          show_popup_button: false,
-          width: '100%',
-          height: height,
-          backgroundColor: '#0f172a',
-          gridColor: '#1e293b',
-          textColor: '#94a3b8',
-          hide_top_toolbar: false,
-          hide_legend: false,
-          save_image: false,
-        })
-        scriptLoaded.current = true
-      }
+    script.text = JSON.stringify({
+      autosize: true,
+      symbol: tradingViewSymbol,
+      interval: 'D',
+      timezone: 'Asia/Bangkok',
+      theme: 'dark',
+      style: '1',
+      locale: 'th',
+      allow_symbol_change: true,
+      withdateranges: true,
+      hide_side_toolbar: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      hide_volume: false,
+      details: true,
+      hotlist: false,
+      calendar: false,
+      save_image: false,
+      backgroundColor: '#0f172a',
+      gridColor: 'rgba(51, 65, 85, 0.35)',
+      studies: [],
+      support_host: 'https://www.tradingview.com',
+    })
+    script.onload = () => setIsLoading(false)
+    script.onerror = () => {
+      setIsLoading(false)
     }
 
     container.appendChild(script)
 
     return () => {
       container.innerHTML = ''
-      scriptLoaded.current = false
     }
-  }, [symbol, exchange, height, isSupported])
-
-  if (!isSupported) {
-    return (
-      <div className="flex items-center justify-center h-[420px] rounded-lg border border-brand-border bg-brand-bg-secondary">
-        <div className="text-center">
-          <p className="text-sm text-brand-text-secondary mb-2">TradingView widget รองรับเฉพาะตลาดหลัก</p>
-          <p className="text-xs text-brand-text-muted">หุ้นไทย (SET) ใช้กราฟเดิมที่ดึงจาก Yahoo Finance</p>
-        </div>
-      </div>
-    )
-  }
+  }, [height, tradingViewSymbol, widgetId])
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full rounded-lg overflow-hidden border border-brand-border"
+    <div
+      className="relative w-full overflow-hidden rounded-lg border border-brand-border bg-brand-bg-secondary"
       style={{ height: `${height}px` }}
-    />
+    >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center text-sm text-brand-text-secondary">
+          กำลังโหลดกราฟจาก TradingView...
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        data-testid="tradingview-chart"
+        data-symbol={tradingViewSymbol}
+        className="h-full w-full"
+      />
+    </div>
   )
 }
