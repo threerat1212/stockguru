@@ -3,6 +3,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   // AI Provider
   MIMO_API_KEY: z.string().min(1).optional(),
+  MIMO_BASE_URL: z.string().url().optional(),
 
   // Supabase
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
@@ -36,6 +37,7 @@ export function getEnv(): Env {
 
   const result = envSchema.safeParse({
     MIMO_API_KEY: process.env.MIMO_API_KEY,
+    MIMO_BASE_URL: process.env.MIMO_BASE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,

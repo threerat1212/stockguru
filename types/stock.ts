@@ -105,6 +105,8 @@ export interface AIAnalysis {
   riskAssessment: string
   keyPoints: string[]
   disclaimer: string
+  // true when produced by the local heuristic (no MIMO_API_KEY / AI call failed)
+  isDemo?: boolean
 }
 
 // AI Chat message

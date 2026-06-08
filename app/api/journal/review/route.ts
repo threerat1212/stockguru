@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const MIMO_API_URL = 'https://api.xiaomimimo.com/v1/chat/completions'
+const MIMO_BASE_URL = (process.env.MIMO_BASE_URL ?? 'https://api.xiaomimimo.com/v1').replace(/\/$/, '')
+const MIMO_API_URL = `${MIMO_BASE_URL}/chat/completions`
 const MIMO_MODEL = 'mimo-v2.5-pro'
 
 interface TradeRecord {

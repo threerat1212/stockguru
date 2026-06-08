@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://stockguru.app/sitemap.xml

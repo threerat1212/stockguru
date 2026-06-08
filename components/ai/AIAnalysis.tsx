@@ -53,6 +53,9 @@ export default function AIAnalysisPanel({ symbol }: AIAnalysisPanelProps) {
               <span className="text-sm">🤖</span>
             </div>
             AI วิเคราะห์
+            {analysis.isDemo && (
+              <Badge variant="warning" className="ml-auto">ผลจำลอง (Demo)</Badge>
+            )}
           </CardTitle>
         </CardHeader>
 
