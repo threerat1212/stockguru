@@ -4,7 +4,20 @@ import type { MarketDataMeta, MarketDataResult } from '@/lib/market-data/types'
 import { cacheMeta, demoMeta, liveMeta } from '@/lib/market-data/types'
 
 const YAHOO_BASE = 'https://query1.finance.yahoo.com'
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+const YAHOO_HEADERS: Record<string, string> = {
+  'User-Agent': UA,
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Connection': 'keep-alive',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Cache-Control': 'max-age=0',
+}
 
 const FALLBACK_QUOTES: Record<string, StockQuote> = {
   'PTT.BK': {
@@ -204,8 +217,12 @@ function getFallbackHistory(symbol: string, timeframe: Timeframe): StockCandle[]
 async function yfetch(path: string, params: Record<string, string> = {}) {
   const qs = new URLSearchParams(params).toString()
   const url = `${YAHOO_BASE}${path}${qs ? '?' + qs : ''}`
-  const res = await fetch(url, { headers: { 'User-Agent': UA } })
-  if (!res.ok) throw new Error(`Yahoo API ${res.status}`)
+  const res = await fetch(url, { headers: YAHOO_HEADERS })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    console.error(`[Yahoo] ${res.status} ${url} body=${body.slice(0, 200)}`)
+    throw new Error(`Yahoo API ${res.status}`)
+  }
   return res.json()
 }
 
@@ -245,7 +262,8 @@ export async function getQuote(symbol: string): Promise<MarketDataResult<StockQu
 
     quoteCache.set(cacheKey, quote)
     return { data: quote, meta: liveMeta('yahoo') }
-  } catch {
+  } catch (err) {
+    console.error(`[getQuote] ${symbol} failed:`, err)
     const quote = getKnownFallbackQuote(symbol)
     if (!quote) {
       throw new Error(`ไม่พบข้อมูลราคาสำหรับ ${symbol} และไม่มีข้อมูลตัวอย่าง`)
@@ -312,7 +330,8 @@ export async function getHistory(
 
     historyCache.set(cacheKey, candles)
     return { data: candles, meta: liveMeta('yahoo') }
-  } catch {
+  } catch (err) {
+    console.error(`[getHistory] ${symbol} ${timeframe} failed:`, err)
     const candles = getFallbackHistory(symbol, timeframe)
     if (!candles.length) {
       throw new Error(`ไม่พบข้อมูลกราฟสำหรับ ${symbol}`)
@@ -345,7 +364,8 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
 
     searchCache.set(cacheKey, results)
     return results
-  } catch {
+  } catch (err) {
+    console.error(`[searchStocks] "${query}" failed:`, err)
     const q = query.toLowerCase()
     return Object.values(FALLBACK_QUOTES)
       .filter((stock) => stock.symbol.toLowerCase().includes(q) || stock.name.toLowerCase().includes(q))
@@ -395,7 +415,8 @@ export async function getTrending(): Promise<MarketDataResult<TrendingStock[]>> 
 
     quoteCache.set(cacheKey, trending, 120)
     return { data: trending, meta: liveMeta('yahoo') }
-  } catch {
+  } catch (err) {
+    console.error(`[getTrending] failed:`, err)
     const fallback = getFallbackTrending()
     quoteCache.set(cacheKey, fallback, 120)
     return { data: fallback, meta: demoMeta(DEMO_WARNING) }
@@ -424,7 +445,8 @@ export async function getMarketIndices(): Promise<MarketDataResult<MarketIndex[]
 
     quoteCache.set(cacheKey, result, 60)
     return { data: result, meta: liveMeta('yahoo') }
-  } catch {
+  } catch (err) {
+    console.error(`[getMarketIndices] failed:`, err)
     quoteCache.set(cacheKey, FALLBACK_MARKET_INDICES, 60)
     return { data: FALLBACK_MARKET_INDICES, meta: demoMeta(DEMO_WARNING) }
   }

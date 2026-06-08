@@ -30,3 +30,25 @@ For external Mercury Agent Skills:
 
 - Read `skills/stockguru-mercury-skills/SKILL.md`.
 - Import only a specific useful skill, never the whole Mercury registry.
+
+For Supabase work:
+
+- Read `skills/stockguru-supabase/SKILL.md`.
+- Read `.agents/skills/supabase/SKILL.md`.
+- For SQL indexes, query optimization, schema design, privileges, or RLS performance, also read `.agents/skills/supabase-postgres-best-practices/SKILL.md`.
+- Local StockGuru rules still apply first for secrets, required schema files, Render redirects, and financial-product copy.
+
+For AI memory or context infrastructure:
+
+- Read `skills/stockguru-ai-safety/SKILL.md` first for financial-safety constraints.
+- For persistent memory, personalization, user profiles, or RAG memory, read `.agents/skills/supermemory/SKILL.md`.
+- For context compression, tool-output/log compression, MCP/proxy optimization, or Headroom evaluation, read `.agents/skills/headroom/SKILL.md`.
+- Do not add new external runtime services or API keys without documenting env vars and keeping secrets out of git.
+
+For Google skills:
+
+- Use these only when the task explicitly involves Google, Gemini, BigQuery, Google Cloud auth, gcloud, or Cloud Run. StockGuru's current production stack is still Render + Supabase.
+- For Gemini API or Google Gen AI SDK work, read `skills/stockguru-ai-safety/SKILL.md` first, then `.agents/skills/gemini-api/SKILL.md`.
+- For BigQuery analytics, warehouse, anomaly detection, forecasting, or SQL jobs, read `.agents/skills/bigquery-basics/SKILL.md`.
+- Before any `gcloud` command or Google Cloud deploy/migration work, read `.agents/skills/google-cloud-recipe-auth/SKILL.md` and `.agents/skills/gcloud/SKILL.md`.
+- For Cloud Run service/job/worker deployment work, also read `.agents/skills/cloud-run-basics/SKILL.md`.

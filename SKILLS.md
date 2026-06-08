@@ -19,6 +19,13 @@ Use multiple skills when the task crosses boundaries. For example:
 - Impeccable UX/UI work: read `.agents/skills/impeccable/SKILL.md` after `skills/stockguru-ui-design/SKILL.md`
 - Trading journal work: read `skills/stockguru-trading-journal/SKILL.md`
 - External skill sourcing: read `skills/stockguru-mercury-skills/SKILL.md`
+- Supabase/Auth/RLS/schema work: read `skills/stockguru-supabase/SKILL.md`, then `.agents/skills/supabase/SKILL.md`
+- SQL indexes, query optimization, schema design, or RLS performance work: also read `.agents/skills/supabase-postgres-best-practices/SKILL.md`
+- AI memory, personalization, user-profile context, or RAG memory work: read `.agents/skills/supermemory/SKILL.md`
+- AI context compression, tool-output/log compression, MCP/proxy context optimization, or Headroom evaluation: read `.agents/skills/headroom/SKILL.md`
+- Gemini API, Google Gen AI SDK, or Google AI migration work: read `.agents/skills/gemini-api/SKILL.md` after `skills/stockguru-ai-safety/SKILL.md`
+- BigQuery analytics, warehouse, anomaly detection, forecasting, or SQL jobs: read `.agents/skills/bigquery-basics/SKILL.md`
+- Google Cloud deploy/migration work: read `.agents/skills/google-cloud-recipe-auth/SKILL.md`, `.agents/skills/gcloud/SKILL.md`, then `.agents/skills/cloud-run-basics/SKILL.md`
 
 ## Project Rules
 
@@ -28,6 +35,10 @@ Use multiple skills when the task crosses boundaries. For example:
 - Prefer real app verification over assumptions: run lint/build and hit the live or local route involved.
 - Keep unrelated dirty files out of commits. In this repo, `output/playwright/*` may contain generated QA logs.
 - Keep third-party skills project-local and curated. Do not install or copy a whole external skill registry into this repo.
+- Imported Supabase Agent Skills live under `.agents/skills/`, come from `https://github.com/supabase/agent-skills`, and keep their MIT license files in each imported folder.
+- Imported Supermemory skill lives under `.agents/skills/supermemory/`, comes from `https://github.com/supermemoryai/supermemory`, and keeps its MIT license file.
+- Headroom guidance lives under `.agents/skills/headroom/`, references `https://github.com/chopratejas/headroom`, and keeps its Apache-2.0 license file.
+- Imported Google skills live under `.agents/skills/`, come from `https://github.com/google/skills`, and keep Apache-2.0 license files in each imported folder. Use them only for explicit Google/Gemini/BigQuery/Cloud Run work; current production remains Render + Supabase unless changed deliberately.
 
 ## Current Production Surface
 

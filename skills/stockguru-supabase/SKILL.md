@@ -9,6 +9,24 @@ description: Use for StockGuru Supabase auth, schema setup, RLS, database persis
 
 Use this when working on Supabase Auth, SQL schema, RLS policies, persistence, subscriptions, usage counters, watchlists, alerts, journal data, or database-related production errors.
 
+## External Supabase Agent Skills
+
+This project imports selected MIT-licensed Supabase Agent Skills from `https://github.com/supabase/agent-skills` under `.agents/skills/`.
+
+For any Supabase task, read:
+
+```text
+.agents/skills/supabase/SKILL.md
+```
+
+For SQL indexes, query optimization, schema design, privileges, or RLS performance, also read:
+
+```text
+.agents/skills/supabase-postgres-best-practices/SKILL.md
+```
+
+Local StockGuru requirements in this file remain the source of truth when they are more specific to this project.
+
 ## Required Env
 
 ```env
