@@ -8,7 +8,7 @@ interface TradingViewWidgetProps {
   height?: number
 }
 
-function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
+export function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
   const cleanSymbol = symbol.trim().toUpperCase()
   const cleanExchange = exchange?.trim().toUpperCase()
 
@@ -21,7 +21,7 @@ function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
   return `NASDAQ:${cleanSymbol}`
 }
 
-export default function TradingViewWidget({ symbol, exchange = 'SET', height = 420 }: TradingViewWidgetProps) {
+export default function TradingViewWidget({ symbol, exchange, height = 420 }: TradingViewWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const reactId = useId()
   const widgetId = useMemo(() => `tradingview-${reactId.replace(/:/g, '')}`, [reactId])

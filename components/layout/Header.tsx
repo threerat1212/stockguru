@@ -36,10 +36,12 @@ export default function Header() {
   }, [])
 
   function handleSelectSymbol(symbol: string) {
-    addSearchHistory(symbol)
+    const nextSymbol = symbol.trim().replace(/\s+/g, '').toUpperCase()
+    if (!nextSymbol) return
+    addSearchHistory(nextSymbol)
     setSearchOpen(false)
     setSearchQuery('')
-    router.push(`/stock/${encodeURIComponent(symbol)}`)
+    router.push(`/stock/${encodeURIComponent(nextSymbol)}`)
   }
 
   const navLinks = [
@@ -106,6 +108,12 @@ export default function Header() {
                 placeholder="ค้นหาหุ้น เช่น PTT, AAPL, NVDA..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleSelectSymbol(searchQuery)
+                  }
+                }}
                 onFocus={() => setSearchOpen(true)}
                 className="w-full bg-transparent px-3 py-2 text-sm text-brand-text-primary placeholder-brand-text-secondary outline-none"
               />
@@ -145,7 +153,16 @@ export default function Header() {
                 )}
 
                 {!searchLoading && searchQuery.length > 0 && results?.length === 0 && (
-                  <div className="p-4 text-center text-brand-text-secondary text-sm">ไม่พบผลลัพธ์</div>
+                  <div className="p-4 text-center">
+                    <p className="text-sm text-brand-text-secondary">ไม่พบผลลัพธ์</p>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSymbol(searchQuery)}
+                      className="mt-2 text-sm font-medium text-brand-primary hover:text-brand-primary-light"
+                    >
+                      เปิดกราฟ {searchQuery.trim().replace(/\s+/g, '').toUpperCase()}
+                    </button>
+                  </div>
                 )}
 
                 {results?.map((result) => (

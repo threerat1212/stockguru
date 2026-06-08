@@ -30,20 +30,54 @@ import {
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
-import { LoadingSpinner, LoadingPage } from '@/components/ui/Loading'
+import { LoadingSpinner } from '@/components/ui/Loading'
 import PriceDisplay, { PriceStats } from '@/components/stock/PriceDisplay'
+import type { StockQuote } from '@/types/stock'
 import TradingViewWidget from '@/components/stock/TradingViewWidget'
 import AuthModal from '@/components/auth/AuthModal'
 
+function normalizeRouteSymbol(value: string) {
+  return value.trim().toUpperCase()
+}
+
+function toQuoteLookupSymbol(value: string) {
+  const symbol = normalizeRouteSymbol(value)
+  if (!symbol) return null
+
+  if (symbol.includes(':')) {
+    const [exchange, ...rest] = symbol.split(':')
+    const ticker = rest.join(':').trim()
+    if (!ticker) return null
+    if (exchange === 'SET') return `${ticker.replace(/\.BK$/, '')}.BK`
+    if (['NASDAQ', 'NYSE', 'AMEX', 'ARCA', 'OTC'].includes(exchange)) return ticker
+    return null
+  }
+
+  return symbol
+}
+
+function getDisplaySymbol(symbol: string, quote?: StockQuote | null) {
+  if (quote) return quote.symbol.replace('.BK', '')
+  if (symbol.includes(':')) return symbol.split(':').slice(1).join(':')
+  return symbol.replace('.BK', '')
+}
+
+function getDisplayExchange(symbol: string, quote?: StockQuote | null) {
+  if (quote) return quote.exchange
+  if (symbol.includes(':')) return symbol.split(':')[0]
+  if (symbol.endsWith('.BK')) return 'SET'
+  return 'TradingView'
+}
+
 export default function StockDetailPage({ params }: { params: { symbol: string } }) {
-  const symbol = decodeURIComponent(params.symbol)
-  const displaySymbol = symbol.replace('.BK', '')
+  const symbol = normalizeRouteSymbol(decodeURIComponent(params.symbol))
+  const quoteLookupSymbol = toQuoteLookupSymbol(symbol)
 
   const { isInWatchlist, addWatchlistItem, removeWatchlistItem } = useWatchlist()
   const inWatchlist = isInWatchlist(symbol)
 
-  const { data: quote, meta: quoteMeta, isLoading: quoteLoading } = useQuote(symbol)
-  const { data: fundamentals } = useFundamentals(symbol)
+  const { data: quote, meta: quoteMeta, isLoading: quoteLoading } = useQuote(quoteLookupSymbol)
+  const { data: fundamentals } = useFundamentals(quote?.symbol ?? null)
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const {
@@ -51,10 +85,13 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
     isLoading: analysisLoading,
     error: analysisError,
     refetch: refetchAnalysis,
-  } = useAnalysis(showAnalysis ? symbol : null)
+  } = useAnalysis(showAnalysis && quote ? quote.symbol : null)
   const analysisAuthRequired = /เข้าสู่ระบบ|sign in|log in|login|unauthor/i.test(
     (analysisError as Error | null)?.message ?? ''
   )
+  const displaySymbol = getDisplaySymbol(symbol, quote)
+  const displayExchange = getDisplayExchange(symbol, quote)
+  const peRatio = fundamentals?.trailingPE ?? quote?.pe
 
   function toggleWatchlist() {
     if (inWatchlist) {
@@ -74,10 +111,6 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
     bullish_momentum: { label: 'แรงซื้อสะสม', color: 'text-brand-success', variant: 'success' as const },
     bearish_momentum: { label: 'แรงขายกดดัน', color: 'text-brand-danger', variant: 'danger' as const },
     neutral_consolidation: { label: 'สร้างฐาน', color: 'text-brand-warning', variant: 'warning' as const },
-  }
-
-  if (quoteLoading) {
-    return <LoadingPage />
   }
 
   return (
@@ -120,16 +153,28 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
       <DataHonestyBanner meta={quoteMeta} />
 
       {/* Price & Quote Info */}
-      {quote && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card>
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-                <div className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+              <div className="space-y-2">
+                {quote ? (
+                  <>
                   <PriceDisplay quote={quote} size="lg" />
                   <DataSourceBadge meta={quoteMeta} />
-                </div>
-                <div className="flex items-center gap-4">
+                  </>
+                ) : (
+                  <div>
+                    <p className="text-3xl font-bold text-brand-text-primary sm:text-4xl">{displaySymbol}</p>
+                    <p className="mt-1 text-sm text-brand-text-secondary">
+                      {quoteLoading ? 'กำลังโหลดข้อมูลราคา...' : 'กราฟจาก TradingView'}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                {quote ? (
+                  <>
                   <div className="text-right">
                     <p className="text-xs text-brand-text-secondary">Volume</p>
                     <p className="text-lg font-mono-nums font-semibold text-brand-text-primary">
@@ -152,18 +197,23 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                       </p>
                     </div>
                   )}
-                </div>
+                  </>
+                ) : (
+                  <Badge variant="info" size="sm">{displayExchange}</Badge>
+                )}
               </div>
+            </div>
 
-              {/* Chart */}
-              <TradingViewWidget symbol={symbol} exchange={quote.exchange} height={520} />
-            </Card>
-          </div>
+            {/* Chart */}
+            <TradingViewWidget symbol={symbol} exchange={quote?.exchange} height={520} />
+          </Card>
+        </div>
 
           {/* Right Sidebar */}
           <div className="space-y-4">
             {/* Price Stats */}
-            <Card>
+            {quote ? (
+              <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <BarChart3 size={16} className="text-brand-primary" />
@@ -171,7 +221,20 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                 </CardTitle>
               </CardHeader>
               <PriceStats quote={quote} />
-            </Card>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 size={16} className="text-brand-primary" />
+                    ข้อมูลราคา
+                  </CardTitle>
+                </CardHeader>
+                <p className="text-sm text-brand-text-secondary">
+                  {quoteLoading ? 'กำลังโหลดข้อมูลราคา...' : 'ไม่มีข้อมูลราคาจาก Yahoo สำหรับ symbol นี้'}
+                </p>
+              </Card>
+            )}
 
             {/* AI Analysis Button */}
             <Card>
@@ -184,7 +247,13 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                   )}
                 </CardTitle>
               </CardHeader>
-              {!showAnalysis ? (
+              {!quote ? (
+                <div className="py-4 text-center">
+                  <p className="text-sm text-brand-text-secondary">
+                    AI ต้องใช้ข้อมูลราคาจากระบบก่อน
+                  </p>
+                </div>
+              ) : !showAnalysis ? (
                 <div className="text-center py-4">
                   <p className="text-sm text-brand-text-secondary mb-4">
                     ให้ AI วิเคราะห์หุ้น {displaySymbol} ด้วยเทคนิค AI
@@ -288,12 +357,14 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-brand-text-secondary">ตลาด</span>
-                  <Badge variant="info" size="sm">{quote.exchange}</Badge>
+                  <Badge variant="info" size="sm">{displayExchange}</Badge>
                 </div>
-                <div className="flex items-center justify-between">
+                {quote && (
+                  <div className="flex items-center justify-between">
                   <span className="text-sm text-brand-text-secondary">สกุลเงิน</span>
                   <span className="text-sm font-medium text-brand-text-primary">{quote.currency}</span>
-                </div>
+                  </div>
+                )}
                 {(fundamentals?.sector || fundamentals?.industry) && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-brand-text-secondary">กลุ่มอุตสาหกรรม</span>
@@ -302,11 +373,11 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                     </span>
                   </div>
                 )}
-                {(fundamentals?.trailingPE ?? quote.pe) && (
+                {peRatio != null && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-brand-text-secondary">P/E Ratio</span>
                     <span className="text-sm font-mono-nums font-medium text-brand-text-primary">
-                      {formatNumber(fundamentals?.trailingPE ?? quote.pe!)}
+                      {formatNumber(peRatio)}
                     </span>
                   </div>
                 )}
@@ -334,7 +405,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                     </span>
                   </div>
                 )}
-                {quote.week52High && (
+                {quote?.week52High && (
                   <div className="flex items-center justify-between">
                   <span className="text-sm text-brand-text-secondary">52W สูงสุด</span>
                   <span className="text-sm font-mono-nums font-medium text-brand-success">
@@ -342,7 +413,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
                   </span>
                 </div>
               )}
-                {quote.week52Low && (
+                {quote?.week52Low && (
                   <div className="flex items-center justify-between">
                   <span className="text-sm text-brand-text-secondary">52W ต่ำสุด</span>
                   <span className="text-sm font-mono-nums font-medium text-brand-danger">
@@ -364,16 +435,6 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
             </div>
           </div>
         </div>
-      )}
-
-      {/* No quote data */}
-      {!quoteLoading && !quote && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-brand-text-secondary">ไม่พบข้อมูลหุ้น {displaySymbol}</p>
-          </div>
-        </Card>
-      )}
     </div>
   )
 }
