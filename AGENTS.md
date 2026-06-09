@@ -90,3 +90,68 @@ For Google skills:
 - stockguru-data-fetch (cron job): crn-d8js21ugvqtc73eogvu0
 - stockguru-news-refresh (cron job): crn-d8i5qujtqb8s73aqes8g
 - stockguru-alerts-check (cron job): crn-d8js21ugvqtc73eogvug
+
+## Supabase Management API Access
+
+**Management API Key:** (Stored in Render secrets - not committed to git)
+
+**What it can do:**
+- List projects and organizations
+- Check project status and configuration
+- Get basic auth provider settings (e.g., Google Auth enabled/disabled)
+
+**What it CANNOT do:**
+- Access auth redirect URLs (Site URL, Redirect URLs)
+- Modify auth settings directly
+- Access internal GoTrue database settings
+
+**How to access Auth Settings (Site URL, Redirect URLs):**
+
+1. **Supabase Dashboard (Recommended):**
+   - Go to: https://supabase.com/dashboard/project/sxmaiqnclgyspfsbmvoa/auth/url-configuration
+   - Manually update Site URL and Redirect URLs
+   - This is the safest and most reliable method
+
+2. **GoTrue Admin API (Advanced):**
+   - Requires service role key signed as JWT
+   - Endpoint: `https://sxmaiqnclgyspfsbmvoa.supabase.co/auth/v1/admin/config`
+   - The service role key must be in JWT format (not raw key)
+   - Example:
+     ```bash
+     curl -X GET "https://sxmaiqnclgyspfsbmvoa.supabase.co/auth/v1/admin/config" \
+       -H "Authorization: Bearer <JWT_TOKEN>"
+     ```
+
+3. **Supabase CLI (Recommended for automation):**
+   - Use `supabase config push --yes` to sync auth settings
+   - Edit `supabase/config.toml` to change settings
+   - Scripts provided: `scripts/sync-auth-config.bat` (Windows) or `scripts/sync-auth-config.sh` (Linux/Mac)
+   - Requires CLI authentication (already configured)
+
+**Sync Auth Settings via CLI:**
+
+**Windows:**
+```bash
+scripts\sync-auth-config.bat
+```
+
+**Linux/Mac:**
+```bash
+./scripts/sync-auth-config.sh
+```
+
+**Manual sync:**
+```bash
+cd E:\งาน\หุ้น\stockguru
+supabase config push --yes
+```
+
+**Config file location:** `supabase/config.toml`
+- Edit `site_url` and `additional_redirect_urls` in the `[auth]` section
+- Run sync script to push changes to remote
+
+**Current Auth Status:**
+- Google Auth: ✅ Enabled
+- Project ID: sxmaiqnclgyspfsbmvoa
+- Site URL: https://stockguru-web.onrender.com ✅ (synced via CLI)
+- Redirect URLs: https://stockguru-web.onrender.com, http://127.0.0.1:3000 ✅ (synced via CLI)
