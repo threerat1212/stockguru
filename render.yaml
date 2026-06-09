@@ -47,6 +47,22 @@ services:
           property: host
 
   - type: cron
+    name: stockguru-data-fetch
+    runtime: node
+    schedule: "*/30 * * * *"
+    plan: starter
+    buildCommand: ""
+    startCommand: |
+      curl -X POST "https://$RENDER_EXTERNAL_HOSTNAME/api/data/fetch" \
+        -H "Content-Type: application/json"
+    envVars:
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: stockguru-web
+          property: host
+
+  - type: cron
     name: stockguru-news-refresh
     runtime: node
     schedule: "*/30 * * * *"
