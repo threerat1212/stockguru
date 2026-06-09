@@ -46,9 +46,10 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
     script.type = 'text/javascript'
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
     script.async = true
-    script.text = JSON.stringify({
+    script.innerHTML = JSON.stringify({
       autosize: true,
       symbol: tradingViewSymbol,
+      container_id: widgetId,
       interval: 'D',
       timezone: 'Asia/Bangkok',
       theme: 'dark',
