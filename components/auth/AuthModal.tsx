@@ -86,8 +86,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       const next = `${window.location.pathname}${window.location.search}`
-      // Use production URL if available, otherwise fallback to window.location.origin
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      // Hardcode production URL to avoid localhost redirect issues
+      const baseUrl = 'https://stockguru-web.onrender.com'
       const redirectTo = `${baseUrl}/auth/callback?next=${encodeURIComponent(next || '/')}`
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
