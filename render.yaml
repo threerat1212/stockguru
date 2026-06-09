@@ -53,7 +53,7 @@ services:
     runtime: node
     schedule: "*/30 * * * *"
     plan: starter
-    region: oregon
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/fetch-data.js
     envVars:
@@ -65,7 +65,7 @@ services:
     runtime: node
     schedule: "*/30 * * * *"
     plan: starter
-    region: oregon
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/refresh-news.js
     envVars:
@@ -82,7 +82,7 @@ services:
     runtime: node
     schedule: "*/5 * * * *"
     plan: starter
-    region: oregon
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/check-alerts.js
     envVars:
