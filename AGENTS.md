@@ -15,7 +15,7 @@ Rules:
 
 **Read `START_HERE.md` first — every time, before any code change.**
 
-This repo keeps project-local skills in `skills/` and selected agent-runtime skills in `.agents/skills/`.
+This repo keeps project-local skills in `skills/` and selected agent-runtime skills in `.agents/skills`.
 
 For StockGuru work, read `START_HERE.md`, then `SKILLS.md`. Use the specific skill that matches the task before editing code.
 
@@ -47,7 +47,7 @@ For AI memory or context infrastructure:
 
 For Google skills:
 
-- Use these only when the task explicitly involves Google, Gemini, BigQuery, Google Cloud auth, gcloud, or Cloud Run. StockGuru's current production stack is still Render + Supabase.
+- Use these only when the task explicitly involves Google, Gemini, BigQuery, Google Cloud auth, gcloud, or Cloud Run, or Google Cloud deploy/migration work. StockGuru's current production stack is still Render + Supabase.
 - For Gemini API or Google Gen AI SDK work, read `skills/stockguru-ai-safety/SKILL.md` first, then `.agents/skills/gemini-api/SKILL.md`.
 - For BigQuery analytics, warehouse, anomaly detection, forecasting, or SQL jobs, read `.agents/skills/bigquery-basics/SKILL.md`.
 - Before any `gcloud` command or Google Cloud deploy/migration work, read `.agents/skills/google-cloud-recipe-auth/SKILL.md` and `.agents/skills/gcloud/SKILL.md`.
@@ -55,32 +55,35 @@ For Google skills:
 
 ## Render API Access
 
-**IMPORTANT:** Use Render API directly instead of MCP tools for monitoring and debugging.
+**IMPORTANT:** Use custom Render MCP server for monitoring and debugging.
 
-**Why MCP tools are limited:**
-- MCP tools require workspace selection (which is blocked for safety)
-- MCP tools only support creating new services (create_cron_job, create_postgres, etc.)
-- MCP tools cannot view existing services, logs, or deploy history
+**Custom MCP Server Location:**
+- Path: `E:\งาน\หุ้น\stockguru\render-mcp-server\render-mcp-server\dist\index.js`
+- Config: `C:\Users\Admin\.cursor\mcp.json`
+- API Key: rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5
 
-**How to use Render API directly:**
-```bash
-# List all services
-curl -X GET "https://api.render.com/v1/services" \
-  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
-  -H "Accept: application/json"
+**Available Tools:**
+1. `render_list_services` — List all services (with IDs, status, URLs)
+2. `render_get_service` — Get full details of a specific service
+3. `render_list_deploys` — List recent deploy history
+4. `render_get_deploy_logs` — **Get full build/deploy logs** (key for debugging)
+5. `render_trigger_deploy` — Trigger a new deploy
+6. `render_diagnose_latest` — Auto-diagnose latest deploy (status + logs in one call)
 
-# Get specific service details
-curl -X GET "https://api.render.com/v1/services/{service_id}" \
-  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
-  -H "Accept: application/json"
-
-# Get deploy history
-curl -X GET "https://api.render.com/v1/services/{service_id}/deploys" \
-  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
-  -H "Accept: application/json"
+**Workflow for debugging:**
+```
+1. render_diagnose_latest(serviceId)  → Check latest deploy status + logs
+2. Analyze logs for errors
+3. Fix code + git commit + push
+4. render_trigger_deploy(serviceId)   → Deploy fix
+5. render_list_deploys(serviceId)     → Monitor deploy status
+6. render_get_deploy_logs(serviceId, deployId) → Confirm success
 ```
 
-**API Key:** rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5 (stored in user's Render account)
+**Why custom MCP server:**
+- Official MCP tools are limited (workspace selection, only create operations)
+- Custom server provides full access to services, logs, and deploy history
+- Can diagnose and fix issues automatically without manual Dashboard access
 
 **Current Services:**
 - stockguru-web (web service): srv-d8i5hdi8qa3s73e3o600
