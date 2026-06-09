@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createChart, IChartApi, ISeriesApi, ColorType, Time } from 'lightweight-charts'
 
 interface TradingViewWidgetProps {
   symbol: string
@@ -23,6 +24,8 @@ export function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
 
 export default function TradingViewWidget({ symbol, exchange, height = 420 }: TradingViewWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+  const seriesRef = useRef<ISeriesApi<'Area'> | null>(null)
   const tradingViewSymbol = useMemo(() => normalizeTradingViewSymbol(symbol, exchange), [symbol, exchange])
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -36,62 +39,89 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
     setHasError(false)
 
     try {
-      // Create iframe widget (more reliable than script embedding)
-      const iframe = document.createElement('iframe')
-      iframe.style.width = '100%'
-      iframe.style.height = '100%'
-      iframe.style.border = 'none'
-      iframe.frameBorder = '0'
+      // Create chart
+      const chart = createChart(container, {
+        width: container.clientWidth,
+        height: height,
+        layout: {
+          background: { type: ColorType.Solid, color: '#0f172a' },
+          textColor: '#94a3b8',
+        },
+        grid: {
+          vertLines: { color: 'rgba(51, 65, 85, 0.35)' },
+          horzLines: { color: 'rgba(51, 65, 85, 0.35)' },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(51, 65, 85, 0.35)',
+        },
+        crosshair: {
+          mode: 1,
+        },
+      })
 
-      // Build TradingView widget URL
-      const widgetUrl = new URL('https://s.tradingview.com/widgetembed/')
-      widgetUrl.searchParams.set('symbol', tradingViewSymbol)
-      widgetUrl.searchParams.set('interval', 'D')
-      widgetUrl.searchParams.set('timezone', 'Asia/Bangkok')
-      widgetUrl.searchParams.set('theme', 'dark')
-      widgetUrl.searchParams.set('style', '1')
-      widgetUrl.searchParams.set('locale', 'th')
-      widgetUrl.searchParams.set('toolbar_bg', '#0f172a')
-      widgetUrl.searchParams.set('enable_publishing', 'false')
-      widgetUrl.searchParams.set('allow_symbol_change', 'true')
-      widgetUrl.searchParams.set('details', 'true')
-      widgetUrl.searchParams.set('hide_top_toolbar', 'false')
-      widgetUrl.searchParams.set('hide_legend', 'false')
-      widgetUrl.searchParams.set('hide_volume', 'false')
-      widgetUrl.searchParams.set('hide_side_toolbar', 'false')
-      widgetUrl.searchParams.set('withdateranges', 'true')
-      widgetUrl.searchParams.set('save_image', 'false')
-      widgetUrl.searchParams.set('studies', '[]')
+      chartRef.current = chart
 
-      iframe.src = widgetUrl.toString()
+      // Create area series
+      const areaSeries = chart.addAreaSeries({
+        lineColor: '#3b82f6',
+        topColor: 'rgba(59, 130, 246, 0.4)',
+        bottomColor: 'rgba(59, 130, 246, 0.0)',
+        lineWidth: 2,
+      })
 
-      iframe.onload = () => {
-        setIsLoading(false)
+      seriesRef.current = areaSeries
+
+      // Generate mock data (in real app, fetch from API)
+      const generateMockData = () => {
+        const data: { time: Time; value: number }[] = []
+        let basePrice = 100
+        const now = Math.floor(Date.now() / 1000)
+        const dayInSeconds = 86400
+
+        for (let i = 100; i >= 0; i--) {
+          const time = (now - i * dayInSeconds) as Time
+          const change = (Math.random() - 0.5) * 5
+          basePrice += change
+          data.push({ time, value: basePrice })
+        }
+        return data
       }
-      iframe.onerror = () => {
-        console.error('TradingView widget failed to load')
-        setIsLoading(false)
-        setHasError(true)
+
+      const data = generateMockData()
+      areaSeries.setData(data)
+
+      chart.timeScale().fitContent()
+
+      setIsLoading(false)
+
+      // Handle resize
+      const handleResize = () => {
+        if (chartRef.current && container) {
+          chartRef.current.applyOptions({
+            width: container.clientWidth,
+          })
+        }
       }
 
-      // Set a timeout
-      const timeoutId = setTimeout(() => {
-        setIsLoading(false)
-        setHasError(true)
-      }, 10000)
-
-      container.appendChild(iframe)
+      window.addEventListener('resize', handleResize)
 
       return () => {
-        clearTimeout(timeoutId)
-        container.innerHTML = ''
+        window.removeEventListener('resize', handleResize)
+        if (chartRef.current) {
+          chartRef.current.remove()
+          chartRef.current = null
+        }
       }
     } catch (error) {
-      console.error('Error initializing TradingView widget:', error)
+      console.error('Error initializing chart:', error)
       setIsLoading(false)
       setHasError(true)
     }
-  }, [tradingViewSymbol]) // Remove isLoading from dependencies to prevent infinite loop
+  }, [tradingViewSymbol, height])
 
   return (
     <div
@@ -100,7 +130,7 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
     >
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center text-sm text-brand-text-secondary">
-          กำลังโหลดกราฟจาก TradingView...
+          กำลังโหลดกราฟ...
         </div>
       )}
       {hasError && (
