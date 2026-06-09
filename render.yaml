@@ -53,20 +53,19 @@ services:
     runtime: node
     schedule: "*/30 * * * *"
     plan: starter
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/fetch-data.js
     envVars:
       - key: RENDER_EXTERNAL_HOSTNAME
-        fromService:
-          type: web
-          name: stockguru-web
-          property: host
+        value: stockguru-web.onrender.com
 
   - type: cron
     name: stockguru-news-refresh
     runtime: node
     schedule: "*/30 * * * *"
     plan: starter
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/refresh-news.js
     envVars:
@@ -76,16 +75,14 @@ services:
           name: stockguru-web
           envVarKey: CRON_SECRET
       - key: RENDER_EXTERNAL_HOSTNAME
-        fromService:
-          type: web
-          name: stockguru-web
-          property: host
+        value: stockguru-web.onrender.com
 
   - type: cron
     name: stockguru-alerts-check
     runtime: node
     schedule: "*/5 * * * *"
     plan: starter
+    region: singapore
     buildCommand: ""
     startCommand: node scripts/check-alerts.js
     envVars:
@@ -95,7 +92,4 @@ services:
           name: stockguru-web
           envVarKey: CRON_SECRET
       - key: RENDER_EXTERNAL_HOSTNAME
-        fromService:
-          type: web
-          name: stockguru-web
-          property: host
+        value: stockguru-web.onrender.com
