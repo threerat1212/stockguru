@@ -31,7 +31,7 @@ async function callMimo(messages: { role: string; content: string }[]): Promise<
 
 async function readCachedData() {
   const cacheDir = join(process.cwd(), 'lib', 'data', 'cache')
-  const data: any = {
+  const data: { [key: string]: any } = {
     setIndex: null,
     thaiStocks: [],
     crypto: [],

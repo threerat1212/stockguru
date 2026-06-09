@@ -1,6 +1,4 @@
-import { createYahooFinance } from 'yahoo-finance2'
-
-const yahooFinance = createYahooFinance()
+import yahooFinance from 'yahoo-finance2'
 
 interface SetIndexData {
   index: string

@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     console.log('Fetching live data...')
     const dataResults = await fetchAllData()
-    console.log('Data fetch complete:', Object.keys(dataResults).filter(k => dataResults[k]))
+    console.log('Data fetch complete:', Object.keys(dataResults).filter((k) => dataResults[k as keyof typeof dataResults]))
   } catch (err) {
     console.error('Data fetch error:', err)
     return NextResponse.json({ error: 'Data fetch failed' }, { status: 500 })
