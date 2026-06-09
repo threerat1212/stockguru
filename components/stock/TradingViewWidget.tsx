@@ -76,10 +76,8 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
 
       // Set a timeout
       const timeoutId = setTimeout(() => {
-        if (isLoading) {
-          setIsLoading(false)
-          setHasError(true)
-        }
+        setIsLoading(false)
+        setHasError(true)
       }, 10000)
 
       container.appendChild(iframe)
@@ -93,7 +91,7 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
       setIsLoading(false)
       setHasError(true)
     }
-  }, [tradingViewSymbol, isLoading])
+  }, [tradingViewSymbol]) // Remove isLoading from dependencies to prevent infinite loop
 
   return (
     <div
