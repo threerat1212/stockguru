@@ -34,6 +34,9 @@ import { LoadingSpinner } from '@/components/ui/Loading'
 import PriceDisplay, { PriceStats } from '@/components/stock/PriceDisplay'
 import type { StockQuote } from '@/types/stock'
 import TradingViewWidget from '@/components/stock/TradingViewWidget'
+import InvestingChartWidget, {
+  getInvestingSetChart,
+} from '@/components/stock/InvestingChartWidget'
 import AuthModal from '@/components/auth/AuthModal'
 
 function normalizeRouteSymbol(value: string) {
@@ -92,6 +95,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const displaySymbol = getDisplaySymbol(symbol, quote)
   const displayExchange = getDisplayExchange(symbol, quote)
   const peRatio = fundamentals?.trailingPE ?? quote?.pe
+  const investingChart = getInvestingSetChart(quote?.symbol ?? symbol, quote?.exchange)
 
   function toggleWatchlist() {
     if (inWatchlist) {
@@ -205,7 +209,15 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
             </div>
 
             {/* Chart */}
-            <TradingViewWidget symbol={symbol} exchange={quote?.exchange} height={520} />
+            {investingChart ? (
+              <InvestingChartWidget
+                symbol={quote?.symbol ?? symbol}
+                exchange={quote?.exchange}
+                height={520}
+              />
+            ) : (
+              <TradingViewWidget symbol={symbol} exchange={quote?.exchange} height={520} />
+            )}
           </Card>
         </div>
 
