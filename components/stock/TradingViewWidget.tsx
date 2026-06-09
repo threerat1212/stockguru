@@ -27,6 +27,7 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
   const widgetId = useMemo(() => `tradingview-${reactId.replace(/:/g, '')}`, [reactId])
   const tradingViewSymbol = useMemo(() => normalizeTradingViewSymbol(symbol, exchange), [symbol, exchange])
   const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -34,53 +35,75 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
     const container = containerRef.current
     container.innerHTML = ''
     setIsLoading(true)
+    setHasError(false)
 
-    const widgetDiv = document.createElement('div')
-    widgetDiv.id = widgetId
-    widgetDiv.className = 'tradingview-widget-container__widget'
-    widgetDiv.style.width = '100%'
-    widgetDiv.style.height = '100%'
-    container.appendChild(widgetDiv)
+    try {
+      // Create widget container
+      const widgetDiv = document.createElement('div')
+      widgetDiv.id = widgetId
+      widgetDiv.className = 'tradingview-widget-container__widget'
+      widgetDiv.style.width = '100%'
+      widgetDiv.style.height = '100%'
+      container.appendChild(widgetDiv)
 
-    const script = document.createElement('script')
-    script.type = 'text/javascript'
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
-    script.async = true
-    script.innerHTML = JSON.stringify({
-      autosize: true,
-      symbol: tradingViewSymbol,
-      container_id: widgetId,
-      interval: 'D',
-      timezone: 'Asia/Bangkok',
-      theme: 'dark',
-      style: '1',
-      locale: 'th',
-      allow_symbol_change: true,
-      withdateranges: true,
-      hide_side_toolbar: false,
-      hide_top_toolbar: false,
-      hide_legend: false,
-      hide_volume: false,
-      details: true,
-      hotlist: false,
-      calendar: false,
-      save_image: false,
-      backgroundColor: '#0f172a',
-      gridColor: 'rgba(51, 65, 85, 0.35)',
-      studies: [],
-      support_host: 'https://www.tradingview.com',
-    })
-    script.onload = () => setIsLoading(false)
-    script.onerror = () => {
+      // Create script with data attributes (correct TradingView embedding method)
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
+      script.async = true
+
+      // TradingView uses data-* attributes for config, not innerHTML
+      script.setAttribute('data-symbol', tradingViewSymbol)
+      script.setAttribute('data-interval', 'D')
+      script.setAttribute('data-timezone', 'Asia/Bangkok')
+      script.setAttribute('data-theme', 'dark')
+      script.setAttribute('data-style', '1')
+      script.setAttribute('data-locale', 'th')
+      script.setAttribute('data-autosize', 'true')
+      script.setAttribute('data-container_id', widgetId)
+      script.setAttribute('data-allow_symbol_change', 'true')
+      script.setAttribute('data-withdateranges', 'true')
+      script.setAttribute('data-hide_side_toolbar', 'false')
+      script.setAttribute('data-hide_top_toolbar', 'false')
+      script.setAttribute('data-hide_legend', 'false')
+      script.setAttribute('data-hide_volume', 'false')
+      script.setAttribute('data-details', 'true')
+      script.setAttribute('data-hotlist', 'false')
+      script.setAttribute('data-calendar', 'false')
+      script.setAttribute('data-save_image', 'false')
+      script.setAttribute('data-backgroundColor', '#0f172a')
+      script.setAttribute('data-gridColor', 'rgba(51, 65, 85, 0.35)')
+      script.setAttribute('data-support_host', 'https://www.tradingview.com')
+
+      script.onload = () => {
+        setIsLoading(false)
+      }
+      script.onerror = () => {
+        console.error('TradingView widget failed to load')
+        setIsLoading(false)
+        setHasError(true)
+      }
+
+      // Set a timeout in case onload/onerror never fires
+      const timeoutId = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false)
+          setHasError(true)
+        }
+      }, 10000)
+
+      container.appendChild(script)
+
+      return () => {
+        clearTimeout(timeoutId)
+        container.innerHTML = ''
+      }
+    } catch (error) {
+      console.error('Error initializing TradingView widget:', error)
       setIsLoading(false)
+      setHasError(true)
     }
-
-    container.appendChild(script)
-
-    return () => {
-      container.innerHTML = ''
-    }
-  }, [height, tradingViewSymbol, widgetId])
+  }, [tradingViewSymbol, widgetId, isLoading])
 
   return (
     <div
@@ -90,6 +113,12 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center text-sm text-brand-text-secondary">
           กำลังโหลดกราฟจาก TradingView...
+        </div>
+      )}
+      {hasError && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 text-sm text-red-400">
+          <span>ไม่สามารถโหลดกราฟได้</span>
+          <span className="text-xs text-brand-text-secondary">Symbol: {tradingViewSymbol}</span>
         </div>
       )}
       <div
