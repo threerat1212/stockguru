@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+import { existsSync } from 'fs'
 
-const MIMO_BASE_URL = (process.env.MIMO_BASE_URL ?? 'https://api.xiaomimimo.com/v1').replace(/\/$/, '')
+const MIMO_BASE_URL = (process.env.MIMO_BASE_URL ?? 'https://token-plan-sgp.xiaomimimo.com/v1').replace(/\/$/, '')
 const MIMO_API_URL = `${MIMO_BASE_URL}/chat/completions`
 const MIMO_MODEL = 'mimo-v2.5-pro'
 
@@ -16,7 +19,7 @@ async function callMimo(messages: { role: string; content: string }[]): Promise<
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
     },
-    body: JSON.stringify({ model: MIMO_MODEL, messages, temperature: 0.75, max_tokens: 8000 }),
+    body: JSON.stringify({ model: MIMO_MODEL, messages, temperature: 0.75, max_tokens: 16000 }),
   })
   if (!response.ok) {
     const errBody = await response.text()
@@ -26,11 +29,73 @@ async function callMimo(messages: { role: string; content: string }[]): Promise<
   return data.choices?.[0]?.message?.content ?? ''
 }
 
-function buildPrompt(): string {
+async function readCachedData() {
+  const cacheDir = join(process.cwd(), 'lib', 'data', 'cache')
+  const data: any = {
+    setIndex: null,
+    thaiStocks: [],
+    crypto: [],
+    fearGreed: null,
+    macro: null,
+  }
+
+  try {
+    if (existsSync(join(cacheDir, 'set-index.json'))) {
+      data.setIndex = JSON.parse(await readFile(join(cacheDir, 'set-index.json'), 'utf-8'))
+    }
+  } catch (e) {
+    console.log('Failed to read set-index.json')
+  }
+
+  try {
+    if (existsSync(join(cacheDir, 'thai-stocks.json'))) {
+      data.thaiStocks = JSON.parse(await readFile(join(cacheDir, 'thai-stocks.json'), 'utf-8'))
+    }
+  } catch (e) {
+    console.log('Failed to read thai-stocks.json')
+  }
+
+  try {
+    if (existsSync(join(cacheDir, 'crypto.json'))) {
+      data.crypto = JSON.parse(await readFile(join(cacheDir, 'crypto.json'), 'utf-8'))
+    }
+  } catch (e) {
+    console.log('Failed to read crypto.json')
+  }
+
+  try {
+    if (existsSync(join(cacheDir, 'fear-greed.json'))) {
+      data.fearGreed = JSON.parse(await readFile(join(cacheDir, 'fear-greed.json'), 'utf-8'))
+    }
+  } catch (e) {
+    console.log('Failed to read fear-greed.json')
+  }
+
+  try {
+    if (existsSync(join(cacheDir, 'macro.json'))) {
+      data.macro = JSON.parse(await readFile(join(cacheDir, 'macro.json'), 'utf-8'))
+    }
+  } catch (e) {
+    console.log('Failed to read macro.json')
+  }
+
+  return data
+}
+
+function buildPrompt(cachedData: any): string {
   const now = new Date().toISOString()
+  const { setIndex, thaiStocks, crypto, fearGreed, macro } = cachedData
+
   return `You are a Senior Investment Strategist at a top-tier Thai securities firm (equivalent to Goldman Sachs or Morgan Stanley research quality). Write 12 premium market intelligence briefs for institutional and sophisticated retail Thai investors.
 
 TODAY'S CONTEXT: ${now.slice(0, 10)} | Thai SET Market
+
+LIVE DATA (use these actual numbers in your analysis):
+${setIndex ? `SET Index: ${setIndex.price} (${setIndex.changePercent > 0 ? '+' : ''}${setIndex.changePercent.toFixed(2)}%), Volume: ${setIndex.volume.toLocaleString()}` : 'SET Index: n/a'}
+${crypto.length > 0 ? `Crypto: BTC $${crypto[0].price} (${crypto[0].changePercent24h > 0 ? '+' : ''}${crypto[0].changePercent24h.toFixed(2)}%), ETH $${crypto[1].price} (${crypto[1].changePercent24h > 0 ? '+' : ''}${crypto[1].changePercent24h.toFixed(2)}%)` : 'Crypto: n/a'}
+${fearGreed ? `Fear & Greed: ${fearGreed.classification} (${fearGreed.value})` : 'Fear & Greed: n/a'}
+${macro ? `Macro: USD/THB ${macro.usdThb}, Fed Rate ${(macro.fedRate * 100).toFixed(2)}%, Oil $${macro.oilPrice}, Gold $${macro.goldPrice}, VIX ${macro.vix}` : 'Macro: n/a'}
+${thaiStocks.length > 0 ? `Top Thai Stocks: ${thaiStocks.slice(0, 5).map(s => `${s.symbol} ${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%)`).join(', ')}` : 'Thai Stocks: n/a'}
 
 Each brief must demonstrate deep macro understanding, sector rotation insights, technical analysis perspective, and risk-aware commentary. Write in professional Thai with occasional English financial terms where standard.
 
@@ -88,12 +153,50 @@ function parseNewsJson(raw: string): Array<Record<string, unknown>> {
   if (text.startsWith('```')) {
     text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
   }
-  const parsed = JSON.parse(text)
-  if (!Array.isArray(parsed)) throw new Error('Response is not an array')
-  return parsed
+  // Fix unterminated strings by adding closing quotes
+  const lines = text.split('\n')
+  let fixedLines: string[] = []
+
+  for (const line of lines) {
+    let fixedLine = line
+    let quoteCount = 0
+
+    for (const char of line) {
+      if (char === '"') quoteCount++
+    }
+
+    // If odd number of quotes, string is likely unterminated
+    if (quoteCount % 2 !== 0) {
+      fixedLine = line + '"'
+    }
+
+    fixedLines.push(fixedLine)
+  }
+
+  const fixedText = fixedLines.join('\n')
+
+  try {
+    const parsed = JSON.parse(fixedText)
+    if (!Array.isArray(parsed)) throw new Error('Response is not an array')
+    return parsed
+  } catch (e) {
+    // If fixing failed, try parsing original
+    try {
+      const parsed = JSON.parse(text)
+      if (!Array.isArray(parsed)) throw new Error('Response is not an array')
+      return parsed
+    } catch (e2) {
+      throw new Error(`Failed to parse JSON: ${e instanceof Error ? e.message : 'Unknown error'}`)
+    }
+  }
 }
 
 export async function POST(request: Request) {
+  // Debug logging
+  console.log('POST called - MIMO_BASE_URL:', process.env.MIMO_BASE_URL)
+  console.log('POST called - MIMO_API_KEY:', process.env.MIMO_API_KEY ? '***configured***' : 'not configured')
+  console.log('POST called - Computed MIMO_BASE_URL:', MIMO_BASE_URL)
+  console.log('POST called - Computed MIMO_API_URL:', MIMO_API_URL)
   // Verify cron secret or skip auth for cron jobs
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -112,12 +215,21 @@ export async function POST(request: Request) {
   const supabase = createAdminClient()
 
   try {
+    // Read cached data
+    const cachedData = await readCachedData()
+    console.log('Cached data loaded:', Object.keys(cachedData).filter(k => cachedData[k]))
+
     const aiResponse = await callMimo([
       { role: 'system', content: 'You are a professional Thai stock market analyst. You write informed behavioral summaries. You NEVER give buy/sell advice. You NEVER claim these are real news events. Always respond with valid JSON only.' },
-      { role: 'user', content: buildPrompt() },
+      { role: 'user', content: buildPrompt(cachedData) },
     ])
 
+    console.log('AI response length:', aiResponse.length)
+    console.log('AI response preview:', aiResponse.substring(0, 500))
+
     const articles = parseNewsJson(aiResponse)
+
+    console.log('Parsed articles count:', articles.length)
 
     const now = new Date().toISOString()
     const toInsert = articles.map((a: Record<string, unknown>) => ({
@@ -135,8 +247,15 @@ export async function POST(request: Request) {
       published_at: now,
     }))
 
+    console.log('Inserting articles count:', toInsert.length)
+
     const { error } = await supabase.from('news_articles').insert(toInsert)
-    if (error) throw error
+    if (error) {
+      console.error('Supabase insert error:', error)
+      throw error
+    }
+
+    console.log('Insert successful')
 
     // Keep only last 200 articles to prevent table bloat
     await supabase.rpc('cleanup_old_news')

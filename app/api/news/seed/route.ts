@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { fetchAllData } from '@/lib/data/scheduler'
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -31,7 +32,17 @@ export async function POST(request: Request) {
     }
   }
 
-  // Trigger refresh
+  // Step 1: Fetch all data
+  try {
+    console.log('Fetching live data...')
+    const dataResults = await fetchAllData()
+    console.log('Data fetch complete:', Object.keys(dataResults).filter(k => dataResults[k]))
+  } catch (err) {
+    console.error('Data fetch error:', err)
+    return NextResponse.json({ error: 'Data fetch failed' }, { status: 500 })
+  }
+
+  // Step 2: Trigger refresh
   try {
     const res = await fetch(`${baseUrl}/api/news/refresh`, {
       method: 'POST',
