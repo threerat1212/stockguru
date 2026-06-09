@@ -95,7 +95,7 @@ ${setIndex ? `SET Index: ${setIndex.price} (${setIndex.changePercent > 0 ? '+' :
 ${crypto.length > 0 ? `Crypto: BTC $${crypto[0].price} (${crypto[0].changePercent24h > 0 ? '+' : ''}${crypto[0].changePercent24h.toFixed(2)}%), ETH $${crypto[1].price} (${crypto[1].changePercent24h > 0 ? '+' : ''}${crypto[1].changePercent24h.toFixed(2)}%)` : 'Crypto: n/a'}
 ${fearGreed ? `Fear & Greed: ${fearGreed.classification} (${fearGreed.value})` : 'Fear & Greed: n/a'}
 ${macro ? `Macro: USD/THB ${macro.usdThb}, Fed Rate ${(macro.fedRate * 100).toFixed(2)}%, Oil $${macro.oilPrice}, Gold $${macro.goldPrice}, VIX ${macro.vix}` : 'Macro: n/a'}
-${thaiStocks.length > 0 ? `Top Thai Stocks: ${thaiStocks.slice(0, 5).map(s => `${s.symbol} ${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%)`).join(', ')}` : 'Thai Stocks: n/a'}
+${thaiStocks.length > 0 ? `Top Thai Stocks: ${thaiStocks.slice(0, 5).map((s: any) => `${s.symbol} ${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent.toFixed(2)}%)`).join(', ')}` : 'Thai Stocks: n/a'}
 
 Each brief must demonstrate deep macro understanding, sector rotation insights, technical analysis perspective, and risk-aware commentary. Write in professional Thai with occasional English financial terms where standard.
 
