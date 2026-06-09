@@ -52,3 +52,38 @@ For Google skills:
 - For BigQuery analytics, warehouse, anomaly detection, forecasting, or SQL jobs, read `.agents/skills/bigquery-basics/SKILL.md`.
 - Before any `gcloud` command or Google Cloud deploy/migration work, read `.agents/skills/google-cloud-recipe-auth/SKILL.md` and `.agents/skills/gcloud/SKILL.md`.
 - For Cloud Run service/job/worker deployment work, also read `.agents/skills/cloud-run-basics/SKILL.md`.
+
+## Render API Access
+
+**IMPORTANT:** Use Render API directly instead of MCP tools for monitoring and debugging.
+
+**Why MCP tools are limited:**
+- MCP tools require workspace selection (which is blocked for safety)
+- MCP tools only support creating new services (create_cron_job, create_postgres, etc.)
+- MCP tools cannot view existing services, logs, or deploy history
+
+**How to use Render API directly:**
+```bash
+# List all services
+curl -X GET "https://api.render.com/v1/services" \
+  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
+  -H "Accept: application/json"
+
+# Get specific service details
+curl -X GET "https://api.render.com/v1/services/{service_id}" \
+  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
+  -H "Accept: application/json"
+
+# Get deploy history
+curl -X GET "https://api.render.com/v1/services/{service_id}/deploys" \
+  -H "Authorization: Bearer rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5" \
+  -H "Accept: application/json"
+```
+
+**API Key:** rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5 (stored in user's Render account)
+
+**Current Services:**
+- stockguru-web (web service): srv-d8i5hdi8qa3s73e3o600
+- stockguru-data-fetch (cron job): crn-d8js21ugvqtc73eogvu0
+- stockguru-news-refresh (cron job): crn-d8i5qujtqb8s73aqes8g
+- stockguru-alerts-check (cron job): crn-d8js21ugvqtc73eogvug
