@@ -87,9 +87,9 @@ For Google skills:
 
 **Current Services:**
 - stockguru-web (web service): srv-d8i5hdi8qa3s73e3o600
-- stockguru-data-fetch (cron job): crn-d8js21ugvqtc73eogvu0
-- stockguru-news-refresh (cron job): crn-d8i5qujtqb8s73aqes8g
-- stockguru-alerts-check (cron job): crn-d8js21ugvqtc73eogvug
+- stockguru-data-fetch (cron job): crn-d8jujbmgvqtc73erft60 (Singapore)
+- stockguru-news-refresh (cron job): crn-d8jujbmgvqtc73erft50 (Singapore)
+- stockguru-alerts-check (cron job): crn-d8jujbmgvqtc73erft4g (Singapore)
 
 ## Supabase Management API Access
 
