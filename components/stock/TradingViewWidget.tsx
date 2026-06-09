@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface TradingViewWidgetProps {
   symbol: string
@@ -23,8 +23,6 @@ export function normalizeTradingViewSymbol(symbol: string, exchange?: string) {
 
 export default function TradingViewWidget({ symbol, exchange, height = 420 }: TradingViewWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const reactId = useId()
-  const widgetId = useMemo(() => `tradingview-${reactId.replace(/:/g, '')}`, [reactId])
   const tradingViewSymbol = useMemo(() => normalizeTradingViewSymbol(symbol, exchange), [symbol, exchange])
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -38,53 +36,45 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
     setHasError(false)
 
     try {
-      // Create widget container
-      const widgetDiv = document.createElement('div')
-      widgetDiv.id = widgetId
-      widgetDiv.className = 'tradingview-widget-container__widget'
-      widgetDiv.style.width = '100%'
-      widgetDiv.style.height = '100%'
-      container.appendChild(widgetDiv)
+      // Create iframe widget (more reliable than script embedding)
+      const iframe = document.createElement('iframe')
+      iframe.style.width = '100%'
+      iframe.style.height = '100%'
+      iframe.style.border = 'none'
+      iframe.frameBorder = '0'
 
-      // Create script with data attributes (correct TradingView embedding method)
-      const script = document.createElement('script')
-      script.type = 'text/javascript'
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js'
-      script.async = true
+      // Build TradingView widget URL
+      const widgetUrl = new URL('https://s.tradingview.com/widgetembed/')
+      widgetUrl.searchParams.set('symbol', tradingViewSymbol)
+      widgetUrl.searchParams.set('interval', 'D')
+      widgetUrl.searchParams.set('timezone', 'Asia/Bangkok')
+      widgetUrl.searchParams.set('theme', 'dark')
+      widgetUrl.searchParams.set('style', '1')
+      widgetUrl.searchParams.set('locale', 'th')
+      widgetUrl.searchParams.set('toolbar_bg', '#0f172a')
+      widgetUrl.searchParams.set('enable_publishing', 'false')
+      widgetUrl.searchParams.set('allow_symbol_change', 'true')
+      widgetUrl.searchParams.set('details', 'true')
+      widgetUrl.searchParams.set('hide_top_toolbar', 'false')
+      widgetUrl.searchParams.set('hide_legend', 'false')
+      widgetUrl.searchParams.set('hide_volume', 'false')
+      widgetUrl.searchParams.set('hide_side_toolbar', 'false')
+      widgetUrl.searchParams.set('withdateranges', 'true')
+      widgetUrl.searchParams.set('save_image', 'false')
+      widgetUrl.searchParams.set('studies', '[]')
 
-      // TradingView uses data-* attributes for config, not innerHTML
-      script.setAttribute('data-symbol', tradingViewSymbol)
-      script.setAttribute('data-interval', 'D')
-      script.setAttribute('data-timezone', 'Asia/Bangkok')
-      script.setAttribute('data-theme', 'dark')
-      script.setAttribute('data-style', '1')
-      script.setAttribute('data-locale', 'th')
-      script.setAttribute('data-autosize', 'true')
-      script.setAttribute('data-container_id', widgetId)
-      script.setAttribute('data-allow_symbol_change', 'true')
-      script.setAttribute('data-withdateranges', 'true')
-      script.setAttribute('data-hide_side_toolbar', 'false')
-      script.setAttribute('data-hide_top_toolbar', 'false')
-      script.setAttribute('data-hide_legend', 'false')
-      script.setAttribute('data-hide_volume', 'false')
-      script.setAttribute('data-details', 'true')
-      script.setAttribute('data-hotlist', 'false')
-      script.setAttribute('data-calendar', 'false')
-      script.setAttribute('data-save_image', 'false')
-      script.setAttribute('data-backgroundColor', '#0f172a')
-      script.setAttribute('data-gridColor', 'rgba(51, 65, 85, 0.35)')
-      script.setAttribute('data-support_host', 'https://www.tradingview.com')
+      iframe.src = widgetUrl.toString()
 
-      script.onload = () => {
+      iframe.onload = () => {
         setIsLoading(false)
       }
-      script.onerror = () => {
+      iframe.onerror = () => {
         console.error('TradingView widget failed to load')
         setIsLoading(false)
         setHasError(true)
       }
 
-      // Set a timeout in case onload/onerror never fires
+      // Set a timeout
       const timeoutId = setTimeout(() => {
         if (isLoading) {
           setIsLoading(false)
@@ -92,7 +82,7 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
         }
       }, 10000)
 
-      container.appendChild(script)
+      container.appendChild(iframe)
 
       return () => {
         clearTimeout(timeoutId)
@@ -103,7 +93,7 @@ export default function TradingViewWidget({ symbol, exchange, height = 420 }: Tr
       setIsLoading(false)
       setHasError(true)
     }
-  }, [tradingViewSymbol, widgetId, isLoading])
+  }, [tradingViewSymbol, isLoading])
 
   return (
     <div
