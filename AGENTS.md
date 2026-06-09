@@ -98,35 +98,59 @@ For Google skills:
 **What it can do:**
 - List projects and organizations
 - Check project status and configuration
+- Get and update auth provider settings (including site_url and redirect URLs)
 - Get basic auth provider settings (e.g., Google Auth enabled/disabled)
 
-**What it CANNOT do:**
-- Access auth redirect URLs (Site URL, Redirect URLs)
-- Modify auth settings directly
-- Access internal GoTrue database settings
+**Auth Config Endpoint:**
+- **GET:** `https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth`
+- **PATCH:** `https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth`
+- Requires: `SUPABASE_MANAGEMENT_API_KEY` environment variable
 
 **How to access Auth Settings (Site URL, Redirect URLs):**
 
-1. **Supabase Dashboard (Recommended):**
+1. **Supabase Management API (Recommended for automation):**
+   - Endpoint: `https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth`
+   - Method: `PATCH` to update, `GET` to read
+   - Requires: `SUPABASE_MANAGEMENT_API_KEY` environment variable
+   - Example:
+     ```bash
+     # Read current config
+     curl -X GET "https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth" \
+       -H "Authorization: Bearer $SUPABASE_MANAGEMENT_API_KEY"
+
+     # Update site_url and redirect URLs
+     curl -X PATCH "https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth" \
+       -H "Authorization: Bearer $SUPABASE_MANAGEMENT_API_KEY" \
+       -H "Content-Type: application/json" \
+       -d '{"site_url":"https://stockguru-web.onrender.com","uri_allow_list":"https://stockguru-web.onrender.com,http://127.0.0.1:3000"}'
+     ```
+   - Script provided: `scripts/sync-auth-api.js` (Node.js)
+
+2. **Supabase Dashboard (Manual):**
    - Go to: https://supabase.com/dashboard/project/sxmaiqnclgyspfsbmvoa/auth/url-configuration
    - Manually update Site URL and Redirect URLs
    - This is the safest and most reliable method
 
-2. **GoTrue Admin API (Advanced):**
-   - Requires service role key signed as JWT
-   - Endpoint: `https://sxmaiqnclgyspfsbmvoa.supabase.co/auth/v1/admin/config`
-   - The service role key must be in JWT format (not raw key)
-   - Example:
-     ```bash
-     curl -X GET "https://sxmaiqnclgyspfsbmvoa.supabase.co/auth/v1/admin/config" \
-       -H "Authorization: Bearer <JWT_TOKEN>"
-     ```
-
-3. **Supabase CLI (Recommended for automation):**
+3. **Supabase CLI (Alternative):**
    - Use `supabase config push --yes` to sync auth settings
    - Edit `supabase/config.toml` to change settings
    - Scripts provided: `scripts/sync-auth-config.bat` (Windows) or `scripts/sync-auth-config.sh` (Linux/Mac)
    - Requires CLI authentication (already configured)
+
+**Sync Auth Settings via Management API:**
+
+**Node.js script:**
+```bash
+node scripts/sync-auth-api.js
+```
+
+**Manual curl:**
+```bash
+curl -X PATCH "https://api.supabase.com/v1/projects/sxmaiqnclgyspfsbmvoa/config/auth" \
+  -H "Authorization: Bearer $SUPABASE_MANAGEMENT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"site_url":"https://stockguru-web.onrender.com","uri_allow_list":"https://stockguru-web.onrender.com,http://127.0.0.1:3000"}'
+```
 
 **Sync Auth Settings via CLI:**
 
@@ -153,5 +177,5 @@ supabase config push --yes
 **Current Auth Status:**
 - Google Auth: ✅ Enabled
 - Project ID: sxmaiqnclgyspfsbmvoa
-- Site URL: https://stockguru-web.onrender.com ✅ (synced via CLI)
-- Redirect URLs: https://stockguru-web.onrender.com, http://127.0.0.1:3000 ✅ (synced via CLI)
+- Site URL: https://stockguru-web.onrender.com ✅ (synced via Management API)
+- Redirect URLs: https://stockguru-web.onrender.com, http://127.0.0.1:3000 ✅ (synced via Management API)
