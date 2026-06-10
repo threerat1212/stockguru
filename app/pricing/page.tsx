@@ -109,7 +109,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto fade-in">
       <div className="text-center space-y-3">
         <h1 className="heading-balance text-3xl font-bold text-brand-text-primary">
           เลือกแผนที่เหมาะกับวิธีลงทุนของคุณ

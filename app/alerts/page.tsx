@@ -21,6 +21,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
 import AuthModal from '@/components/auth/AuthModal'
+import type { AlertChannel, AlertType, PushSubscription } from '@/lib/alerts/types'
 
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
 
@@ -31,7 +32,29 @@ function normalizeSymbol(symbol: string) {
   return FOREIGN_SYMBOLS.has(upper) ? upper : `${upper}.BK`
 }
 
-function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; triggered: boolean; targetPrice: number; condition: 'above' | 'below' }[]; onTrigger: (symbol: string) => void }) {
+function getAlertTypeLabel(type: AlertType) {
+  switch (type) {
+    case 'percent_change':
+      return 'เปลี่ยนแปลง %'
+    case 'volume_spike':
+      return 'Volume spike'
+    default:
+      return 'ราคา'
+  }
+}
+
+function getAlertTypePlaceholder(type: AlertType) {
+  switch (type) {
+    case 'percent_change':
+      return 'เปอร์เซ็นต์ เช่น 3'
+    case 'volume_spike':
+      return 'ปริมาณหุ้น เช่น 1000000'
+    default:
+      return 'ราคาเป้าหมาย'
+  }
+}
+
+function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; type: AlertType; triggered: boolean; targetPrice: number; condition: 'above' | 'below' }[]; onTrigger: (symbol: string) => void }) {
   const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
   const prevPrices = useRef<Record<string, number>>({})
 
@@ -46,9 +69,10 @@ function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; trigger
         // Check all alerts for this symbol
         for (const alert of alerts) {
           if (alert.symbol !== sym || alert.triggered) continue
+          const currentValue = alert.type === 'percent_change' ? quote.changePercent : alert.type === 'volume_spike' ? quote.volume : quote.price
           if (
-            (alert.condition === 'above' && quote.price >= alert.targetPrice) ||
-            (alert.condition === 'below' && quote.price <= alert.targetPrice)
+            (alert.condition === 'above' && currentValue >= alert.targetPrice) ||
+            (alert.condition === 'below' && currentValue <= alert.targetPrice)
           ) {
             onTrigger(sym)
           }
@@ -60,7 +84,7 @@ function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; trigger
   return null
 }
 
-function AlertItem({ alert, onRemove }: { alert: { id: string; symbol: string; targetPrice: number; condition: 'above' | 'below'; triggered: boolean; triggeredAt?: string }; onRemove: () => void }) {
+function AlertItem({ alert, onRemove }: { alert: { id: string; symbol: string; type: AlertType; targetPrice: number; condition: 'above' | 'below'; triggered: boolean; triggeredAt?: string; notificationChannels: AlertChannel[] }; onRemove: () => void }) {
   const { data: quote, isLoading } = useQuote(alert.symbol)
   const displaySym = alert.symbol.replace('.BK', '')
   const currentPrice = quote?.price ?? 0
@@ -99,9 +123,16 @@ function AlertItem({ alert, onRemove }: { alert: { id: string; symbol: string; t
             )}
           </div>
           <p className="text-xs text-brand-text-secondary">
-            {isAbove ? 'แจ้งเตือนเมื่อราคาขึ้นถึง' : 'แจ้งเตือนเมื่อราคาลงถึง'}{' '}
+            {isAbove ? 'แจ้งเตือนเมื่อ' : 'แจ้งเตือนเมื่อ'} {getAlertTypeLabel(alert.type).toLowerCase()} {isAbove ? 'ขึ้นถึง' : 'ลงถึง'}{' '}
             <span className="font-semibold text-brand-text-primary">{formatCurrency(alert.targetPrice, currency)}</span>
           </p>
+          <div className="mt-1 flex items-center gap-1">
+            {alert.notificationChannels.map((channel) => (
+              <Badge key={channel} variant="info" size="sm">
+                {channel === 'push' ? 'Push' : 'Email'}
+              </Badge>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -130,14 +161,18 @@ function AlertItem({ alert, onRemove }: { alert: { id: string; symbol: string; t
 }
 
 export default function AlertsPage() {
-  const { alerts, isLoading, isAuthenticated, addAlert, removeAlert, clearTriggered } = useAlerts()
+  const { alerts, isLoading, isAuthenticated, addAlert, removeAlert, clearTriggered, registerPushSubscription, unregisterPushSubscription } = useAlerts()
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   // Form state
   const [formSymbol, setFormSymbol] = useState('')
   const [formPrice, setFormPrice] = useState('')
+  const [formType, setFormType] = useState<AlertType>('price')
   const [formCondition, setFormCondition] = useState<'above' | 'below'>('above')
+  const [formChannels, setFormChannels] = useState<AlertChannel[]>(['email'])
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushMessage, setPushMessage] = useState('')
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
@@ -157,6 +192,81 @@ export default function AlertsPage() {
     }
   }, [removeAlert])
 
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const rawData = window.atob(base64)
+    const outputArray = new Uint8Array(rawData.length)
+    for (let i = 0; i < rawData.length; i += 1) outputArray[i] = rawData.charCodeAt(i)
+    return outputArray
+  }
+
+  const handlePushToggle = useCallback(async () => {
+    if (!isAuthenticated) {
+      setAuthModalOpen(true)
+      return
+    }
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushMessage('เบราว์เซอร์นี้ไม่รองรับ Web Push')
+      return
+    }
+
+    try {
+      const keyRes = await fetch('/api/alerts/push/public-key')
+      const keyData = await keyRes.json().catch(() => ({}))
+      const publicKey = keyData.data?.publicKey
+
+      if (!publicKey) {
+        setPushMessage('ยังไม่ได้ตั้งค่า VAPID public key')
+        return
+      }
+
+      if (pushEnabled) {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
+        if (subscription) {
+          const payload = subscription.toJSON() as PushSubscription
+          if (!payload.endpoint || !payload.keys?.p256dh || !payload.keys.auth) throw new Error('Push subscription keys are missing')
+          await unregisterPushSubscription(payload)
+          await subscription.unsubscribe()
+        }
+        setPushEnabled(false)
+        setPushMessage('ปิด push notification แล้ว')
+        return
+      }
+
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        setPushMessage('ต้องอนุญาตการแจ้งเตือนในเบราว์เซอร์ก่อน')
+        return
+      }
+
+      const registration = await navigator.serviceWorker.register('/service-worker.js')
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      })
+      const payload = subscription.toJSON() as PushSubscription
+      if (!payload.endpoint || !payload.keys?.p256dh || !payload.keys.auth) throw new Error('Push subscription keys are missing')
+
+      await registerPushSubscription(payload)
+      setPushEnabled(true)
+      setPushMessage('เปิด push notification แล้ว')
+    } catch (err) {
+      console.error('Failed to toggle push:', err)
+      setPushMessage('ไม่สามารถเปิด push notification ได้')
+    }
+  }, [isAuthenticated, pushEnabled, registerPushSubscription, unregisterPushSubscription])
+
+  useEffect(() => {
+    if (!mounted || !isAuthenticated || !('serviceWorker' in navigator) || !('PushManager' in window)) return
+    navigator.serviceWorker.ready
+      .then((registration) => registration.pushManager.getSubscription())
+      .then((subscription) => setPushEnabled(!!subscription))
+      .catch(() => undefined)
+  }, [mounted, isAuthenticated])
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
@@ -165,10 +275,13 @@ export default function AlertsPage() {
     const targetPrice = parseFloat(formPrice)
 
     if (!symbol) { setFormError('กรุณาใส่ชื่อหุ้น'); return }
-    if (isNaN(targetPrice) || targetPrice <= 0) { setFormError('กรุณาใส่ราคาที่ถูกต้อง'); return }
+    if (isNaN(targetPrice) || targetPrice <= 0) { setFormError('กรุณาใส่ค่าแจ้งเตือนที่ถูกต้อง'); return }
 
     try {
-      await addAlert(symbol, targetPrice, formCondition)
+      await addAlert(symbol, targetPrice, formCondition, {
+        type: formType,
+        notificationChannels: formChannels.length > 0 ? formChannels : ['email'],
+      })
       setFormSymbol('')
       setFormPrice('')
     } catch (err) {
@@ -182,7 +295,7 @@ export default function AlertsPage() {
   const triggeredAlerts = alerts.filter(a => a.triggered)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
       <AlertChecker alerts={alerts} onTrigger={handleTrigger} />
 
@@ -233,12 +346,50 @@ export default function AlertsPage() {
           <div className="w-full sm:w-36">
             <Input
               type="number"
-              placeholder="ราคาเป้าหมาย"
+              placeholder={getAlertTypePlaceholder(formType)}
               value={formPrice}
               onChange={(e) => setFormPrice(e.target.value)}
               min="0.01"
               step="0.01"
             />
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFormType('price')}
+              className={cn(
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                formType === 'price'
+                  ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
+              )}
+            >
+              ราคา
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormType('percent_change')}
+              className={cn(
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                formType === 'percent_change'
+                  ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
+              )}
+            >
+              % เปลี่ยน
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormType('volume_spike')}
+              className={cn(
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                formType === 'volume_spike'
+                  ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
+              )}
+            >
+              Volume
+            </button>
           </div>
           <div className="flex gap-2">
             <button
@@ -268,6 +419,32 @@ export default function AlertsPage() {
               ลงถึง
             </button>
           </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFormChannels((prev) => prev.includes('email') ? prev.filter((channel) => channel !== 'email') : [...prev, 'email'])}
+              className={cn(
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                formChannels.includes('email')
+                  ? 'bg-brand-success/10 text-brand-success border border-brand-success/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
+              )}
+            >
+              Email
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormChannels((prev) => prev.includes('push') ? prev.filter((channel) => channel !== 'push') : [...prev, 'push'])}
+              className={cn(
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                formChannels.includes('push')
+                  ? 'bg-brand-info/10 text-brand-info border border-brand-info/30'
+                  : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
+              )}
+            >
+              Push
+            </button>
+          </div>
           <Button type="submit" className="sm:w-auto" isLoading={isLoading}>
             <Plus size={16} />
             เพิ่ม
@@ -276,6 +453,26 @@ export default function AlertsPage() {
         {formError && (
           <p className="mt-2 text-xs text-brand-danger">{formError}</p>
         )}
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <BellRing size={18} className="text-brand-info" />
+            Push notification
+          </CardTitle>
+        </CardHeader>
+        <div className="space-y-3">
+          <p className="text-sm text-brand-text-secondary">
+            เปิดการแจ้งเตือนแบบ browser push เพื่อให้ cron ส่ง alert เข้าเครื่องได้โดยตรง เมื่อตั้งค่า VAPID keys แล้ว
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <Button type="button" variant="secondary" onClick={handlePushToggle}>
+              {pushEnabled ? 'ปิด Push' : 'เปิด Push'}
+            </Button>
+            {pushMessage && <p className="text-xs text-brand-text-secondary">{pushMessage}</p>}
+          </div>
+        </div>
       </Card>
 
       {/* Triggered Alerts */}

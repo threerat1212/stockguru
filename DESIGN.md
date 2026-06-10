@@ -6,34 +6,35 @@ A Thai retail investor opens StockGuru at 9:15 AM before the SET opens, in a hom
 
 ## Color Strategy
 
-**Restrained** — tinted neutrals + one accent ≤10% surface area.
+**Restrained with one cinematic market layer**: tinted near-black neutrals + emerald/teal accent used for current selection, chart energy, and primary actions.
 
-The brand is a data tool, not a campaign. The surface is dominated by deep navy and charcoal so that chart candles, green/red price changes, and the violet AI accent pop without competition. The only saturated color is the primary blue used for interactive elements and the AI accent violet used sparingly for AI-generated insights.
+The brand is a data tool, not a campaign. The new visual pass can feel more premium than a plain dashboard, but the drama must sit behind the work: a controlled aurora band behind the market-pulse chart, active status rings, and compact row motion. The surface remains a working desk where chart, screener, watchlist, risk checklist, and AI context are readable in the first viewport.
 
 ### Palette
 
 | Token | OKLCH | Hex | Usage |
 |---|---|---|---|
-| `--bg` | 15% 0.02 260 | `#0A0E1A` | Root background |
-| `--bg-secondary` | 18% 0.015 260 | `#111827` | Elevated surfaces, sidebar |
-| `--surface` | 28% 0.02 260 | `#1E293B` | Cards, panels, input fields |
-| `--surface-hover` | 32% 0.025 260 | `#27354F` | Hover states |
-| `--border` | 35% 0.03 260 | `#334155` | Dividers, outlines |
+| `--bg` | 13% 0.018 230 | `#060A12` | Root background |
+| `--bg-secondary` | 17% 0.018 225 | `#0B111D` | Sidebar, top chrome |
+| `--surface` | 22% 0.022 225 | `#111A29` | Cards, panels, input fields |
+| `--surface-hover` | 27% 0.025 220 | `#172437` | Hover states |
+| `--border` | 35% 0.035 215 | `#2A3A4F` | Dividers, outlines |
 | `--ink-primary` | 97% 0.01 260 | `#F8FAFC` | Headings, primary text |
-| `--ink-secondary` | 72% 0.02 260 | `#94A3B8` | Body text, captions |
-| `--ink-muted` | 55% 0.02 260 | `#64748B` | Placeholders, disabled |
-| `--primary` | 60% 0.18 255 | `#3B82F6` | CTAs, links, active states |
-| `--primary-hover` | 55% 0.2 255 | `#2563EB` | Primary hover |
+| `--ink-secondary` | 77% 0.018 230 | `#A8B5C7` | Body text, captions |
+| `--ink-muted` | 61% 0.02 230 | `#718196` | Placeholders, disabled |
+| `--primary` | 74% 0.145 170 | `#34D399` | CTAs, links, active states |
+| `--primary-hover` | 66% 0.145 170 | `#10B981` | Primary hover |
 | `--success` | 70% 0.15 155 | `#10B981` | Gains, positive change |
 | `--danger` | 60% 0.18 25 | `#F43F5E` | Losses, negative change, warnings |
 | `--warning` | 75% 0.15 85 | `#F59E0B` | Alerts, pending states |
-| `--accent` | 60% 0.18 300 | `#8B5CF6` | AI features, highlights |
+| `--accent` | 74% 0.13 210 | `#22D3EE` | AI features, info highlights |
 
 **Rules:**
 - Body text (`--ink-secondary`) must hit ≥4.5:1 against `--bg` and `--surface`.
 - Muted text (`--ink-muted`) is for placeholders only; never use for body copy.
 - Success/danger are semantic only; they never appear as decorative backgrounds larger than a badge.
 - No gradient text. No glassmorphism blur as default card treatment.
+- Teal/emerald light is permitted only as a bounded chart/backdrop material, active navigation affordance, or primary action glow. It must not turn every card into a neon object.
 
 ## Typography
 
@@ -125,13 +126,26 @@ Motion is intentional, never decorative. It guides attention to what changed, no
 - **Hover:** background color transitions 150ms, no scale transforms on cards.
 - **Reduced motion:** `@media (prefers-reduced-motion: reduce)` → all transitions become instant crossfades or immediate state changes.
 
+### Aurora Market Desk Pass
+- **Signature motion:** one bounded aurora sweep behind the first-viewport market chart. It should sit below content, move slowly, and never block interaction.
+- **Status motion:** market-open dots and selected rows can pulse at low opacity for 1.8-2.4s. No bounce, no elastic.
+- **Queue motion:** opportunity rows can use a short stagger on first render, capped to the visible queue. Content must be visible even if animation never runs.
+- **Hover feedback:** chart, screener preset, and watchlist rows use border/color transitions and small icon movement only. No card-scale choreography.
+- **Reduced motion:** aurora and pulse animations stop; static gradients remain.
+
+### Market Desk Reference Pass
+- **Intent:** match the approved concept direction: left full-height product sidebar, top command/search bar, compact market-status chrome, dense index tiles, central aurora chart, right-side watch/risk rail, and lower decision tables.
+- **Adapted, not copied:** keep StockGuru Thai-first research tasks and compliance copy. The reference contributes layout density, lighting, and rhythm only; it does not introduce crypto-wallet content, order-entry trading, or marketing hero copy.
+- **Layout risk:** the desktop grid must stay usable at 1366px wide and the right rail must collapse under the chart on tablet/mobile without horizontal overflow.
+- **Validation:** compare `/` and `/stock/[symbol]` screenshots against the approved concept after every large UI pass, then run lint, typecheck, build, and browser QA.
+
 ## Pages
 
 ### Dashboard (Home)
 - **Layout:** Sidebar left + main content right, with a two-column market desk at desktop. Left side is market scan and opportunity flow. Right rail is watchlist, risk checklist, and AI prompt. On mobile, right rail collapses below the scan flow.
-- **First viewport:** Not a marketing hero. It is a working dashboard: market pulse, active session notes, quick scan actions, and the next 2-3 symbols to inspect.
+- **First viewport:** Not a marketing hero. It is a working dashboard: market pulse, active session notes, quick scan actions, and the next 2-3 symbols to inspect. The richer visual identity comes from a central chart-stage, live status rail, and compact actionable queues.
 - **Market pulse:** SET, SET50, S&P 500, NASDAQ, DOW/mai shown as compact index tiles with price, signed percent, arrow icon, and last refresh note. Keep numbers tabular and aligned.
-- **Scan presets:** 5 quick-start routes from benchmark patterns: Volume leader, US leaders, Global gainers, Pullback watch, Bank focus. Each card must name the filter intent and the next action, not just a category.
+- **Scan presets:** 5 quick-start routes from benchmark patterns: Volume leader, US leaders, Global gainers, Pullback watch, Sector momentum. Each item should feel like a command tile: filter intent, why inspect, and the next action.
 - **Opportunity list:** Prefer compact rows or table-like stock cards over repeated large cards. Each row shows symbol, market, sector, price, signed change, volume clue, and direct actions: chart, AI, watchlist.
 - **News:** 3 market-impact cards with category, time, related symbols, and one-line impact. Avoid portal-like news grids.
 - **AI Chat:** Fixed-height panel with guest-limit indicator, evidence/risk language, and suggested next actions after an answer.
@@ -202,3 +216,4 @@ These repos inform the process only. Do not copy their generated UI, prompts, sc
 - Every high-signal module should answer: "What happened?", "Why inspect it?", and "What should I do next?"
 - Above the fold must show an actual dashboard surface, not a landing-page hero.
 - Visual QA must include desktop and mobile, plus at least one interaction path: preset scan, search, or AI prompt.
+- For the requested richer inspiration pass, use the inspiration as mood only: dark premium fintech lighting, central product stage, layered depth, and precise motion. Do not import crypto-wallet metaphors, huge marketing headlines, or decorative glass cards.

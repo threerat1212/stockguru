@@ -125,7 +125,7 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
       {/* Header */}

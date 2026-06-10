@@ -41,7 +41,7 @@ export function LoadingSkeleton({ className, lines = 1 }: LoadingSkeletonProps) 
       {Array.from({ length: lines }).map((_, i) => (
         <div
           key={i}
-          className="h-4 bg-brand-card rounded animate-pulse"
+          className="h-4 shimmer rounded-lg"
           style={{ width: widths[i % widths.length] }}
         />
       ))}
@@ -60,12 +60,12 @@ export function LoadingPage() {
 
 export function LoadingCard() {
   return (
-    <div className="bg-brand-card border border-brand-border rounded-xl p-5 animate-pulse">
-      <div className="h-4 bg-brand-bg-secondary rounded w-1/3 mb-4" />
+    <div className="card-modern rounded-xl p-5">
+      <div className="h-4 shimmer rounded-lg w-1/3 mb-4" />
       <div className="space-y-3">
-        <div className="h-3 bg-brand-bg-secondary rounded w-full" />
-        <div className="h-3 bg-brand-bg-secondary rounded w-4/5" />
-        <div className="h-3 bg-brand-bg-secondary rounded w-2/3" />
+        <div className="h-3 shimmer rounded-lg w-full" />
+        <div className="h-3 shimmer rounded-lg w-4/5" />
+        <div className="h-3 shimmer rounded-lg w-2/3" />
       </div>
     </div>
   )

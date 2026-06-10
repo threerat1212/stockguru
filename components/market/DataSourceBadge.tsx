@@ -14,6 +14,7 @@ export default function DataSourceBadge({ meta, className, compact = false }: Da
   if (!meta) return null
 
   const isDemo = meta.isDemo || meta.source === 'fallback'
+  const providerLabel = meta.provider || 'Market Data'
 
   const config = isDemo
     ? {
@@ -24,12 +25,12 @@ export default function DataSourceBadge({ meta, className, compact = false }: Da
     : meta.source === 'cache'
       ? {
           icon: Clock,
-          label: compact ? 'แคช' : 'ข้อมูลแคช',
+          label: compact ? 'แคช' : `ข้อมูลแคช (${providerLabel})`,
           className: 'border-brand-border bg-brand-bg-secondary text-brand-text-secondary',
         }
       : {
           icon: Wifi,
-          label: compact ? 'Yahoo' : 'Yahoo Finance',
+          label: compact ? providerLabel : providerLabel,
           className: 'border-brand-success/30 bg-brand-success/10 text-brand-success',
         }
 

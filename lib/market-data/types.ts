@@ -1,4 +1,8 @@
-export type MarketDataSource = 'yahoo' | 'cache' | 'fallback'
+export const MARKET_DATA_PROVIDER_YAHOO = 'yahoo'
+export const MARKET_DATA_PROVIDER_SET = 'set'
+export const MARKET_DATA_PROVIDER_STOCKGURU_DEMO = 'stockguru-demo'
+
+export type MarketDataSource = 'yahoo' | 'siamchart' | 'cache' | 'fallback'
 
 export interface MarketDataMeta {
   source: MarketDataSource
@@ -13,11 +17,11 @@ export interface MarketDataResult<T> {
   meta: MarketDataMeta
 }
 
-export function liveMeta(source: MarketDataSource = 'yahoo'): MarketDataMeta {
+export function liveMeta(source: MarketDataSource = 'yahoo', provider = 'Yahoo Finance'): MarketDataMeta {
   return {
     source,
     isDemo: false,
-    provider: 'Yahoo Finance',
+    provider,
     updatedAt: Date.now(),
   }
 }

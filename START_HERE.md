@@ -102,70 +102,52 @@ START_HERE.md             # เอกสารนี้
 
 ---
 
-## Gap Analysis: StockGuru vs Top 5 Thai Stock Sites
+## Gap Analysis: StockGuru vs Top 5 Market Platforms
 
-> **เปรียบเทียบกับ:** SET.or.th, Kaohoon, SETTRADE, Investing.com (TH), Longdo Dict (Stock)
+> **เอกสารหลัก:** `docs/TOP5_GAP_ROADMAP.md`  
+> **Benchmark:** TradingView, Investing.com, Yahoo Finance, Finviz, Seeking Alpha + Thai local context: SET.or.th, Kaohoon, SETTRADE, broker apps  
+> **Positioning:** StockGuru ควรเป็น **Thai market research cockpit + AI assistant** ไม่ใช่ TradingView clone
 
-### Quick Wins (ทำได้เร็ว, ผลกระทบสูง, ไม่ต้อง API ใหม่)
+### Strategic conclusion
 
-| ฟีเจชอร์ | ช่องว่างปัจจุบัน | ขนาดงาน | ความสำคัญ |
-|-----------|----------------|----------|------------|
-| **Watchlist สัญญาณ (Signal Watchlist)** | ไม่มี — watchlist เป็นแค่รายชื่อ | S (1-2 วัน) | 🔥 Critical |
-| **Smart Alerts (ราคา + ปริมาณ + เงื่อนไขเทคนิค)** | มีแค่ price alert, ไม่มี volume/MA cross | S (2-3 วัน) | 🔥 Critical |
-| **News Impact Panel (มีอยู่แล้ว → ขยาย)** | หน้า detail มี, แต่งว่างบน 홈 + trending | S (1 วัน) | 🔥 Critical |
-| **Economic Calendar (iCal/ICS import)** | ไม่มี — ต้องดูเว็บอื่น | S (1-2 วัน) | 🔥 Critical |
-| **Market Breadth (Advance/Decline, New High/Low)** | ไม่มี — ต้องดู SET | M (3-5 วัน) | 🔥 Critical |
-| **Heatmap ภาคกิจการ + ขนาดตลาด** | ไม่มี — ต้องดู Kaohoon/SETTRADE | M (3-5 วัน) | 🔥 Critical |
-| **Compare ตาราง (Side-by-side fundamentals)** | ไม่มี — เปรียบเทียบยาก | M (3-5 วัน) | 🔥 Critical |
-| **PWA + Push Notification (VAPID)** | ไม่มี — mobile UX อ่อน | M (3-5 วัน) | 🔥 Critical |
+StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscription, AI brief, watchlist, alerts, portfolio, journal, compare, screener, news, deploy pipeline  
+แต่ช่องว่างใหญ่สุดก่อนขาย paid product คือ:
 
-### Strategic Priorities (ต้องมี API/ข้อตกลง/งบประมาณ)
+1. **ข้อมูล SET/mai ที่น่าเชื่อถือและครอบคลุม**
+2. **Market dashboard แบบเห็นภาพรวมตลาด**
+3. **Advanced screener ที่ใช้งานจริง**
+4. **Smart alerts แบบราคา + volume + indicator + news/earnings**
+5. **News citation + AI impact ที่มี source**
+6. **Portfolio analytics และ watchlist intelligence**
+7. **PWA + push notification**
 
-| ฟีเจชอร์ | ช่องว่างปัจจุบัน | ต้องการ | ขนาดงาน | ความสำคัญ |
-|-----------|----------------|----------|----------|------------|
-| **SET Real-time Level 1 (Last, Bid/Ask, Volume)** | Yahoo 15-30 min delay | `SET_API_KEY` หรือ broker partner | L (2-4 สัปดาห์ + legal) | 🔥 Critical |
-| **SET Level 2 (Order Book Depth)** | ไม่มีเลย | SET API / broker | XL (1-2 เดือน) | 🔴 High |
-| **Thai Fundamentals จริง (FS, Ratio, Dividend History)** | MiMo สรุปเฉยๆ, ไม่มี raw data | Vendor (Finnhub, SET, Kaohoon API) | L (3-6 สัปดาห์) | 🔥 Critical |
-| **Fund Flow (Foreign/Inst/Proprietary Net Buy/Sell)** | ไม่มี — ดู SET/TSFC | SET API / TSFC / vendor | L (2-4 สัปดาห์) | 🔴 High |
-| **News Wire จริง (Reuters, Benzinga, SET RSS)** | AI Brief เท่านั้น | `NEWS_API_KEY` / RSS parser | M (2-3 สัปดาห์) | 🔴 High |
-| **Broker Execution (Paper → Live)** | Journal = manual | Broker API (KTZ, Bualuang, SCB) | XL (3-6 เดือน) | 🟡 Medium |
-| **Backtesting Engine (Vectorized + Event-driven)** | ไม่มี | Custom / Backtrader / Zipline | XL (2-3 เดือน) | 🟡 Medium |
-| **Screener มาตรฐานไทย (SET50, SET100, mai, ESG)** | Universe ~35 symbols | Full SET list + sector mapping | M (2-3 สัปดาห์) | 🔴 High |
+### Next roadmap
 
-### Technical Debt & Architecture Improvements
+ต่อจาก PR3–PR8 ที่เสร็จแล้ว ให้ใช้ลำดับนี้:
 
-| หัวข้อ | ปัญหา | แนวทางแก้ | ขนาดงาน |
-|--------|-------|-----------|----------|
-| **Data Source Abstraction** | logic ผสมใน hooks, ยากสลับ provider | `lib/market-data/adapters/` + interface `IMarketDataProvider` | M |
-| **Cache Layer แบบ Unified** | in-memory แยกต่อ route, ไม่มี TTL ตัวเลข | Redis + `lib/cache.ts` rewrite (skill: stockguru-market-data) | M |
-| **Type Safety: API Contracts** | `any` ใน response, ไม่มี schema | Zod schemas ทุก route + `openapi` spec | S-M |
-| **Error Boundaries + Logging** | `console.error` ทั่วไป, ไม่มี correlation ID | Sentry + structured logging (pino) | S |
-| **Background Jobs Framework** | Cron เป็น API route แยกต่างหาก | BullMQ + Redis หรือ Render Cron Jobs แบบ managed | M |
-| **Mobile-first Responsive** | บางหน้า overflow บน mobile | Audit ทุกหน้า + Tailwind `md:` `lg:` consistent | M |
-| **i18n Infrastructure** | TH only, hardcoded strings | `next-intl` หรือ `i18next` + translation files | M |
+- **PR9A — Market Data Provider Abstraction** ✅ Implemented
+- **PR9B — Reliable Thai Market Data** ⏸ Pending
+- **PR10 — Market Dashboard**
+- **PR11 — Advanced Screener**
 
----
+- **PR12 — Smart Alerts + Push**
+- **PR13 — News Citations + AI Impact**
 
-## สิ่งที่ข้ามไปก่อน (ต้องมีเงื่อนไข)
+- **PR14 — Portfolio Analytics**
+- **PR15 — PWA + Push Notifications**
 
-> **อย่าเริ่มงานเหล่านี้จนกว่าจะมีสิ่งที่ระบุในคอลัมน์ "เงื่อนไข"**
+รายละเอียด full benchmark, acceptance criteria, first engineering tickets, และ definition of done อยู่ใน `docs/TOP5_GAP_ROADMAP.md`
 
-|| งาน | เงื่อนไขที่ต้องมี | สถานะ | หมายเหตุ ||
-|-----|-------------------|--------|----------|
-| **SET data provider จริง** | สัญญา/license SET หรือ API key (Finnhub, Alpha Vantage, broker partner) | ⏸ ข้าม | Yahoo ยังใช้ได้แต่ไม่พอสำหรับ paid product ไทย |
-| **News wire จริง** | `NEWS_API_KEY` หรือ provider (Reuters, Benzinga, SET RSS) | ⏸ ข้าม | ตอนนี้ใช้ AI brief + rebrand แล้ว |
-| **Redis cache** | `REDIS_URL` หรือ Render Key Value instance | ⏸ ข้าม | in-memory cache ใช้ได้บน single instance |
-| **Sentry monitoring** | `SENTRY_DSN` + `npm install @sentry/nextjs` | ⏸ ข้าม | ดู PR6 ใน stockguru-roadmap.md |
-| **Resend alert emails** | `RESEND_API_KEY` บน Render Dashboard | ⏸ ข้าม | โค้ด cron พร้อมแล้ว แต่ email ไม่ส่งถ้าไม่มี key |
-| **Stripe portal ใช้งานจริง** | `STRIPE_SECRET_KEY` + เปิด Customer Portal ใน [Stripe Dashboard](https://dashboard.stripe.com/settings/billing/portal) | ⚠️ โค้ดพร้อม | ปุ่มอยู่หน้า `/pricing` สำหรับสมาชิก Pro+ |
-| **Yahoo proxy** | `YAHOO_FINANCE_PROXY` ถ้า Render IP โดน block | ⏸ ข้าม | ตั้งเมื่อ quote API ล้มเหลวบ่อย |
-| **Sector data จริง** | SET sector API หรือ vendor | ⏸ ข้าม | หน้า sector มีคำเตือน demo แล้ว |
-| **i18n EN** | ตัดสินใจ scope + ไฟล์แปล | ⏸ ข้าม | PR8 ใน roadmap |
-| **Fund Flow (Foreign/Inst/Proprietary)** | `SET_API_KEY` หรือ TSFC / vendor data feed | ⏸ ข้าม | Gap Analysis: Strategic Priority |
-| **Economic Calendar** | iCal/ICS source หรือ API (TradingEconomics, SET) | ⏸ ข้าม | Gap Analysis: Quick Win |
-| **Heatmap ภาคกิจการ** | SET sector list + market cap data | ⏸ ข้าม | Gap Analysis: Quick Win |
-| **Compare ตาราง (Side-by-side)** | Thai fundamentals raw data | ⏸ ข้าม | Gap Analysis: Quick Win |
-| **PWA + Push (VAPID)** | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | ⏸ ข้าม | Gap Analysis: Quick Win |
+### สิ่งที่ข้ามไปก่อน จนกว่าจะมี data/provider/legal พร้อม
+
+- SET real-time/delayed provider
+- Full SET/mai universe + sector mapping
+- Fund flow / foreign holding
+- News wire จริงที่มี source/citation
+- PWA push infrastructure
+- Broker CSV import / live execution
+- Backtesting engine เต็มรูปแบบ
+- Social feed / public ideas
 
 ### วิธีเปิดใช้ Stripe Customer Portal (เมื่อพร้อม)
 

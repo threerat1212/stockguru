@@ -22,8 +22,8 @@ export default function UpgradeModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4 bg-brand-card border border-brand-border rounded-xl shadow-2xl p-6 text-center">
+    <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/70">
+      <div className="relative mx-4 w-full max-w-md rounded-xl border border-brand-border bg-brand-card p-6 text-center">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-bg-secondary transition-colors"

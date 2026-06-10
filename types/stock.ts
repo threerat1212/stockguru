@@ -119,6 +119,7 @@ export interface ChatMessage {
 
 // Screener filter
 export interface ScreenerFilters {
+  query?: string
   market?: string
   sector?: string
   minMarketCap?: number
@@ -126,10 +127,25 @@ export interface ScreenerFilters {
   minPe?: number
   maxPe?: number
   minVolume?: number
+  maxVolume?: number
+  minPrice?: number
+  maxPrice?: number
   minChange?: number
   maxChange?: number
-  sortBy?: 'volume' | 'change' | 'marketCap' | 'pe'
+  minDividendYield?: number
+  sortBy?: 'volume' | 'change' | 'marketCap' | 'pe' | 'dividendYield' | 'price'
   sortOrder?: 'asc' | 'desc'
+}
+
+export type SortField = 'volume' | 'change' | 'marketCap' | 'pe' | 'dividendYield' | 'price'
+export type SortOrder = 'asc' | 'desc'
+
+export interface ScreenerStock extends TrendingStock {
+  pe?: number
+  pb?: number
+  de?: number
+  dividendYield?: number
+  freeFloat?: number
 }
 
 // Chart timeframe
@@ -152,6 +168,49 @@ export interface MarketIndex {
   price: number
   change: number
   changePercent: number
+}
+
+export interface MarketBreadth {
+  advancing: number
+  declining: number
+  unchanged: number
+  total: number
+  volume: number
+  value: number
+}
+
+export interface MarketSectorSummary {
+  sector: string
+  count: number
+  advancing: number
+  declining: number
+  avgChangePercent: number
+  avgChange: number
+  topSymbol: string
+  topChangePercent: number
+}
+
+export interface MarketMover {
+  symbol: string
+  name: string
+  sector?: string
+  exchange?: string
+  price: number
+  change: number
+  changePercent: number
+  volume: number
+}
+
+export interface MarketSummary {
+  indices: MarketIndex[]
+  breadth: MarketBreadth
+  sectors: MarketSectorSummary[]
+  movers: {
+    gainers: MarketMover[]
+    losers: MarketMover[]
+    active: MarketMover[]
+  }
+  updatedAt: string
 }
 
 // Market data provenance (see lib/market-data/types.ts)

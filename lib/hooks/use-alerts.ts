@@ -5,14 +5,17 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { PLAN_LIMITS } from '@/lib/hooks/use-subscription'
 import { effectivePlan } from '@/lib/subscription/plan-utils'
+import type { AlertChannel, AlertType, SmartAlert, PushSubscription } from '@/lib/alerts/types'
 
 export interface PriceAlert {
   id: string
   symbol: string
+  type: AlertType
   targetPrice: number
   condition: 'above' | 'below'
   triggered: boolean
   triggeredAt?: string
+  notificationChannels: AlertChannel[]
   createdAt: string
 }
 
@@ -28,9 +31,11 @@ function loadLocalAlerts(): PriceAlert[] {
       id: String(item.id ?? crypto.randomUUID()),
       symbol: String(item.symbol),
       targetPrice: Number(item.targetPrice ?? item.target_price),
+      type: (String(item.type ?? 'price') as AlertType),
       condition: String(item.condition) as 'above' | 'below',
       triggered: Boolean(item.triggered ?? false),
       triggeredAt: item.triggeredAt ? String(item.triggeredAt) : item.triggered_at ? String(item.triggered_at) : undefined,
+      notificationChannels: Array.isArray(item.notificationChannels) ? item.notificationChannels as AlertChannel[] : ['email'],
       createdAt: item.createdAt ? new Date(Number(item.createdAt)).toISOString() : new Date().toISOString(),
     }))
   } catch {
@@ -47,9 +52,11 @@ function saveLocalAlerts(alerts: PriceAlert[]) {
         id: a.id,
         symbol: a.symbol,
         targetPrice: a.targetPrice,
+        type: a.type,
         condition: a.condition,
         triggered: a.triggered,
         triggeredAt: a.triggeredAt,
+        notificationChannels: a.notificationChannels,
         createdAt: new Date(a.createdAt).getTime(),
       }))
     )
@@ -115,9 +122,13 @@ export function useAlerts() {
             id: String(row.id),
             symbol: String(row.symbol),
             targetPrice: Number(row.target_price),
+            type: String(row.type ?? 'price') as AlertType,
             condition: String(row.condition) as 'above' | 'below',
             triggered: Boolean(row.triggered ?? false),
             triggeredAt: row.triggered_at ? String(row.triggered_at) : undefined,
+            notificationChannels: Array.isArray(row.notification_channels)
+              ? (row.notification_channels as AlertChannel[])
+              : ['email'],
             createdAt: String(row.created_at),
           }))
         )
@@ -131,7 +142,10 @@ export function useAlerts() {
   const alertsLimit = PLAN_LIMITS[plan]?.alerts ?? PLAN_LIMITS.free.alerts
 
   const addAlert = useCallback(
-    async (symbol: string, targetPrice: number, condition: 'above' | 'below') => {
+    async (symbol: string, targetPrice: number, condition: 'above' | 'below', options: {
+      type?: AlertType
+      notificationChannels?: AlertChannel[]
+    } = {}) => {
       if (!isAuthenticated || !user) {
         throw new Error('กรุณาเข้าสู่ระบบเพื่อตั้งการแจ้งเตือน — แจ้งเตือนจะส่งทางอีเมลเมื่อราคาแตะเป้า')
       }
@@ -145,8 +159,10 @@ export function useAlerts() {
         .insert({
           user_id: user.id,
           symbol,
+          type: options.type ?? 'price',
           target_price: targetPrice,
           condition,
+          notification_channels: options.notificationChannels ?? ['email'],
         })
         .select()
         .single()
@@ -161,9 +177,11 @@ export function useAlerts() {
           id: data.id,
           symbol: data.symbol,
           targetPrice: Number(data.target_price),
+          type: data.type as AlertType,
           condition: data.condition as 'above' | 'below',
           triggered: data.triggered ?? false,
           triggeredAt: data.triggered_at,
+          notificationChannels: Array.isArray(data.notification_channels) ? data.notification_channels as AlertChannel[] : ['email'],
           createdAt: data.created_at,
         }
         setAlerts((prev) => [...prev, newAlert])
@@ -204,5 +222,31 @@ export function useAlerts() {
     setAlerts((prev) => prev.filter((a) => !a.triggered))
   }, [isAuthenticated, user, alerts, supabase])
 
-  return { alerts, isLoading, isAuthenticated, alertsLimit, addAlert, removeAlert, clearTriggered }
+  const registerPushSubscription = useCallback(async (subscription: PushSubscription) => {
+    const res = await fetch('/api/alerts/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subscription),
+    })
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error ?? 'ไม่สามารถเปิดการแจ้งเตือนแบบ push ได้')
+    }
+  }, [])
+
+  const unregisterPushSubscription = useCallback(async (subscription: PushSubscription) => {
+    const res = await fetch('/api/alerts/push/unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subscription),
+    })
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error ?? 'ไม่สามารถปิดการแจ้งเตือนแบบ push ได้')
+    }
+  }, [])
+
+  return { alerts, isLoading, isAuthenticated, alertsLimit, addAlert, removeAlert, clearTriggered, registerPushSubscription, unregisterPushSubscription }
 }

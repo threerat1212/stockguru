@@ -105,14 +105,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-black/70 p-4"
       onMouseDown={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
-        className="relative w-full max-w-md rounded-xl border border-brand-border bg-brand-card p-6 shadow-xl shadow-black/30"
+        className="relative w-full max-w-md rounded-xl border border-brand-border bg-brand-card p-6"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <button

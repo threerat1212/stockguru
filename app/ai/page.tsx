@@ -22,11 +22,11 @@ const safetyPoints = [
 
 export default function AIPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-brand-accent to-brand-primary">
-            <Brain size={20} className="text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-brand-accent/30 bg-brand-accent/10">
+            <Brain size={20} className="text-brand-accent" />
           </div>
           <div>
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">AI วิเคราะห์</h1>

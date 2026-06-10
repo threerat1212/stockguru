@@ -323,7 +323,7 @@ export default function ComparePage() {
               icon={<Search size={16} />}
             />
             {showSearch && searchResults && searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-brand-card border border-brand-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
+              <div className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-brand-border bg-brand-card">
                 {searchResults.map(result => {
                   const fullSym = result.symbol
                   const alreadyAdded = symbols.includes(fullSym)
@@ -352,7 +352,7 @@ export default function ComparePage() {
               </div>
             )}
             {showSearch && searchQuery && (!searchResults || searchResults.length === 0) && (
-              <div className="absolute z-10 w-full mt-1 bg-brand-card border border-brand-border rounded-lg shadow-xl p-4 text-center">
+              <div className="absolute z-10 mt-1 w-full rounded-lg border border-brand-border bg-brand-card p-4 text-center">
                 <p className="text-sm text-brand-text-secondary">ไม่พบหุ้น &ldquo;{searchQuery}&rdquo;</p>
               </div>
             )}

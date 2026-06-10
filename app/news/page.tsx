@@ -47,11 +47,11 @@ export default function NewsPage() {
   const total = data?.pages[0]?.total ?? 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-primary/10 rounded-lg flex items-center justify-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-brand-primary/25 bg-brand-primary/10">
             <Newspaper size={20} className="text-brand-primary" />
           </div>
           <div>

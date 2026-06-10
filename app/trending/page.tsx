@@ -87,7 +87,7 @@ export default function TrendingPage() {
   if (isLoading) return <LoadingPage />
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

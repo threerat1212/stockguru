@@ -18,7 +18,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-brand-card border border-brand-border rounded-xl',
+          'card-modern card-modern-hover rounded-xl',
           paddings[padding],
           className
         )}

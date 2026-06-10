@@ -8,11 +8,18 @@ import {
   Trash2,
   TrendingUp,
   TrendingDown,
+  Download,
   PieChart,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { useQuote } from '@/lib/hooks/use-stock'
 import { useHoldings } from '@/lib/hooks/use-holdings'
-import { formatPercent, formatCurrency, getPriceColor, cn } from '@/lib/utils/format'
+import { useSubscription } from '@/lib/hooks/use-subscription'
+import { canAccessFeature } from '@/lib/subscription/plan-utils'
+import { formatPercent, formatCurrency, formatNumber, getPriceColor, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -25,6 +32,37 @@ interface PortfolioItem {
   quantity: number
   buyPrice: number
   addedAt: number
+}
+
+interface BenchmarkIndex {
+  symbol: string
+  name: string
+  changePercent: number
+}
+
+interface PortfolioAnalyticsHolding extends PortfolioItem {
+  quote?: {
+    price: number
+    changePercent: number
+    currency: string
+  }
+  currentPrice: number
+  cost: number
+  value: number
+  pnl: number
+  pnlPercent: number
+  weight: number
+}
+
+interface PortfolioAnalyticsSummary {
+  holdings: PortfolioAnalyticsHolding[]
+  totalCost: number
+  totalValue: number
+  totalPnl: number
+  totalPnlPercent: number
+  best: PortfolioAnalyticsHolding | null
+  worst: PortfolioAnalyticsHolding | null
+  benchmark?: BenchmarkIndex | null
 }
 
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
@@ -182,6 +220,266 @@ const PIE_COLORS = [
   '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
 ]
 
+function csvEscape(value: string | number) {
+  const text = String(value ?? '')
+  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`
+  return text
+}
+
+function exportPortfolioCsv(summary: PortfolioAnalyticsSummary) {
+  const header = [
+    'Symbol',
+    'Quantity',
+    'Buy Price',
+    'Current Price',
+    'Cost',
+    'Current Value',
+    'P/L',
+    'P/L %',
+    'Weight',
+  ]
+
+  const rows = summary.holdings.map((h) => [
+    h.symbol,
+    h.quantity,
+    h.buyPrice,
+    h.currentPrice,
+    h.cost,
+    h.value,
+    h.pnl,
+    h.pnlPercent,
+    h.weight,
+  ])
+
+  const csv = [
+    header.join(','),
+    ...rows.map((row) => row.map(csvEscape).join(',')),
+  ].join('\n')
+
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `stockguru-portfolio-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function usePortfolioBenchmark() {
+  const [benchmark, setBenchmark] = useState<BenchmarkIndex | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/market/summary')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('ไม่สามารถโหลด benchmark ได้'))))
+      .then((data: any) => {
+        if (!mounted) return
+        const indices = data?.data?.indices ?? []
+        const setIndex = indices.find((i: any) => i.symbol === 'SET')
+        setBenchmark(setIndex ? {
+          symbol: setIndex.symbol,
+          name: setIndex.name,
+          changePercent: Number(setIndex.changePercent ?? 0),
+        } : null)
+      })
+      .catch(() => setBenchmark(null))
+      .finally(() => {
+        if (mounted) setIsLoading(false)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  return { benchmark, isLoading }
+}
+
+function usePortfolioAnalytics(portfolio: PortfolioItem[]) {
+  const symbols = portfolio.map((item) => item.symbol)
+  const quoteQuery = useQuery({
+    queryKey: ['portfolio-quotes', symbols.join('|')],
+    enabled: symbols.length > 0,
+    queryFn: async () => {
+      const results = await Promise.all(symbols.map(async (symbol) => {
+        const res = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(symbol)}`)
+        if (!res.ok) throw new Error('ไม่สามารถโหลดราคาหุ้นได้')
+        const data = await res.json()
+        return [symbol, data?.data as { price: number; changePercent: number; currency: string }] as const
+      }))
+      return new Map(results)
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  })
+  const { benchmark } = usePortfolioBenchmark()
+
+  return useMemo<PortfolioAnalyticsSummary>(() => {
+    const holdings = portfolio.map((item) => {
+      const quote = quoteQuery.data?.get(item.symbol)
+      const currentPrice = Number(quote?.price ?? 0)
+      const cost = item.quantity * item.buyPrice
+      const value = item.quantity * currentPrice
+      const pnl = value - cost
+      const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0
+
+      return {
+        ...item,
+        quote: quote ? {
+          price: currentPrice,
+          changePercent: Number(quote.changePercent ?? 0),
+          currency: quote.currency,
+        } : undefined,
+        currentPrice,
+        cost,
+        value,
+        pnl,
+        pnlPercent,
+        weight: 0,
+      }
+    })
+
+    const totalCost = holdings.reduce((sum, h) => sum + h.cost, 0)
+    const totalValue = holdings.reduce((sum, h) => sum + h.value, 0)
+    const totalPnl = totalValue - totalCost
+    const totalPnlPercent = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0
+
+    holdings.forEach((h) => {
+      h.weight = totalValue > 0 ? (h.value / totalValue) * 100 : 0
+    })
+
+    const sortedByPnl = [...holdings].sort((a, b) => b.pnlPercent - a.pnlPercent)
+
+    return {
+      holdings,
+      totalCost,
+      totalValue,
+      totalPnl,
+      totalPnlPercent,
+      best: sortedByPnl[0] ?? null,
+      worst: sortedByPnl[sortedByPnl.length - 1] ?? null,
+      benchmark,
+    }
+  }, [portfolio, quoteQuery.data, benchmark])
+}
+
+function PortfolioAnalytics({ portfolio, benchmark }: { portfolio: PortfolioAnalyticsSummary; benchmark?: BenchmarkIndex | null }) {
+  const { plan } = useSubscription()
+  const canExport = canAccessFeature(plan, 'exportCsv')
+  const allocationData = portfolio.holdings
+    .filter((h) => h.value > 0)
+    .map((h, i) => ({
+      label: h.symbol.replace('.BK', ''),
+      value: h.value,
+      color: PIE_COLORS[i % PIE_COLORS.length],
+    }))
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Target size={18} className="text-brand-accent" />
+              ภาพรวมผลตอบแทน
+            </CardTitle>
+            <p className="text-xs text-brand-text-secondary">คำนวณจากมูลค่าปัจจุบันของหุ้นแต่ละรายการ</p>
+          </div>
+          {!canExport ? (
+            <FeatureGate feature="exportCsv" inline>
+              <Button variant="primary" size="sm" disabled className="gap-1">
+                <Download size={14} />
+                Export
+              </Button>
+            </FeatureGate>
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => exportPortfolioCsv(portfolio)} className="gap-1">
+              <Download size={14} />
+              Export CSV
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-xl border border-brand-border bg-brand-bg-secondary p-4">
+          <p className="text-xs text-brand-text-secondary">มูลค่าพอร์ต</p>
+          <p className="mt-1 text-xl font-bold text-brand-text-primary">{formatCurrency(portfolio.totalValue, 'THB')}</p>
+        </div>
+        <div className="rounded-xl border border-brand-border bg-brand-bg-secondary p-4">
+          <p className="text-xs text-brand-text-secondary">ต้นทุน</p>
+          <p className="mt-1 text-xl font-bold text-brand-text-primary">{formatCurrency(portfolio.totalCost, 'THB')}</p>
+        </div>
+        <div className="rounded-xl border border-brand-border bg-brand-bg-secondary p-4">
+          <p className="text-xs text-brand-text-secondary">กำไร/ขาดทุน</p>
+          <p className={cn('mt-1 text-xl font-bold', getPriceColor(portfolio.totalPnl))}>
+            {portfolio.totalPnl >= 0 ? '+' : ''}{formatCurrency(portfolio.totalPnl, 'THB')}
+          </p>
+          <p className={cn('text-xs font-mono-nums', getPriceColor(portfolio.totalPnlPercent))}>
+            {formatPercent(portfolio.totalPnlPercent)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-brand-border bg-brand-bg-secondary p-4">
+          <p className="text-xs text-brand-text-secondary">Benchmark</p>
+          <p className="mt-1 text-xl font-bold text-brand-text-primary">
+            {benchmark ? `${benchmark.name} ${formatPercent(benchmark.changePercent)}` : 'กำลังโหลด'}
+          </p>
+          {benchmark && (
+            <p className={cn('text-xs font-mono-nums', getPriceColor(portfolio.totalPnlPercent - benchmark.changePercent))}>
+              Spread {formatPercent(portfolio.totalPnlPercent - benchmark.changePercent)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-brand-text-primary">Top allocation</p>
+          <PieChartSVG data={allocationData} />
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-brand-text-primary">Best / Worst</p>
+          <div className="rounded-lg border border-brand-success/20 bg-brand-success/5 p-3">
+            {portfolio.best ? (
+              <>
+                <p className="text-xs text-brand-text-secondary">ผลตอบแทนดีที่สุด</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="font-semibold text-brand-text-primary">{portfolio.best.symbol.replace('.BK', '')}</span>
+                  <span className="flex items-center gap-1 text-sm font-mono-nums text-brand-success">
+                    <ArrowUpRight size={14} />
+                    {formatPercent(portfolio.best.pnlPercent)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-brand-text-secondary">ยังไม่มีข้อมูล</p>
+            )}
+          </div>
+          <div className="rounded-lg border border-brand-danger/20 bg-brand-danger/5 p-3">
+            {portfolio.worst ? (
+              <>
+                <p className="text-xs text-brand-text-secondary">ผลตอบแทนต่ำสุด</p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="font-semibold text-brand-text-primary">{portfolio.worst.symbol.replace('.BK', '')}</span>
+                  <span className="flex items-center gap-1 text-sm font-mono-nums text-brand-danger">
+                    <ArrowDownRight size={14} />
+                    {formatPercent(portfolio.worst.pnlPercent)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-brand-text-secondary">ยังไม่มีข้อมูล</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
 export default function PortfolioPage() {
   const { holdings, isLoading, addHolding, removeHolding } = useHoldings()
   const [mounted, setMounted] = useState(false)
@@ -205,6 +503,8 @@ export default function PortfolioPage() {
       addedAt: new Date(h.createdAt).getTime(),
     }))
   }, [holdings])
+
+  const analytics = usePortfolioAnalytics(portfolio)
 
   const handleRemove = useCallback(async (id: string) => {
     try {
@@ -305,7 +605,10 @@ export default function PortfolioPage() {
 
           {/* Portfolio Summary */}
           {portfolio.length > 0 && (
-            <Card>
+            <>
+              <PortfolioAnalytics portfolio={analytics} benchmark={analytics.benchmark ?? null} />
+
+              <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <PieChart size={18} className="text-brand-accent" />
@@ -320,6 +623,7 @@ export default function PortfolioPage() {
                 }))}
               />
             </Card>
+            </>
           )}
 
           {/* Portfolio List */}

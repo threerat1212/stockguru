@@ -122,8 +122,8 @@ export default function AIChat() {
   return (
     <div className="flex h-[500px] flex-col overflow-hidden rounded-xl border border-brand-border bg-brand-card">
       <div className="flex items-center gap-3 border-b border-brand-border bg-brand-bg-secondary/50 px-4 py-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-accent to-brand-primary">
-          <Sparkles size={16} className="text-white" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-brand-accent/30 bg-brand-accent/10">
+          <Sparkles size={16} className="text-brand-accent" />
         </div>
         <div>
           <h3 className="text-sm font-semibold text-brand-text-primary">AI แชท</h3>
@@ -147,7 +147,7 @@ export default function AIChat() {
             <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', msg.role === 'user' ? 'bg-brand-primary/10' : 'bg-brand-accent/10')}>
               {msg.role === 'user' ? <User size={16} className="text-brand-primary" /> : <Bot size={16} className="text-brand-accent" />}
             </div>
-            <div className={cn('max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed', msg.role === 'user' ? 'rounded-br-none bg-brand-primary text-white' : 'rounded-bl-none bg-brand-bg-secondary text-brand-text-primary')}>
+            <div className={cn('max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed', msg.role === 'user' ? 'rounded-br-none bg-brand-primary text-slate-950' : 'rounded-bl-none bg-brand-bg-secondary text-brand-text-primary')}>
               <p className="whitespace-pre-wrap">{msg.content}</p>
             </div>
           </div>
@@ -160,9 +160,9 @@ export default function AIChat() {
             </div>
             <div className="rounded-xl rounded-bl-none bg-brand-bg-secondary px-4 py-3">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-text-secondary" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-text-secondary [animation-delay:0.1s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-brand-text-secondary [animation-delay:0.2s]" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-brand-primary" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-brand-primary [animation-delay:0.1s]" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-brand-primary [animation-delay:0.2s]" />
               </div>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function AIChat() {
         </div>
         <div className="flex items-center gap-2">
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} placeholder={isAuthenticated ? 'พิมพ์คำถามเกี่ยวกับหุ้น...' : 'เข้าสู่ระบบเพื่อถาม AI'} className="flex-1 rounded-lg border border-brand-border bg-brand-bg-secondary px-4 py-2.5 text-sm text-brand-text-primary outline-none placeholder:text-brand-text-secondary focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30" disabled={isLoading} />
-          <button onClick={() => handleSend()} disabled={!input.trim() || isLoading} aria-label="ส่งคำถาม" className="rounded-lg bg-brand-primary p-2.5 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50">
+          <button onClick={() => handleSend()} disabled={!input.trim() || isLoading} aria-label="ส่งคำถาม" className="rounded-lg bg-brand-primary p-2.5 text-slate-950 transition-colors hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50">
             <Send size={18} />
           </button>
         </div>

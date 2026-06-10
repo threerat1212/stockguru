@@ -11,14 +11,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-brand-bg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100'
+    const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-lg transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-brand-primary/30 focus:ring-offset-2 focus:ring-offset-brand-bg active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 relative overflow-hidden'
 
     const variants = {
-      primary: 'bg-brand-primary hover:bg-blue-600 text-white focus:ring-brand-primary',
-      secondary: 'bg-brand-card hover:bg-slate-600 text-brand-text-primary border border-brand-border focus:ring-brand-border',
-      ghost: 'bg-transparent hover:bg-brand-card text-brand-text-secondary hover:text-brand-text-primary focus:ring-brand-border',
-      danger: 'bg-brand-danger hover:bg-rose-600 text-white focus:ring-brand-danger',
-      success: 'bg-brand-success hover:bg-emerald-600 text-white focus:ring-brand-success',
+      primary: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:from-emerald-400 hover:to-emerald-500 focus:ring-emerald-500/40',
+      secondary: 'border border-brand-border bg-brand-card/80 backdrop-blur-sm text-brand-text-primary hover:border-brand-primary/50 hover:bg-brand-surface-hover hover:shadow-lg hover:shadow-emerald-500/10',
+      ghost: 'bg-transparent text-brand-text-secondary hover:bg-brand-card/60 hover:text-brand-text-primary',
+      danger: 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:from-rose-400 hover:to-rose-500',
+      success: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-slate-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40',
     }
 
     const sizes = {

@@ -18,7 +18,7 @@ export default function NewsInfographic({ article }: { article: NewsArticle }) {
   const score = article.marketImpactScore ?? 50
 
   return (
-    <div className="rounded-2xl border border-brand-border bg-gradient-to-br from-brand-card to-brand-bg-secondary p-4 sm:p-5">
+    <div className="rounded-xl border border-brand-border bg-brand-card p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
@@ -36,7 +36,7 @@ export default function NewsInfographic({ article }: { article: NewsArticle }) {
       </div>
 
       <div className="mb-4 h-2 overflow-hidden rounded-full bg-brand-bg">
-        <div className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-accent" style={{ width: `${Math.min(Math.max(score, 0), 100)}%` }} />
+        <div className="h-full rounded-full bg-brand-primary" style={{ width: `${Math.min(Math.max(score, 0), 100)}%` }} />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Clock } from 'lucide-react'
+import { ArrowRight, BarChart3, Clock, ExternalLink } from 'lucide-react'
 import type { NewsArticle } from '@/types/stock'
 import { newsDetailPath } from '@/lib/news/normalize'
 import { timeAgo } from '@/lib/utils/format'
@@ -80,6 +80,19 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
           <p className="text-sm text-brand-text-secondary line-clamp-3 mb-3">
             {article.summary}
           </p>
+
+          {article.references && article.references.length > 0 && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-brand-text-secondary">
+              <ExternalLink size={12} />
+              <span>{article.references.length} แหล่งอ้างอิง</span>
+            </div>
+          )}
+          {article.marketImpactScore != null && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-brand-warning">
+              <BarChart3 size={12} />
+              <span>Impact {article.marketImpactScore}/100</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1 text-xs text-brand-primary">อ่านรายละเอียด <ArrowRight size={12} /></span>

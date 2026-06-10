@@ -9,11 +9,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-brand-primary to-brand-accent rounded-lg flex items-center justify-center">
-                <TrendingUp size={18} className="text-white" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-brand-primary/35 bg-brand-primary/10">
+                <TrendingUp size={18} className="text-brand-primary" />
               </div>
               <div>
-                <h2 className="text-base font-bold gradient-text">StockGuru</h2>
+                <h2 className="text-base font-bold text-brand-text-primary">StockGuru</h2>
                 <p className="text-[10px] text-brand-text-secondary">สต็อกกูรู</p>
               </div>
             </div>

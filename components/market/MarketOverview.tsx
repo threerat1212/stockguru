@@ -30,8 +30,8 @@ export default function MarketOverview() {
             key={index.symbol}
             href="/screener"
             className={cn(
-              'block rounded-lg border border-brand-border bg-brand-card p-4 transition-colors duration-200',
-              'hover:border-brand-primary/30 hover:bg-brand-surface-hover/70 cursor-pointer'
+              'group block rounded-lg border border-brand-border bg-brand-card p-4 transition-colors duration-200',
+              'hover:border-brand-primary/40 hover:bg-brand-surface-hover/70 cursor-pointer'
             )}
           >
             <div className="mb-3 flex items-start justify-between gap-3">
@@ -41,7 +41,7 @@ export default function MarketOverview() {
               </div>
               <div
                 className={cn(
-                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
+                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors',
                   isPositive ? 'bg-brand-success/10' : 'bg-brand-danger/10'
                 )}
               >
@@ -66,6 +66,14 @@ export default function MarketOverview() {
             <div className="mt-3 flex items-center gap-1.5 border-t border-brand-border/60 pt-2 text-[11px] text-brand-text-muted">
               <Clock size={12} />
               <span>ใช้เป็นบริบท ไม่ใช่สัญญาณซื้อขาย</span>
+            </div>
+            <div
+              className={cn(
+                'mt-3 h-1 overflow-hidden rounded-full bg-brand-bg-secondary',
+                isPositive ? '[&>span]:bg-brand-success' : '[&>span]:bg-brand-danger'
+              )}
+            >
+              <span className="block h-full w-2/3 rounded-full transition-all group-hover:w-4/5" />
             </div>
           </Link>
         )

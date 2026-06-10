@@ -1,6 +1,8 @@
 import { getMarketIndices } from '@/lib/services/stock-service'
 import { apiSuccess, apiError } from '@/lib/api/response'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/market
  * Get market indices overview (S&P500, Dow, NASDAQ, Russell, SET)

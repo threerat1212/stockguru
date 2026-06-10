@@ -94,18 +94,58 @@ create table if not exists public.alerts (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users on delete cascade not null,
   symbol text not null,
+  type text not null default 'price' check (type in ('price', 'percent_change', 'volume_spike')),
   target_price numeric not null,
   condition text not null check (condition in ('above', 'below')),
   triggered boolean default false,
   triggered_at timestamptz,
+  notification_channels text[] default '{"email"}',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
+-- Idempotency ledger for alert deliveries. Cron checks this before sending email/push.
+create table if not exists public.alert_deliveries (
+  id uuid default gen_random_uuid() primary key,
+  alert_id uuid references public.alerts on delete cascade not null,
+  user_id uuid references auth.users on delete cascade not null,
+  channel text not null check (channel in ('email', 'push')),
+  delivery_key text not null,
+  status text not null default 'pending' check (status in ('pending', 'sent', 'failed', 'skipped')),
+  attempts int not null default 0,
+  last_attempt_at timestamptz,
+  sent_at timestamptz,
+  error text,
+  created_at timestamptz default now(),
+  unique(alert_id, channel, delivery_key)
+);
+
+-- Web push subscriptions.
+create table if not exists public.push_subscriptions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  endpoint text not null,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id, endpoint)
+);
+
 alter table public.alerts enable row level security;
+alter table public.alert_deliveries enable row level security;
+alter table public.push_subscriptions enable row level security;
 
 create policy "Users can CRUD own alerts"
   on public.alerts for all
+  using (auth.uid() = user_id);
+
+create policy "Users can view own alert deliveries"
+  on public.alert_deliveries for select
+  using (auth.uid() = user_id);
+
+create policy "Users can CRUD own push subscriptions"
+  on public.push_subscriptions for all
   using (auth.uid() = user_id);
 
 -- AI usage logs

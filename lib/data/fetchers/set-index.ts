@@ -1,3 +1,5 @@
+import { getMarketIndices } from '@/lib/services/stock-service'
+
 interface SetIndexData {
   index: string
   price: number
@@ -10,21 +12,29 @@ interface SetIndexData {
   open: number
   previousClose: number
   timestamp: string
+  meta?: unknown
 }
 
 export async function fetchSetIndexData(): Promise<SetIndexData> {
-  // Return mock data for SET index (no free API available)
+  const result = await getMarketIndices()
+  const setIndex = result.data.find((index) => index.symbol === 'SET') ?? result.data[0]
+
+  if (!setIndex) {
+    throw new Error('ไม่พบข้อมูลดัชนี SET')
+  }
+
   return {
-    index: 'SET',
-    price: 1350.00,
-    change: 0,
-    changePercent: 0,
-    volume: 50000000000,
+    index: setIndex.symbol,
+    price: setIndex.price,
+    change: setIndex.change,
+    changePercent: setIndex.changePercent,
+    volume: 0,
     marketCap: 0,
-    high: 1350.00,
-    low: 1350.00,
-    open: 1350.00,
-    previousClose: 1350.00,
+    high: setIndex.price,
+    low: setIndex.price,
+    open: setIndex.price,
+    previousClose: setIndex.price - setIndex.change,
     timestamp: new Date().toISOString(),
+    meta: result.meta,
   }
 }
