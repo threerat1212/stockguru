@@ -217,3 +217,4 @@ These repos inform the process only. Do not copy their generated UI, prompts, sc
 - Above the fold must show an actual dashboard surface, not a landing-page hero.
 - Visual QA must include desktop and mobile, plus at least one interaction path: preset scan, search, or AI prompt.
 - For the requested richer inspiration pass, use the inspiration as mood only: dark premium fintech lighting, central product stage, layered depth, and precise motion. Do not import crypto-wallet metaphors, huge marketing headlines, or decorative glass cards.
+- Home Dashboard polish rule: desktop `/` should prioritize a dense market desk: compact index tiles, a large central chart stage, right rail for watchlist and risk, and bottom decision queues. Premium treatment must come from layout rhythm, surface contrast, restrained lighting, and row/table precision, not decorative glass cards or oversized marketing copy.

@@ -79,7 +79,7 @@ function MiniSparkline({ id, path, tone }: { id: string; path: string; tone: 'up
 function MarketTile({ tile, index }: { tile: typeof marketTiles[0]; index: number }) {
   const toneClass = tile.tone === 'down' ? 'text-brand-danger' : tile.tone === 'info' ? 'text-brand-accent' : 'text-brand-primary'
   return (
-    <div className="card-modern card-modern-hover group relative min-h-[112px] overflow-hidden rounded-xl p-3">
+    <div className="market-tile card-modern-hover group min-h-[122px] rounded-xl p-4">
       <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-brand-primary/8 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="relative z-10 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -174,7 +174,7 @@ function IntradayChartPanel() {
 
 function RiskPanel() {
   return (
-    <div className="card-modern rounded-xl p-4 lg:p-5">
+    <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
           <Shield size={17} className="text-brand-primary" />
@@ -213,7 +213,7 @@ function ScanPresetCard({ preset }: { preset: typeof scanPresets[0] }) {
     emerald: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
   }
   return (
-    <Link href={preset.href} className="card-modern card-modern-hover flex flex-col rounded-xl p-4">
+    <Link href={preset.href} className="scan-card card-modern-hover flex flex-col rounded-xl border border-brand-border bg-brand-bg-secondary/40 p-4 transition-colors hover:border-brand-primary/35 hover:bg-brand-surface-hover">
       <div className={cn('mb-3 flex h-10 w-10 items-center justify-center rounded-xl border', toneColors[preset.tone])}>
         <Icon size={20} />
       </div>
@@ -244,7 +244,7 @@ function OpportunityQueue() {
     return colors[tone] || colors.info
   }
   return (
-    <div className="card-modern rounded-xl p-4 lg:p-5">
+    <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
           <Target size={17} className="text-brand-primary" />
@@ -254,7 +254,7 @@ function OpportunityQueue() {
         <Link href="/screener" className="text-xs font-medium text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table-compact">
           <thead>
             <tr className="border-b border-brand-border/50">
               <th className="pb-2 text-left text-[11px] font-medium text-brand-text-muted">อันดับ</th>
@@ -291,7 +291,7 @@ function OpportunityQueue() {
 
 function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; empty?: boolean }) {
   return (
-    <div className="card-modern rounded-xl p-4 lg:p-5">
+    <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="min-w-0">
           <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
@@ -303,7 +303,7 @@ function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; 
       </div>
       {stocks.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-compact">
             <thead>
               <tr className="border-b border-brand-border/50">
                 <th className="pb-2 text-left text-[11px] font-medium text-brand-text-muted">สัญลักษณ์</th>
@@ -314,7 +314,7 @@ function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; 
             </thead>
             <tbody>
               {stocks.slice(0, 6).map((stock) => (
-                <tr key={stock.symbol} className="border-b border-brand-border/30 last:border-b-0">
+                <tr key={stock.symbol} className="watchlist-row border-b border-brand-border/30 last:border-0">
                   <td className="py-2.5">
                     <Link href={`/stock/${stock.symbol}`} className="text-sm font-semibold text-brand-text-primary hover:text-brand-primary">
                       {stock.symbol.replace('.BK', '')}
@@ -345,7 +345,7 @@ function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; 
 
 function ScanPresetSection() {
   return (
-    <div className="card-modern rounded-xl p-4 lg:p-5">
+    <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-brand-text-primary">เริ่มลงทุนหุ้น</h2>
@@ -362,7 +362,7 @@ function ScanPresetSection() {
 
 function VolumeLeaderTable({ stocks, title, icon: Icon }: { stocks: string[][]; title: string; icon: any }) {
   return (
-    <div className="card-modern rounded-xl p-4 lg:p-5">
+    <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center gap-2">
         <Icon size={17} className="text-brand-primary" />
         <h2 className="text-base font-semibold text-brand-text-primary">{title}</h2>
@@ -395,12 +395,12 @@ export default function HomePage() {
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
   return (
-    <div className="min-w-0 space-y-5 fade-in">
+    <div className="dashboard-shell min-w-0 space-y-6 px-4 pb-8 sm:px-6 lg:px-8">
       {/* Market Overview */}
       <section>
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary sm:text-3xl">Market desk วันนี้</h1>
+            <h1 className="dashboard-title text-2xl font-bold text-brand-text-primary sm:text-[2rem]">Market Desk</h1>
             <p className="mt-1 text-sm text-brand-text-secondary">สแกนตลาดไทยและต่างประเทศ พร้อมระบบประเมินความเสี่ยง</p>
           </div>
           <button className="hidden items-center gap-1 rounded-lg border border-brand-border bg-brand-card px-3 py-1.5 text-xs text-brand-text-secondary transition-colors hover:border-brand-primary/40 hover:text-brand-text-primary sm:flex">
@@ -417,7 +417,7 @@ export default function HomePage() {
         <div className="space-y-5">
           <IntradayChartPanel />
 
-          <div className="card-modern rounded-xl p-4 lg:p-5">
+          <div className="market-panel rounded-xl p-4 lg:p-5">
             <div className="mb-4 flex items-center gap-2">
               <Brain size={17} className="text-brand-accent" />
               <h2 className="text-base font-semibold text-brand-text-primary">AI Market Brief</h2>
