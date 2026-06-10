@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { useQueries } from '@tanstack/react-query'
+import type { StockQuote } from '@/types/stock'
 import {
   Bell,
   Plus,
@@ -13,14 +15,14 @@ import {
   X,
   Lock,
 } from 'lucide-react'
-import { useQuote } from '@/lib/hooks/use-stock'
-import { useAlerts } from '@/lib/hooks/use-alerts'
+import Badge from '@/components/ui/Badge'
+import AuthModal from '@/components/auth/AuthModal'
 import { formatCurrency, cn } from '@/lib/utils/format'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import Badge from '@/components/ui/Badge'
-import AuthModal from '@/components/auth/AuthModal'
+import { useAlerts } from '@/lib/hooks/use-alerts'
+import { useQuote } from '@/lib/hooks/use-stock'
 import type { AlertChannel, AlertType, PushSubscription } from '@/lib/alerts/types'
 
 const FOREIGN_SYMBOLS = new Set(['AAPL', 'MSFT', 'NVDA', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'JPM', 'BABA'])
@@ -54,32 +56,64 @@ function getAlertTypePlaceholder(type: AlertType) {
   }
 }
 
-function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; type: AlertType; triggered: boolean; targetPrice: number; condition: 'above' | 'below' }[]; onTrigger: (symbol: string) => void }) {
-  const symbols = [...new Set(alerts.filter(a => !a.triggered).map(a => a.symbol))]
-  const prevPrices = useRef<Record<string, number>>({})
+function toggleAlertChannel(channels: AlertChannel[], channel: AlertChannel) {
+  return channels.includes(channel) ? channels.filter((item) => item !== channel) : [...channels, channel]
+}
 
-  // Poll each symbol
-  for (const sym of symbols) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: quote } = useQuote(sym)
-    if (quote) {
-      const prev = prevPrices.current[sym]
-      if (prev !== quote.price) {
-        prevPrices.current[sym] = quote.price
-        // Check all alerts for this symbol
-        for (const alert of alerts) {
-          if (alert.symbol !== sym || alert.triggered) continue
-          const currentValue = alert.type === 'percent_change' ? quote.changePercent : alert.type === 'volume_spike' ? quote.volume : quote.price
-          if (
-            (alert.condition === 'above' && currentValue >= alert.targetPrice) ||
-            (alert.condition === 'below' && currentValue <= alert.targetPrice)
-          ) {
-            onTrigger(sym)
-          }
+function getPushMessageClass(message: string) {
+  const lower = message.toLowerCase()
+  if (lower.includes('ไม่ได้') || lower.includes('ต้อง') || lower.includes('ยังไม่ได้') || lower.includes('ไม่ถูกต้อง')) return 'text-brand-warning'
+  return 'text-brand-success'
+}
+
+function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; type: AlertType; triggered: boolean; targetPrice: number; condition: 'above' | 'below' }[]; onTrigger: (symbol: string) => void }) {
+  const prevPrices = useRef<Record<string, number>>({})
+  const activeSymbols = useMemo(
+    () => [...new Set(alerts.filter((alert) => !alert.triggered).map((alert) => alert.symbol))],
+    [alerts]
+  )
+
+  const quoteResults = useQueries({
+    queries: activeSymbols.map((symbol) => ({
+      queryKey: ['quote', symbol] as const,
+      queryFn: async (): Promise<{ data: StockQuote; meta?: unknown }> => {
+        const res = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(symbol)}`)
+        const json = await res.json()
+        if (!json.success) throw new Error(json.error || 'API request failed')
+        return json.data as { data: StockQuote; meta?: unknown }
+      },
+      enabled: activeSymbols.length > 0,
+      refetchInterval: 30_000,
+      staleTime: 15_000,
+    })),
+  })
+
+  useEffect(() => {
+    const quoteBySymbol = activeSymbols.reduce<Record<string, StockQuote | undefined>>((acc, symbol, index) => {
+      acc[symbol] = quoteResults[index]?.data?.data
+      return acc
+    }, {})
+
+    activeSymbols.forEach((symbol) => {
+      const quote = quoteBySymbol[symbol]
+      if (!quote) return
+
+      const prev = prevPrices.current[symbol]
+      if (prev === quote.price) return
+      prevPrices.current[symbol] = quote.price
+
+      alerts.forEach((alert) => {
+        if (alert.symbol !== symbol || alert.triggered) return
+        const currentValue = alert.type === 'percent_change' ? quote.changePercent : alert.type === 'volume_spike' ? quote.volume : quote.price
+        if (
+          (alert.condition === 'above' && currentValue >= alert.targetPrice) ||
+          (alert.condition === 'below' && currentValue <= alert.targetPrice)
+        ) {
+          onTrigger(symbol)
         }
-      }
-    }
-  }
+      })
+    })
+  }, [activeSymbols, quoteResults, alerts, onTrigger])
 
   return null
 }
@@ -174,6 +208,8 @@ export default function AlertsPage() {
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushMessage, setPushMessage] = useState('')
   const [formError, setFormError] = useState('')
+  const pushSupported = mounted && 'serviceWorker' in navigator && 'PushManager' in window
+  const canUsePush = isAuthenticated && pushSupported
 
   useEffect(() => {
     setMounted(true)
@@ -207,7 +243,7 @@ export default function AlertsPage() {
       return
     }
 
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!pushSupported) {
       setPushMessage('เบราว์เซอร์นี้ไม่รองรับ Web Push')
       return
     }
@@ -217,8 +253,13 @@ export default function AlertsPage() {
       const keyData = await keyRes.json().catch(() => ({}))
       const publicKey = keyData.data?.publicKey
 
+      if (!keyData.data?.configured) {
+        setPushMessage('ยังไม่ได้ตั้งค่า VAPID keys')
+        return
+      }
+
       if (!publicKey) {
-        setPushMessage('ยังไม่ได้ตั้งค่า VAPID public key')
+        setPushMessage('VAPID public key ไม่ถูกต้อง')
         return
       }
 
@@ -257,15 +298,15 @@ export default function AlertsPage() {
       console.error('Failed to toggle push:', err)
       setPushMessage('ไม่สามารถเปิด push notification ได้')
     }
-  }, [isAuthenticated, pushEnabled, registerPushSubscription, unregisterPushSubscription])
+  }, [isAuthenticated, pushSupported, pushEnabled, registerPushSubscription, unregisterPushSubscription])
 
   useEffect(() => {
-    if (!mounted || !isAuthenticated || !('serviceWorker' in navigator) || !('PushManager' in window)) return
+    if (!canUsePush) return
     navigator.serviceWorker.ready
       .then((registration) => registration.pushManager.getSubscription())
       .then((subscription) => setPushEnabled(!!subscription))
       .catch(() => undefined)
-  }, [mounted, isAuthenticated])
+  }, [canUsePush])
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -276,6 +317,11 @@ export default function AlertsPage() {
 
     if (!symbol) { setFormError('กรุณาใส่ชื่อหุ้น'); return }
     if (isNaN(targetPrice) || targetPrice <= 0) { setFormError('กรุณาใส่ค่าแจ้งเตือนที่ถูกต้อง'); return }
+    if (!isAuthenticated) { setFormError('กรุณาเข้าสู่ระบบเพื่อตั้งการแจ้งเตือน'); return }
+    if (formChannels.includes('push') && !canUsePush) {
+      setFormError('ต้องล็อกอินและใช้เบราว์เซอร์ที่รองรับ Web Push ก่อนเลือก Push')
+      return
+    }
 
     try {
       await addAlert(symbol, targetPrice, formCondition, {
@@ -422,7 +468,7 @@ export default function AlertsPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setFormChannels((prev) => prev.includes('email') ? prev.filter((channel) => channel !== 'email') : [...prev, 'email'])}
+              onClick={() => setFormChannels((prev) => toggleAlertChannel(prev, 'email'))}
               className={cn(
                 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
                 formChannels.includes('email')
@@ -434,13 +480,15 @@ export default function AlertsPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFormChannels((prev) => prev.includes('push') ? prev.filter((channel) => channel !== 'push') : [...prev, 'push'])}
+              disabled={!canUsePush}
+              onClick={() => setFormChannels((prev) => toggleAlertChannel(prev, 'push'))}
               className={cn(
-                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5',
+                'flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed',
                 formChannels.includes('push')
                   ? 'bg-brand-info/10 text-brand-info border border-brand-info/30'
                   : 'bg-brand-bg-secondary text-brand-text-secondary border border-brand-border'
               )}
+              title={isAuthenticated ? 'เบราว์เซอร์นี้ไม่รองรับ Web Push' : 'เข้าสู่ระบบเพื่อเลือก Push'}
             >
               Push
             </button>
@@ -463,14 +511,22 @@ export default function AlertsPage() {
           </CardTitle>
         </CardHeader>
         <div className="space-y-3">
-          <p className="text-sm text-brand-text-secondary">
-            เปิดการแจ้งเตือนแบบ browser push เพื่อให้ cron ส่ง alert เข้าเครื่องได้โดยตรง เมื่อตั้งค่า VAPID keys แล้ว
-          </p>
+          {!isAuthenticated ? (
+            <p className="text-sm text-brand-text-secondary">
+              เข้าสู่ระบบเพื่อเปิดการแจ้งเตือนแบบ browser push ให้ cron ส่ง alert เข้าเครื่องได้โดยตรง
+            </p>
+          ) : !pushSupported ? (
+            <p className="text-sm text-brand-warning">เบราว์เซอร์นี้ไม่รองรับ Web Push</p>
+          ) : (
+            <p className="text-sm text-brand-text-secondary">
+              เปิดการแจ้งเตือนแบบ browser push เพื่อให้ cron ส่ง alert เข้าเครื่องได้โดยตรง เมื่อตั้งค่า VAPID keys แล้ว
+            </p>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <Button type="button" variant="secondary" onClick={handlePushToggle}>
-              {pushEnabled ? 'ปิด Push' : 'เปิด Push'}
+              {isAuthenticated ? (pushEnabled ? 'ปิด Push' : 'เปิด Push') : 'ล็อกอินเพื่อเปิด Push'}
             </Button>
-            {pushMessage && <p className="text-xs text-brand-text-secondary">{pushMessage}</p>}
+            {pushMessage && <p className={cn('text-xs', getPushMessageClass(pushMessage))}>{pushMessage}</p>}
           </div>
         </div>
       </Card>

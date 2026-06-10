@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       auth: authKey,
       updated_at: new Date().toISOString(),
     }, {
-      onConflict: 'endpoint',
+      onConflict: 'user_id,endpoint',
     })
 
   if (error) {

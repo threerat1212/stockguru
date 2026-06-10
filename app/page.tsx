@@ -388,7 +388,7 @@ export default function HomePage() {
           <div className="card-modern rounded-xl p-4 lg:p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
-                <Star size={17} className="text-brand-warning" /> หุ้นที่ติดต่อ
+                <Star size={17} className="text-brand-warning" /> หุ้นที่สนใจ
               </h2>
               <Link href="/watchlist" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
             </div>

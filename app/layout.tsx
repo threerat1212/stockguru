@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   description: 'เว็บไซต์วิเคราะห์หุ้นไทยด้วย AI ครบครันด้วยกราฟเทคนิค ข่าวสาร และเครื่องมือวิเคราะห์',
   keywords: ['หุ้นไทย', 'SET', 'วิเคราะห์หุ้น', 'AI', 'StockGuru', 'สต็อกกูรู'],
   manifest: '/manifest.webmanifest',
-  themeColor: '#0A0E1A',
   appleWebApp: {
     capable: true,
     title: 'StockGuru',
@@ -20,6 +19,10 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icon.svg',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0A0E1A',
 }
 
 export default function RootLayout({

@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
                 targetPrice: smartAlert.targetPrice,
                 currentPrice: Number(alert._current_value ?? smartAlert.targetPrice),
                 alertType: smartAlert.type,
+                alertId: smartAlert.id,
               })))
 
               sent = results.some(Boolean)

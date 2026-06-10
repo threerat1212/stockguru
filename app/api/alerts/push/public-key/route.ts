@@ -5,6 +5,7 @@ export async function GET() {
     success: true,
     data: {
       publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null,
+      configured: Boolean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
     },
   })
 }

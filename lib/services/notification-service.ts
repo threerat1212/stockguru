@@ -13,6 +13,7 @@ interface AlertNotification {
   targetPrice: number
   currentPrice: number
   alertType?: 'price' | 'percent_change' | 'volume_spike'
+  alertId?: string
 }
 
 interface WebPushSubscription {
@@ -134,7 +135,7 @@ export async function sendWebPushAlert(subscription: WebPushSubscription, notifi
       icon: '/icons/icon-192.png',
       data: {
         userId: notification.userId,
-        alertId: notification.userId,
+        alertId: notification.alertId ?? notification.userId,
         symbol: notification.symbol,
         url: `/stock/${encodeURIComponent(notification.symbol)}`,
       },
