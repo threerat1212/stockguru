@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Activity, ArrowRight, BarChart3, Brain, CheckCircle2, ChevronDown,
+  Activity, ArrowRight, BarChart3, Brain, CheckCircle2, ChevronDown, Coins,
   Globe2, LineChart, Search, Shield, Star, Target, TrendingUp, Zap,
 } from 'lucide-react'
 import { useTrending } from '@/lib/hooks/use-stock'
@@ -40,6 +40,7 @@ const scanPresets = [
   { href: '/screener', icon: Target, title: 'หุ้นเด่นวันนี้', detail: 'เทรนด์ขึ้นกำลังเปลี่ยนสูง', count: '52 หุ้น', tone: 'cyan' as const },
   { href: '/screener', icon: TrendingUp, title: 'Breakout', detail: 'ทะลุแนวต้าน 20 วัน', count: '38 หุ้น', tone: 'green' as const },
   { href: '/screener', icon: BarChart3, title: 'High Volume', detail: 'มูลค่าซื้อขายสูงกว่าค่าเฉลี่ย', count: '61 หุ้น', tone: 'violet' as const },
+  { href: '/screener', icon: Coins, title: 'Dividend', detail: 'ผลตอบแทนปันผลสม่ำเสมอ', count: '43 หุ้น', tone: 'amber' as const },
   { href: '/screener', icon: Zap, title: 'Gainer 5%+', detail: 'ปรับตัวขึ้นมากกว่า 5%', count: '24 หุ้น', tone: 'emerald' as const },
 ]
 
@@ -208,6 +209,7 @@ function ScanPresetCard({ preset }: { preset: typeof scanPresets[0] }) {
     cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     green: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     violet: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
     emerald: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
   }
   return (
@@ -287,6 +289,77 @@ function OpportunityQueue() {
   )
 }
 
+function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; empty?: boolean }) {
+  return (
+    <div className="card-modern rounded-xl p-4 lg:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
+            <Star size={17} className="text-brand-warning" /> หุ้นที่ต้องดูต่อ
+          </h2>
+          {empty && <p className="mt-0.5 text-[11px] text-brand-text-muted">ยังไม่มีรายการโปรด — แสดงตัวอย่างจากตลาด</p>}
+        </div>
+        <Link href="/watchlist" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
+      </div>
+      {stocks.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-brand-border/50">
+                <th className="pb-2 text-left text-[11px] font-medium text-brand-text-muted">สัญลักษณ์</th>
+                <th className="pb-2 text-right text-[11px] font-medium text-brand-text-muted">ราคา</th>
+                <th className="pb-2 text-right text-[11px] font-medium text-brand-text-muted">เปลี่ยน</th>
+                <th className="pb-2 text-right text-[11px] font-medium text-brand-text-muted">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stocks.slice(0, 6).map((stock) => (
+                <tr key={stock.symbol} className="border-b border-brand-border/30 last:border-b-0">
+                  <td className="py-2.5">
+                    <Link href={`/stock/${stock.symbol}`} className="text-sm font-semibold text-brand-text-primary hover:text-brand-primary">
+                      {stock.symbol.replace('.BK', '')}
+                    </Link>
+                    <p className="truncate text-[11px] text-brand-text-muted">{stock.name}</p>
+                  </td>
+                  <td className="py-2.5 text-right text-sm font-mono-nums text-brand-text-primary">{formatCurrency(stock.price, getCurrency(stock))}</td>
+                  <td className="py-2.5 text-right">
+                    <span className={cn('text-xs font-mono-nums', getPriceColor(stock.change))}>{formatCurrency(stock.change, getCurrency(stock))}</span>
+                  </td>
+                  <td className="py-2.5 text-right">
+                    <span className={cn('text-xs font-mono-nums', getPriceColor(stock.changePercent))}>{formatPercent(stock.changePercent)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-brand-border/50 bg-brand-bg-secondary/40 p-4 text-center">
+          <p className="text-sm text-brand-text-secondary">ยังไม่มีหุ้นในรายการโปรด</p>
+          <Link href="/screener" className="mt-2 inline-flex text-xs text-brand-primary hover:text-emerald-300">ไปสแกนหุ้น</Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ScanPresetSection() {
+  return (
+    <div className="card-modern rounded-xl p-4 lg:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-brand-text-primary">เริ่มลงทุนหุ้น</h2>
+          <p className="mt-0.5 text-xs text-brand-text-muted">คัดจากสัญญาณ Screener</p>
+        </div>
+        <Link href="/screener" className="text-xs text-brand-primary hover:text-emerald-300">Screener ทั้งหมด</Link>
+      </div>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+        {scanPresets.map((preset) => <ScanPresetCard key={preset.title} preset={preset} />)}
+      </div>
+    </div>
+  )
+}
+
 function VolumeLeaderTable({ stocks, title, icon: Icon }: { stocks: string[][]; title: string; icon: any }) {
   return (
     <div className="card-modern rounded-xl p-4 lg:p-5">
@@ -316,7 +389,8 @@ export default function HomePage() {
   const { data: stocks = [] } = useTrending()
   const { isInWatchlist } = useWatchlist()
   const displayStocks = stocks.length > 0 ? stocks : fallbackStocks
-  const watchlistPreview = displayStocks.filter((s) => isInWatchlist(s.symbol)).slice(0, 4)
+  const watchlistPreview = displayStocks.filter((s) => isInWatchlist(s.symbol)).slice(0, 6)
+  const watchlistRows = watchlistPreview.length > 0 ? watchlistPreview : displayStocks.slice(0, 6)
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
@@ -339,80 +413,47 @@ export default function HomePage() {
       </section>
 
       {/* Main grid */}
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]">
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_330px]">
         <div className="space-y-5">
           <IntradayChartPanel />
 
-          {/* AI Market Brief + Scan Presets */}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
-            <div className="card-modern rounded-xl p-4 lg:p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <Brain size={17} className="text-brand-accent" />
-                <h2 className="text-base font-semibold text-brand-text-primary">AI Market Brief</h2>
-                <span className="ml-auto text-[11px] text-brand-text-muted">อัปเดต 10:00</span>
-              </div>
-              <div className="space-y-3">
-                <div className="rounded-lg border border-brand-border/40 bg-brand-bg-secondary/50 p-3">
-                  <p className="text-sm leading-relaxed text-brand-text-secondary">
-                    ตลาดหุ้นไทยเช้านี้เปิดบวกตามแรงซื้อจากต่างชาติ นักลงทุนให้ความสนใจกลุ่มพลังงานและแบงก์
-                    หลังราคาน้ำมันดิบเวสต์เท็กซ์ฟื้นตัว 1,395 ดอลลาร์ และสัญญาณเงินเฟ้อสหรัฐชะลอตัว
-                    มองแนวรับสำคัญ 1,375 จุด
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">Energy, Bank, Commerce</span>
-                  <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">US CPI, Fed policy</span>
-                  <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">Fund flow, OPEC+</span>
-                </div>
-              </div>
+          <div className="card-modern rounded-xl p-4 lg:p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Brain size={17} className="text-brand-accent" />
+              <h2 className="text-base font-semibold text-brand-text-primary">AI Market Brief</h2>
+              <span className="ml-auto text-[11px] text-brand-text-muted">อัปเดต 10:00</span>
             </div>
             <div className="space-y-3">
-              {scanPresets.map((preset) => <ScanPresetCard key={preset.title} preset={preset} />)}
+              <div className="rounded-lg border border-brand-border/40 bg-brand-bg-secondary/50 p-3">
+                <p className="text-sm leading-relaxed text-brand-text-secondary">
+                  ตลาดหุ้นไทยเช้านี้เปิดบวกตามแรงซื้อจากต่างชาติ นักลงทุนให้ความสนใจกลุ่มพลังงานและแบงก์
+                  หลังราคาน้ำมันดิบเวสต์เท็กซ์ฟื้นตัว 1,395 ดอลลาร์ และสัญญาณเงินเฟ้อสหรัฐชะลอตัว
+                  มองแนวรับสำคัญ 1,375 จุด
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">Energy, Bank, Commerce</span>
+                <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">US CPI, Fed policy</span>
+                <span className="rounded-md border border-brand-border bg-brand-card px-2.5 py-1 text-xs text-brand-text-secondary">Fund flow, OPEC+</span>
+              </div>
             </div>
           </div>
 
-          {/* Volume Leader + US Leaders */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <VolumeLeaderTable stocks={[['PTT', '33.75', '+0.50', '+1.51%'], ['ADVANC', '245.00', '-1.00', '-0.41%'], ['KBANK', '133.50', '+2.00', '+1.52%'], ['CPALL', '57.25', '+0.50', '+0.88%'], ['BBL', '153.00', '+1.50', '+0.99%']]} title="Volume leader" icon={BarChart3} />
             <VolumeLeaderTable stocks={usLeaders} title="US leaders" icon={TrendingUp} />
           </div>
-
-          <OpportunityQueue />
         </div>
 
-        {/* Right sidebar */}
         <aside className="space-y-5">
+          <WatchlistPreview stocks={watchlistRows} empty={watchlistPreview.length === 0} />
           <RiskPanel />
-
-          {/* Watchlist */}
-          <div className="card-modern rounded-xl p-4 lg:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
-                <Star size={17} className="text-brand-warning" /> หุ้นที่สนใจ
-              </h2>
-              <Link href="/watchlist" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
-            </div>
-            <div className="space-y-2">
-              {watchlistPreview.length > 0 ? watchlistPreview.map((stock) => (
-                <Link key={stock.symbol} href={`/stock/${stock.symbol}`} className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-brand-bg-secondary/50">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-brand-text-primary">{stock.symbol.replace('.BK', '')}</span>
-                    <span className="text-xs text-brand-text-muted">{stock.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-mono-nums text-brand-text-primary">{formatCurrency(stock.price, getCurrency(stock))}</p>
-                    <p className={cn('text-xs font-mono-nums', getPriceColor(stock.changePercent))}>{formatPercent(stock.changePercent)}</p>
-                  </div>
-                </Link>
-              )) : (
-                <div className="text-center py-4">
-                  <p className="text-sm text-brand-text-secondary">ยังไม่มีหุ้นในรายการโปรด</p>
-                  <Link href="/screener" className="mt-2 text-xs text-brand-primary hover:text-emerald-300">ไปสแกนหุ้น</Link>
-                </div>
-              )}
-            </div>
-          </div>
         </aside>
+      </section>
+
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+        <ScanPresetSection />
+        <OpportunityQueue />
       </section>
     </div>
   )
