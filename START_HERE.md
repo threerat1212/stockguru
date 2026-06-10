@@ -100,6 +100,12 @@ START_HERE.md             # เอกสารนี้
 - [x] **PR7** — Tests (e2e golden path ขยาย, CI workflow พร้อม)
 - [x] **PR8** — Polish (`as any` = 0 ทั้งโปรเจกต์, `Record<string, unknown>`, `Time` type จาก lightweight-charts)
 
+### รอบที่ 4 — Home Dashboard UX/UI Polish
+- [x] ปรับหน้า Home `/` เป็น market desk layout: market tiles, central chart stage, AI brief, watchlist/risk rail, scan presets, opportunity queue
+- [x] เพิ่ม visual polish แบบ restrained premium: `market-panel`, `market-tile`, `table-compact`, `scan-card`, `watchlist-row`
+- [x] อัปเดต `DESIGN.md` ให้บันทึก Home Dashboard polish rule, empty watchlist behavior, และ validation checklist
+- [x] Verification: `npm run typecheck`, `npm run build`, `npm test`, local `/` smoke test, browser snapshot/console check
+
 ---
 
 ## Gap Analysis: StockGuru vs Top 5 Market Platforms

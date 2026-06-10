@@ -150,6 +150,9 @@ Motion is intentional, never decorative. It guides attention to what changed, no
 - **News:** 3 market-impact cards with category, time, related symbols, and one-line impact. Avoid portal-like news grids.
 - **AI Chat:** Fixed-height panel with guest-limit indicator, evidence/risk language, and suggested next actions after an answer.
 - **Right rail:** Watchlist mini-view + "Before you decide" checklist. The checklist is advisory and specific: volume, sector confirmation, news driver, alert/watchlist follow-up.
+- **Home Dashboard polish implementation:** Desktop `/` uses `market-panel`, `market-tile`, `table-compact`, `scan-card`, and `watchlist-row` treatments to keep the surface dense, table-driven, and readable. Premium feel should come from restrained surface contrast, compact market-status chrome, central chart stage, and precise row spacing, not decorative glass cards or oversized marketing copy.
+- **Watchlist empty state:** If the user has no saved watchlist, the preview can show market examples so the dashboard still communicates the intended workflow. The copy must make clear that it is an example, not a real saved watchlist.
+- **Validation checklist:** `npm run typecheck`, `npm run build`, `npm test`, local `/` smoke test, browser snapshot/console check, and visual comparison against the approved reference direction.
 
 ### Stock Detail
 - **Header:** Symbol, name, price, change % — all on one row. Back arrow + watchlist toggle.
