@@ -4,6 +4,12 @@ const envSchema = z.object({
   // AI Provider
   MIMO_API_KEY: z.string().min(1).optional(),
   MIMO_BASE_URL: z.string().url().optional(),
+  DEEPSEEK_API_KEY: z.string().min(1).optional(),
+  DEEPSEEK_BASE_URL: z.string().url().optional(),
+  OPENROUTER_API_KEY: z.string().min(1).optional(),
+  AGENT_LOOP_LLM_PROVIDER: z.enum(['openrouter', 'mimo', 'deepseek']).optional(),
+  AGENT_LOOP_LLM_BASE_URL: z.string().url().optional(),
+  AGENT_LOOP_LLM_MODEL: z.string().min(1).optional(),
 
   // Supabase
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
@@ -38,6 +44,12 @@ export function getEnv(): Env {
   const result = envSchema.safeParse({
     MIMO_API_KEY: process.env.MIMO_API_KEY,
     MIMO_BASE_URL: process.env.MIMO_BASE_URL,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL,
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    AGENT_LOOP_LLM_PROVIDER: process.env.AGENT_LOOP_LLM_PROVIDER,
+    AGENT_LOOP_LLM_BASE_URL: process.env.AGENT_LOOP_LLM_BASE_URL,
+    AGENT_LOOP_LLM_MODEL: process.env.AGENT_LOOP_LLM_MODEL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,

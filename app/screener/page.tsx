@@ -64,6 +64,17 @@ function getCurrency(stock: ScreenerStock) {
   return stock.currency ?? (stock.symbol.endsWith('.BK') ? 'THB' : 'USD')
 }
 
+function formatTableCurrency(value: number, currency: string) {
+  const symbol = currency === 'THB' ? '฿' : currency === 'USD' ? '$' : `${currency} `
+  const abs = Math.abs(value)
+  const sign = value < 0 ? '-' : ''
+  if (abs >= 1_000_000_000_000) return `${sign}${symbol}${(abs / 1_000_000_000_000).toFixed(2)}T`
+  if (abs >= 1_000_000_000) return `${sign}${symbol}${(abs / 1_000_000_000).toFixed(2)}B`
+  if (abs >= 1_000_000) return `${sign}${symbol}${(abs / 1_000_000).toFixed(2)}M`
+  if (abs >= 1_000) return `${sign}${symbol}${(abs / 1_000).toFixed(1)}K`
+  return formatCurrency(value, currency)
+}
+
 function numberInput(value?: number) {
   return value === undefined || Number.isNaN(value) ? '' : String(value)
 }
@@ -192,6 +203,13 @@ export default function ScreenerPage() {
     maxPrice,
     minDividendYield,
   ])
+
+  const isFocusedScan = Boolean(searchQuery.trim() || activeFilters.length > 0 || activeQuickScreen)
+  const visibleStocks = useMemo(
+    () => (isFocusedScan ? filteredStocks : filteredStocks.slice(0, 24)),
+    [filteredStocks, isFocusedScan]
+  )
+  const isPreviewLimited = !isFocusedScan && filteredStocks.length > visibleStocks.length
 
   useEffect(() => {
     try {
@@ -593,41 +611,67 @@ export default function ScreenerPage() {
             </Button>
           </div>
         ) : (
+          <>
+          <div className="flex flex-col gap-2 border-b border-brand-border px-4 py-3 text-sm text-brand-text-secondary md:flex-row md:items-center md:justify-between">
+            <span>
+              {isPreviewLimited
+                ? `แสดงตัวอย่าง ${visibleStocks.length} รายการแรกจาก ${formatNumber(filteredStocks.length, 0)} รายการ ใช้ค้นหาหรือตัวกรองเพื่อเจาะหุ้นที่ต้องการ`
+                : `แสดง ${formatNumber(visibleStocks.length, 0)} รายการตามเงื่อนไขปัจจุบัน`}
+            </span>
+            {isPreviewLimited && (
+              <button type="button" onClick={() => setShowFilters(true)} className="self-start text-xs font-semibold text-brand-primary hover:text-emerald-300 md:self-auto">
+                เปิดตัวกรอง
+              </button>
+            )}
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-[1180px] w-full table-fixed">
+              <colgroup>
+                <col className="w-[128px]" />
+                <col className="w-[220px]" />
+                <col className="w-[76px]" />
+                <col className="w-[112px]" />
+                <col className="w-[100px]" />
+                <col className="w-[118px]" />
+                <col className="w-[104px]" />
+                <col className="w-[118px]" />
+                <col className="w-[64px]" />
+                <col className="w-[86px]" />
+                <col className="w-[96px]" />
+              </colgroup>
               <thead className="sticky top-0 z-10 bg-brand-card">
                 <tr className="border-b border-brand-border">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-brand-text-secondary">สัญลักษณ์</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-brand-text-secondary">ชื่อบริษัท</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-brand-text-secondary">ตลาด</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-brand-text-secondary">กลุ่ม</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-text-secondary">สัญลักษณ์</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-text-secondary">ชื่อบริษัท</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-text-secondary">ตลาด</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-brand-text-secondary">กลุ่ม</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">
                     <button type="button" onClick={() => handleSort('price')} className="flex items-center gap-1 ml-auto hover:text-brand-text-primary transition-colors">
                       ราคา <SortIcon field="price" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">
                     <button type="button" onClick={() => handleSort('change')} className="flex items-center gap-1 ml-auto hover:text-brand-text-primary transition-colors">
                       เปลี่ยนแปลง <SortIcon field="change" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">
                     <button type="button" onClick={() => handleSort('volume')} className="flex items-center gap-1 ml-auto hover:text-brand-text-primary transition-colors">
                       Volume <SortIcon field="volume" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">
                     <button type="button" onClick={() => handleSort('marketCap')} className="flex items-center gap-1 ml-auto hover:text-brand-text-primary transition-colors">
                       มูลค่าตลาด <SortIcon field="marketCap" />
                     </button>
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">P/E</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">Div Yield</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-brand-text-secondary">ทำต่อ</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">P/E</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">Div Yield</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-brand-text-secondary">ทำต่อ</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStocks.map((stock) => {
+                {visibleStocks.map((stock) => {
                   const displaySym = stock.symbol.replace('.BK', '')
                   const isPositive = stock.change >= 0
                   const inWatchlist = isInWatchlist(stock.symbol)
@@ -639,41 +683,49 @@ export default function ScreenerPage() {
                       key={stock.symbol}
                       className="border-b border-brand-border/50 hover:bg-brand-bg-secondary/50 transition-colors"
                     >
-                      <td className="px-4 py-3">
-                        <Link href={`/stock/${encodeURIComponent(stock.symbol)}`} className="flex items-center gap-2 group">
+                      <td className="px-4 py-3 align-middle">
+                        <Link href={`/stock/${encodeURIComponent(stock.symbol)}`} className="group flex min-w-0 items-center gap-2">
                           <div className="w-8 h-8 bg-brand-primary/10 rounded-lg flex items-center justify-center shrink-0">
                             <span className="text-xs font-bold text-brand-primary">{displaySym.substring(0, 2)}</span>
                           </div>
-                          <span className="text-sm font-semibold text-brand-text-primary group-hover:text-brand-primary transition-colors">
+                          <span className="min-w-0 truncate text-sm font-semibold text-brand-text-primary transition-colors group-hover:text-brand-primary">
                             {displaySym}
                           </span>
                         </Link>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-brand-text-secondary max-w-[180px] truncate block">{stock.name}</span>
+                      <td className="px-4 py-3 align-middle">
+                        <span className="block truncate text-sm text-brand-text-secondary" title={stock.name}>{stock.name}</span>
                       </td>
-                      <td className="px-4 py-3"><Badge variant="info" size="sm">{exchange}</Badge></td>
-                      <td className="px-4 py-3">{stock.sector && <Badge variant="outline" size="sm">{stock.sector}</Badge>}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="text-sm font-mono-nums font-medium text-brand-text-primary">{formatCurrency(stock.price, currency)}</span>
+                      <td className="px-4 py-3 align-middle"><Badge variant="info" size="sm">{exchange}</Badge></td>
+                      <td className="px-4 py-3 align-middle">
+                        {stock.sector && (
+                          <span className="block truncate" title={stock.sector}>
+                            <Badge variant="outline" size="sm">{stock.sector}</Badge>
+                          </span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right align-middle">
+                        <span className="block truncate font-mono-nums text-sm font-medium text-brand-text-primary" title={formatCurrency(stock.price, currency)}>
+                          {formatTableCurrency(stock.price, currency)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right align-middle">
                         <div className="flex items-center justify-end gap-1.5">
                           {isPositive ? <TrendingUp size={14} className="text-brand-success" /> : <TrendingDown size={14} className="text-brand-danger" />}
-                          <span className={cn('text-sm font-mono-nums font-medium', getPriceColor(stock.change))}>
+                          <span className={cn('truncate text-sm font-mono-nums font-medium', getPriceColor(stock.change))}>
                             {formatPercent(stock.changePercent)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right"><span className="text-sm font-mono-nums text-brand-text-secondary">{formatVolume(stock.volume)}</span></td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="text-sm font-mono-nums text-brand-text-secondary">
-                          {stock.marketCap ? formatCurrency(stock.marketCap, currency) : '-'}
+                      <td className="px-4 py-3 text-right align-middle"><span className="block truncate font-mono-nums text-sm text-brand-text-secondary">{formatVolume(stock.volume)}</span></td>
+                      <td className="px-4 py-3 text-right align-middle">
+                        <span className="block truncate font-mono-nums text-sm text-brand-text-secondary" title={stock.marketCap ? formatCurrency(stock.marketCap, currency) : '-'}>
+                          {stock.marketCap ? formatTableCurrency(stock.marketCap, currency) : '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right"><span className="text-sm font-mono-nums text-brand-text-secondary">{stock.pe !== undefined ? formatNumber(stock.pe, 2) : '-'}</span></td>
-                      <td className="px-4 py-3 text-right"><span className="text-sm font-mono-nums text-brand-text-secondary">{stock.dividendYield !== undefined ? `${formatNumber(stock.dividendYield, 2)}%` : '-'}</span></td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-right align-middle"><span className="block truncate font-mono-nums text-sm text-brand-text-secondary">{stock.pe !== undefined ? formatNumber(stock.pe, 2) : '-'}</span></td>
+                      <td className="px-4 py-3 text-right align-middle"><span className="block truncate font-mono-nums text-sm text-brand-text-secondary">{stock.dividendYield !== undefined ? `${formatNumber(stock.dividendYield, 2)}%` : '-'}</span></td>
+                      <td className="px-4 py-3 align-middle">
                         <div className="flex items-center justify-end gap-1">
                           <Link href={`/stock/${encodeURIComponent(stock.symbol)}`} aria-label={`เปิดกราฟ ${displaySym}`} className="rounded-lg p-2 text-brand-text-secondary transition-colors hover:bg-brand-primary/10 hover:text-brand-primary">
                             <LineChart size={15} />
@@ -703,6 +755,7 @@ export default function ScreenerPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
     </div>

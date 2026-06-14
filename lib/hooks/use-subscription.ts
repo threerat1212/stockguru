@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getLifetimeSubscriptionForEmail } from '@/lib/subscription/lifetime'
 
-export type Plan = 'free' | 'pro' | 'founding_pro' | 'trader'
+import { PLAN_LIMITS, type Plan } from '@/lib/subscription/plans'
+
+export { PLAN_LIMITS, type Plan } from '@/lib/subscription/plans'
 
 export interface Subscription {
   plan: Plan
@@ -18,61 +21,6 @@ export interface UsageCounters {
   alertsCount: number
 }
 
-export const PLAN_LIMITS = {
-  free: {
-    aiQuestionsDay: 3,
-    aiQuestionsMonth: 90,
-    watchlist: 10,
-    alerts: 3,
-    features: {
-      advancedScreener: false,
-      compare: false,
-      portfolio: false,
-      newsImpact: false,
-      exportCsv: false,
-    },
-  },
-  pro: {
-    aiQuestionsDay: 9999,
-    aiQuestionsMonth: 300,
-    watchlist: 200,
-    alerts: 100,
-    features: {
-      advancedScreener: true,
-      compare: true,
-      portfolio: true,
-      newsImpact: true,
-      exportCsv: true,
-    },
-  },
-  founding_pro: {
-    aiQuestionsDay: 9999,
-    aiQuestionsMonth: 300,
-    watchlist: 200,
-    alerts: 100,
-    features: {
-      advancedScreener: true,
-      compare: true,
-      portfolio: true,
-      newsImpact: true,
-      exportCsv: true,
-    },
-  },
-  trader: {
-    aiQuestionsDay: 9999,
-    aiQuestionsMonth: 500,
-    watchlist: 500,
-    alerts: 200,
-    features: {
-      advancedScreener: true,
-      compare: true,
-      portfolio: true,
-      newsImpact: true,
-      exportCsv: true,
-    },
-  },
-}
-
 export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [usage, setUsage] = useState<UsageCounters | null>(null)
@@ -80,13 +28,19 @@ export function useSubscription() {
 
   useEffect(() => {
     const supabase = createClient()
+    let cancelled = false
 
-    const fetchSub = async () => {
+    async function fetchSubscription() {
       const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled) return
       if (!user) {
+        setSubscription(null)
+        setUsage(null)
         setIsLoading(false)
         return
       }
+
+      const lifetimeSubscription = getLifetimeSubscriptionForEmail(user.email)
 
       const { data: subData } = await supabase
         .from('subscriptions')
@@ -100,7 +54,11 @@ export function useSubscription() {
         .eq('user_id', user.id)
         .single()
 
-      if (subData) {
+      if (cancelled) return
+
+      if (lifetimeSubscription) {
+        setSubscription(lifetimeSubscription)
+      } else if (subData) {
         setSubscription({
           plan: subData.plan as Plan,
           status: subData.status as Subscription['status'],
@@ -122,7 +80,16 @@ export function useSubscription() {
       setIsLoading(false)
     }
 
-    fetchSub()
+    void fetchSubscription()
+
+    const authState = supabase.auth.onAuthStateChange(() => {
+      void fetchSubscription()
+    })
+
+    return () => {
+      cancelled = true
+      authState.data.subscription.unsubscribe()
+    }
   }, [])
 
   const plan = subscription?.status === 'active' ? subscription.plan : 'free'

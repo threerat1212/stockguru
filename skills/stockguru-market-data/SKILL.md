@@ -49,6 +49,19 @@ Recommended future response shape:
 }
 ```
 
+## SiamChart Provenance Rules
+
+Use these rules when working on SET/mai market data:
+
+- SiamChart is the primary Thai provider for SET/mai data; Yahoo remains fallback metadata.
+- Preserve source/fallback metadata through caches. Cache full `MarketDataResult` objects when `source: 'fallback'`, warnings, or `meta` must survive cache hits.
+- `searchStocksWithMeta(query)` is the provenance-aware entry point; keep `searchStocks(query)` as a compatibility wrapper.
+- `/api/stock/search` should return `meta`/`cached` so UI hooks like `useSearch` can show provider/cache/fallback state.
+- `/api/market/summary` should return aggregate `MarketSummaryMeta` with nested `sources`, `trading`, and `warnings`; UI must collect nested source metadata before treating `meta` as a single `MarketDataMeta`.
+- SET vs mai breadth is `summary.breadthByExchange`, not `summary.breadth.set` or `summary.breadth.mai`.
+- SiamChart `/query/history` can return HTTP 200 with an empty body. Treat empty/non-JSON responses as clean provider errors, use stock-table close when available, and keep fallback provenance in metadata instead of noisy raw parser logs.
+- The full Thai stock universe should be returned; do not reintroduce a hard `.slice(0, 80)` in `fetchThaiStocksData`.
+
 ## Provider Replacement Checklist
 
 When replacing market data:

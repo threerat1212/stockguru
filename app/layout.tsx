@@ -38,7 +38,7 @@ export default function RootLayout({
           <Header />
           <div className="flex min-w-0">
             <Sidebar />
-            <main className="min-w-0 flex-1 lg:ml-64">
+            <main className="min-w-0 flex-1 lg:ml-[220px]">
               <div className="mx-auto min-w-0 max-w-[1680px] px-3 py-4 sm:px-4 lg:px-6">
                 {children}
               </div>

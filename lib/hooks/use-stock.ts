@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import type {
   StockQuote,
   StockCandle,
@@ -10,6 +10,8 @@ import type {
   Timeframe,
   ApiResponse,
   MarketDataMeta,
+  MarketSummary,
+  MarketSummaryMeta,
   FundamentalData,
 } from '@/types/stock'
 
@@ -26,11 +28,11 @@ async function fetchApi<T>(url: string): Promise<T> {
   return json.data as T
 }
 
-async function fetchApiWithMeta<T>(url: string): Promise<{ data: T; meta?: MarketDataMeta }> {
+async function fetchApiWithMeta<T, M = MarketDataMeta>(url: string): Promise<{ data: T; meta?: M }> {
   const res = await fetch(url)
   const json: ApiResponse<T> = await res.json()
   if (!json.success) throw new Error(json.error || 'API request failed')
-  return { data: json.data as T, meta: json.meta }
+  return { data: json.data as T, meta: json.meta as M | undefined }
 }
 
 async function postApi<T>(url: string, body: unknown): Promise<T> {
@@ -76,12 +78,18 @@ export function useHistory(symbol: string | null, timeframe: Timeframe = '3M') {
 
 // ─── Stock Search ──────────────────────────────────────────
 export function useSearch(query: string) {
-  return useQuery<StockSearchResult[]>({
+  const queryResult = useQuery({
     queryKey: ['search', query],
-    queryFn: () => fetchApi<StockSearchResult[]>(`/api/stock/search?q=${encodeURIComponent(query)}`),
+    queryFn: () => fetchApiWithMeta<StockSearchResult[]>(`/api/stock/search?q=${encodeURIComponent(query)}`),
     enabled: query.length >= 1,
     staleTime: 300_000,
   })
+
+  return {
+    ...queryResult,
+    data: queryResult.data?.data,
+    meta: queryResult.data?.meta,
+  }
 }
 
 // ─── Trending Stocks ───────────────────────────────────────
@@ -109,14 +117,36 @@ export function useMarketIndices() {
   })
 }
 
-// ─── Market Summary (AI) ──────────────────────────────────
-export function useMarketSummary() {
-  return useQuery<{ summary: string }>({
-    queryKey: ['market-summary'],
-    queryFn: () => fetchApi<{ summary: string }>('/api/market/summary'),
-    staleTime: 600_000, // 10 min
-  })
+// ─── Market Summary ────────────────────────────────────────
+export interface MarketSummaryResponse {
+  summary: MarketSummary
+  meta?: MarketSummaryMeta
 }
+
+export interface MarketSummaryHookResult extends Omit<UseQueryResult<MarketSummaryResponse>, 'data'> {
+  data?: MarketSummary
+  meta?: MarketSummaryMeta
+}
+
+export function useMarketSummary(): MarketSummaryHookResult {
+  const query = useQuery<MarketSummaryResponse>({
+    queryKey: ['market-summary'],
+    queryFn: async () => {
+      const { data, meta } = await fetchApiWithMeta<MarketSummary, MarketSummaryMeta>('/api/market/summary')
+      return { summary: data, meta }
+    },
+    staleTime: 15_000,
+    refetchInterval: 60_000,
+  })
+
+  return {
+    ...query,
+    data: query.data?.summary,
+    meta: query.data?.meta,
+  }
+}
+
+
 
 // ─── Fundamentals ──────────────────────────────────────────
 export function useFundamentals(symbol: string | null) {

@@ -7,9 +7,12 @@ import {
   BarChart3,
   Bell,
   Brain,
+  Fish,
   Briefcase,
+  Cpu,
   Crown,
   Home,
+  MessageSquare,
   Newspaper,
   NotebookPen,
   RefreshCw,
@@ -20,14 +23,18 @@ import {
   X,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store/stockStore'
+import { useSubscription } from '@/lib/hooks/use-subscription'
 import { cn } from '@/lib/utils/format'
 
 const sidebarLinks = [
   { href: '/', label: 'หน้าแรก', icon: Home },
   { href: '/market', label: 'ภาพรวมตลาด', icon: Activity },
-  { href: '/trending', label: 'ตลาดร้อน', icon: BarChart3 },
+  { href: '/trending', label: 'หุ้นเคลื่อนไหว', icon: BarChart3 },
   { href: '/screener', label: 'สแกนหุ้น', icon: Search },
   { href: '/ai', label: 'AI วิเคราะห์', icon: Brain },
+  { href: '/agent-loop', label: 'Agent Loop', icon: Cpu },
+  { href: '/war-room', label: 'MiroFish Debate', icon: MessageSquare },
+  { href: '/mirofish', label: 'MiroFish Swarm', icon: Fish },
   { href: '/news', label: 'ข่าวสาร', icon: Newspaper },
   { href: '/watchlist', label: 'วอตช์ลิสต์', icon: Star },
   { href: '/portfolio', label: 'พอร์ตการลงทุน', icon: Briefcase },
@@ -45,6 +52,15 @@ const marketRows = [
 export default function Sidebar() {
   const pathname = usePathname()
   const { sidebarOpen, setSidebarOpen } = useAppStore()
+  const { subscription, plan, isTrader, isPro } = useSubscription()
+  const planTitle = isTrader ? 'Trader Lifetime' : isPro ? 'Pro Plan' : 'Free Plan'
+  const planStatus = isTrader && !subscription?.currentPeriodEnd
+    ? 'ไม่มีวันหมดอายุ'
+    : subscription?.currentPeriodEnd
+      ? `ต่ออายุ ${new Date(subscription.currentPeriodEnd).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`
+      : 'ยังไม่ได้อัปเกรด'
+  const usageLabel = isTrader ? 'Unlimited' : isPro ? '78%' : 'Free'
+  const usageWidth = isTrader ? '100%' : isPro ? '78%' : '18%'
 
   return (
     <>
@@ -58,7 +74,7 @@ export default function Sidebar() {
 
       <aside
         className={cn(
-          'fixed bottom-0 left-0 top-0 z-sidebar w-64 sidebar-emerald',
+          'fixed bottom-0 left-0 top-0 z-sidebar w-[220px] sidebar-emerald',
           'transform transition-transform duration-300 ease-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -66,10 +82,9 @@ export default function Sidebar() {
         <div className="flex h-full flex-col overflow-y-auto p-4">
           {/* Logo */}
           <div className="mb-6 flex items-center justify-between gap-3">
-            <Link href="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-brand-primary/40 bg-brand-primary/15">
+            <Link href="/" onClick={() => setSidebarOpen(false)} className="flex min-h-11 items-center gap-3 rounded-lg pr-2">
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-brand-primary/40 bg-brand-primary/15">
                 <TrendingUp size={20} className="text-brand-primary" />
-                <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-brand-primary shadow-sm shadow-emerald-500/50" />
               </div>
               <div>
                 <p className="text-lg font-bold leading-tight text-brand-text-primary">StockGuru</p>
@@ -79,7 +94,8 @@ export default function Sidebar() {
 
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded-lg p-1.5 text-brand-text-secondary transition-colors hover:bg-brand-card hover:text-brand-text-primary lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-brand-text-secondary transition-colors hover:bg-brand-card hover:text-brand-text-primary lg:hidden"
+              aria-label="ปิดเมนูนำทาง"
             >
               <X size={18} />
             </button>
@@ -102,9 +118,6 @@ export default function Sidebar() {
                       : 'sidebar-item text-brand-text-secondary hover:bg-brand-primary/5 hover:text-brand-text-primary'
                   )}
                 >
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-primary shadow-sm shadow-emerald-500/50" />
-                  )}
                   <Icon size={18} className={cn(
                     'transition-colors',
                     isActive ? 'text-brand-primary' : 'text-brand-text-muted group-hover:text-brand-text-secondary'
@@ -121,22 +134,22 @@ export default function Sidebar() {
             <div className="card-modern rounded-xl p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Crown size={16} className="text-brand-warning" />
-                <p className="font-semibold text-brand-text-primary">Pro Plan</p>
+                <p className="font-semibold text-brand-text-primary">{planTitle}</p>
               </div>
-              <p className="text-xs text-brand-text-secondary">ต่ออายุ 12 ก.ค. 2026</p>
+              <p className="text-xs text-brand-text-secondary">{planStatus}</p>
               <div className="mt-3 h-1.5 rounded-full bg-brand-bg-secondary overflow-hidden">
-                <div className="h-full w-[78%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+                <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" style={{ width: usageWidth }} />
               </div>
               <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-brand-text-muted">ใช้ฟีเจอร์</span>
-                <span className="font-mono-nums text-brand-primary">78%</span>
+                <span className="text-brand-text-muted">แผนปัจจุบัน</span>
+                <span className="font-mono-nums text-brand-primary">{usageLabel}</span>
               </div>
               <Link
                 href="/pricing"
                 onClick={() => setSidebarOpen(false)}
-                className="mt-3 flex h-9 items-center justify-center rounded-lg border border-brand-border bg-brand-bg-secondary text-xs font-semibold text-brand-text-primary transition-colors hover:border-brand-primary/40 hover:bg-brand-surface-hover"
+                className="mt-3 flex min-h-11 items-center justify-center rounded-lg border border-brand-border bg-brand-bg-secondary px-3 text-xs font-semibold text-brand-text-primary transition-colors hover:border-brand-primary/40 hover:bg-brand-surface-hover"
               >
-                จัดการแผน
+                {plan === 'free' ? 'อัปเกรดแผน' : 'จัดการแผน'}
               </Link>
             </div>
 

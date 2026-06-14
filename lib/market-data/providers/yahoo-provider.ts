@@ -439,6 +439,11 @@ export async function searchStocks(query: string): Promise<StockSearchResult[]> 
   }
 }
 
+export async function searchStocksWithMeta(query: string): Promise<MarketDataResult<StockSearchResult[]>> {
+  const results = await searchStocks(query)
+  return { data: results, meta: liveMeta('yahoo') }
+}
+
 /** Get trending stocks */
 export async function getTrending(): Promise<MarketDataResult<TrendingStock[]>> {
   const cacheKey = 'trending:global'
@@ -518,6 +523,7 @@ export const yahooProvider: MarketDataProvider = {
   displayName: 'Yahoo Finance',
   getQuote,
   getHistory,
+  searchStocksWithMeta,
   searchStocks,
   getTrending,
   getMarketIndices,

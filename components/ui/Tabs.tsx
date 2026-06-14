@@ -47,7 +47,7 @@ export const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          'px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200',
+          'min-h-10 px-3 text-sm font-medium rounded-md transition-all duration-200',
           isActive
             ? 'bg-brand-card text-brand-text-primary shadow-sm'
             : 'text-brand-text-secondary hover:text-brand-text-primary',

@@ -21,7 +21,6 @@ export async function fetchThaiStocksData(): Promise<ThaiStockData[]> {
   const rows = await fetchSiamchartStockRows()
   return rows
     .filter((row) => row.close > 0)
-    .slice(0, 80)
     .map((row) => ({
       symbol: row.yahooSymbol,
       name: row.name,

@@ -37,6 +37,18 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Do not commit values.
 
+## Account-Backed QA
+
+Use this section for local Playwright/e2e flows that depend on a real smoke account.
+
+- Read `docs/TEST_ACCOUNTS.md` before running account-backed QA.
+- Do not hardcode credentials. Real test passwords belong only in `.env.local`.
+- Playwright does not automatically load `.env.local` into `process.env`; load those vars explicitly when running outside Next's env loader.
+- Before expecting War Room Pro content, verify the smoke account has a Pro entitlement. A Free-plan account can reach `/war-room` but should remain feature-gated.
+- If the local smoke account lacks the required entitlement, provision it locally via the service-role path, for example an upsert into `subscriptions(user_id, plan: 'pro', status: 'active')`.
+- Do not change app behavior solely to satisfy a weak or unentitled smoke account.
+- Keep secret-bearing env files out of commits, memory, skills, docs, and command output.
+
 ## Required SQL
 
 Run these in Supabase SQL Editor, in order:

@@ -1,3 +1,5 @@
+import type { MarketDataMeta, MarketDataSource } from '../lib/market-data/types'
+
 // Stock quote data
 export interface StockQuote {
   symbol: string
@@ -170,6 +172,15 @@ export interface MarketIndex {
   changePercent: number
 }
 
+export interface MarketBreadthSegment {
+  advancing: number
+  declining: number
+  unchanged: number
+  total: number
+  volume: number
+  value: number
+}
+
 export interface MarketBreadth {
   advancing: number
   declining: number
@@ -178,6 +189,53 @@ export interface MarketBreadth {
   volume: number
   value: number
 }
+
+export interface MarketBreadthSplit {
+  SET: MarketBreadth
+  mai: MarketBreadth
+}
+
+export interface MarketForeignFlow {
+  buyValue?: number
+  sellValue?: number
+  netValue?: number
+}
+
+export type MarketTradingPhase = 'pre_open' | 'market_open' | 'lunch_break' | 'after_hours' | 'closed' | 'unknown'
+
+export interface MarketTradingSession {
+  phase: MarketTradingPhase
+  exchange: 'SET' | 'mai' | 'SET/mai'
+  localDate: string
+  updatedAt: number
+  nextOpenAt?: string
+  nextCloseAt?: string
+}
+
+export interface MarketTradingStatus {
+  state: 'open' | 'closed'
+  session: MarketTradingSession
+}
+
+export type MarketSummaryWarningType = 'stale' | 'fallback' | 'demo' | 'partial' | 'missing'
+
+export interface MarketSummaryWarning {
+  type: MarketSummaryWarningType
+  message: string
+  field?: string
+}
+
+export interface MarketSummaryMeta extends MarketDataMeta {
+  sources: {
+    indices: MarketDataMeta
+    trending: MarketDataMeta
+    stocks: MarketDataMeta
+  }
+  trading: MarketTradingStatus
+  warnings: MarketSummaryWarning[]
+}
+
+export type MarketDataSourceMeta = MarketDataMeta | MarketSummaryMeta
 
 export interface MarketSectorSummary {
   sector: string
@@ -204,25 +262,30 @@ export interface MarketMover {
 export interface MarketSummary {
   indices: MarketIndex[]
   breadth: MarketBreadth
+  breadthByExchange: MarketBreadthSplit
   sectors: MarketSectorSummary[]
   movers: {
     gainers: MarketMover[]
     losers: MarketMover[]
     active: MarketMover[]
   }
+  foreign?: MarketForeignFlow
+  value?: number
+  volume?: number
   updatedAt: string
 }
 
 // Market data provenance (see lib/market-data/types.ts)
-export type { MarketDataMeta, MarketDataSource } from '@/lib/market-data/types'
+export type { MarketDataMeta, MarketDataSource } from '../lib/market-data/types'
 
 // API response wrapper
+
 export interface ApiResponse<T> {
   success: boolean
   data?: T
   error?: string
   cached?: boolean
-  meta?: import('@/lib/market-data/types').MarketDataMeta
+  meta?: MarketDataSourceMeta
 }
 
 // ============================================================

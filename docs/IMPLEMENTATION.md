@@ -11,6 +11,9 @@
 7. [เปรียบเทียบหุ้น — กราฟ](#7-เปรียบเทียบหุ้น--กราฟ)
 8. [ปฏิทินประกาศงบ — User custom](#8-ปฏิทินประกาศงบ--user-custom)
 9. [DESIGN.md — Design System](#9-designmd--design-system)
+10. [Agent Looping / Market War Room](#10-agent-looping--market-war-room)
+11. [Trading System Backlog](#11-trading-system-backlog)
+12. [MiroFish Debate Mode](#12-mirofish-debate-mode)
 
 ---
 
@@ -185,6 +188,196 @@ export default function HomePage() {
 
 ---
 
+## 10. Agent Looping / Market War Room
+
+**ปัญหา:** ต้องการนำแนวคิด Agent Looping / MiroFish มาปรับใช้กับ StockGuru โดยไม่ clone engine ทั้งระบบ และต้องไม่กลายเป็นระบบทำนายหุ้นหรือระบบเทรดอัตโนมัติ
+
+**แก้ไข:**
+- เพิ่ม backend layer `lib/agent-loop/`
+  - `types.ts` — type contract
+  - `schema.ts` — zod validation + symbol normalization
+  - `data.ts` — context collector จาก quote/history/news
+  - `agents.ts` — Data, Technical, Fundamental, News, Risk, Portfolio, Report agents
+   - `verifier.ts` — safety/evidence/risk/disclaimer gate
+   - `sega/*` — SEGA Finance Division review gate, approval gate, Storycraft
+   - `orchestrator.ts` — Closed Loop orchestration
+
+- เพิ่ม API: `POST /api/agent-loop/simulate`
+  - ใช้ `requireFeature('agentLoop')`
+  - บันทึก usage ลง `ai_usage_logs`
+  - Return closed-loop result พร้อม verifier trace
+- เพิ่ม API: `POST /api/sega/review`
+  - รับ explicit `proposal` หรือ derive proposal จาก `agentLoopResult` / `miroFishResult`
+  - Return `{ approval, story, persona }`
+- เพิ่ม UI: `/war-room`
+  - เลือก Watchlist / Portfolio / Market Preset / Custom
+  - ใส่ scenario + timeframe
+  - แสดง closed-loop phases, agent cards, risk checklist, verifier trace
+  - แสดง SEGA Review Gate หลังมี Agent Loop / MiroFish Debate result
+- เพิ่ม navigation: Sidebar → Agent Loop
+- เพิ่ม feature gate: `agentLoop` ใน `FeatureGate`, `PLAN_LIMITS`, server check
+- เพิ่ม safety boundary: ไม่ buy/sell advice, ไม่การันตีผลตอบแทน, ไม่ส่ง order จริง
+- เพิ่ม SEGA boundary: ไม่เป็น primary signal generator, ไม่เป็น trade executor, ไม่ duplicate specialist agents
+
+**ไฟล์ที่แก้ไข/เพิ่ม:**
+- `lib/agent-loop/*`
+- `lib/agent-loop/sega/*`
+- `app/api/agent-loop/simulate/route.ts`
+- `app/api/sega/review/route.ts`
+- `app/war-room/page.tsx`
+- `components/layout/Sidebar.tsx`
+- `components/auth/FeatureGate.tsx`
+- `lib/hooks/use-subscription.ts`
+- `__tests__/unit/agent-loop-schema.test.ts`
+- `__tests__/unit/agent-loop-verifier.test.ts`
+- `__tests__/unit/sega-approval.test.ts`
+- `__tests__/unit/sega-adapters.test.ts`
+- `__tests__/unit/sega-personas.test.ts`
+- `__tests__/unit/sega-storycraft.test.ts`
+- `docs/AGENT_LOOPING_MVP.md`
+- `docs/TRADING_SYSTEM_BACKLOG.md`
+- `PRODUCT.md`
+- `DESIGN.md`
+- `stockguru-roadmap.md`
+- `START_HERE.md`
+
+**สถานะ:** ✅ เสร็จสิ้น
+
+### Verification
+- `npm run typecheck` — **ผ่าน**
+- `npm run lint` — **ผ่าน**
+- `npm test` — **ผ่าน** (102 tests passed, 1 skipped)
+- SEGA targeted unit tests — **19 tests passed**
+- `npm run build` — **ผ่าน**
+
+**หมายเหตุ:** Build มี warning เดิมจาก Supabase client ที่ใช้ Node.js API ใน Edge Runtime trace; ไม่ใช่ error ของ Agent Looping
+
+---
+
+## 11. Trading System Backlog
+
+**ปัญหา:** ผู้ใช้ต้องการระบบเทรดในอนาคต แต่ต้องไม่ผสมกับ Agent Looping MVP เพราะ trading execution มีความเสี่ยงสูงกว่า research/rehearsal
+
+**แก้ไข:**
+- เพิ่ม `docs/TRADING_SYSTEM_BACKLOG.md`
+- เพิ่ม roadmap `PR17 — Trade Plan + Paper Trading 🧊 Future backlog`
+- ระบุ boundary:
+  - ไม่เชื่อม broker ใน PR16/PR17
+  - ไม่ทำ autonomous trading
+  - ไม่ให้ AI สั่งซื้อ/ขาย
+  - เริ่มจาก Trade Plan → Paper Trading ก่อน
+  - Broker integration ต้องเป็น optional, user-approved, มี risk limit/audit/kill switch
+
+**สถานะ:** ✅ Backlog documented
+
+---
+
+## 12. MiroFish Debate Mode
+
+**ปัญหา:** ผู้ใช้ชอบ concept ให้ Agent หลายตัว discuss กันก่อนตอบ แต่ต้องไม่ clone MiroFish ทั้งระบบ และต้องคง safety boundary ของ StockGuru
+
+**แก้ไข:**
+- เพิ่ม MiroFish-inspired debate layer ใน `lib/agent-loop/mirofish/`
+  - `types.ts` — type contract สำหรับ seed, graph, transcript, debate result
+  - `seed.ts` — แปลคำถาม user เป็น symbols, scenario, timeframe, intent, mode
+  - `graph.ts` — สร้าง debate graph
+  - `personas.ts` — persona list สำหรับ Moderator, Data, Technical, Fundamental, News, Portfolio, Risk, Contrarian, Reporter, Verifier
+  - `reporter.ts` — เรียบเรียง final summary / thesis / checks
+  - `debate.ts` — orchestrator สำหรับ 3 rounds: Observation, Challenge, Synthesis + Gate
+  - `schema.ts` — zod schema สำหรับ request
+  - `persistence.ts` — fallback persistence ไป Supabase
+- เพิ่ม API: `POST /api/war-room/debate`
+  - ใช้ `requireFeature('agentLoop')`
+  - บันทึก usage ลง `ai_usage_logs`
+  - persist debate run/messages/evidence/verification ถ้า tables พร้อม
+  - ถ้า Supabase tables ยังไม่ apply จะ catch error และ return result ได้
+- เพิ่ม UI: `/war-room`
+  - textarea พิมพ์คำถาม
+  - button `รัน MiroFish Debate`
+  - final summary card
+  - transcript panel
+  - verifier card
+  - risk & next checks
+  - debate graph
+- เพิ่ม Supabase tables:
+  - `war_room_debate_runs`
+  - `war_room_debate_messages`
+  - `war_room_debate_evidence`
+  - `war_room_debate_verifications`
+- เพิ่ม migration:
+  - `supabase/migrations/20260611150000_pr18_war_room_debate.sql`
+- อัปเดต fresh schema:
+  - `supabase/schema.sql`
+
+**AI API status:**
+- `/api/war-room/debate` มีแล้ว
+- External LLM runtime ยังไม่ได้ validate ด้วย API key จริงใน session นี้
+- Debate มาจาก rule-based MiroFish engine เมื่อ env ไม่ครบ
+- OpenRouter / Xiaomi MiMo / DeepSeek provider adapter พร้อมเปิดผ่าน env และ fallback กลับไป rule-based debate
+
+**ไฟล์ที่แก้ไข/เพิ่ม:**
+- `lib/agent-loop/mirofish/*`
+- `lib/agent-loop/providers/openrouter-provider.ts`
+- `lib/agent-loop/providers/mimo-provider.ts`
+- `lib/agent-loop/providers/deepseek-provider.ts`
+- `lib/agent-loop/providers/model-router.ts`
+- `lib/agent-loop/providers/debate-assist.ts` — optional multi-model debate assist
+- `lib/agent-loop/providers/reporter-draft.ts`
+- `app/api/war-room/debate/route.ts`
+- `app/war-room/page.tsx`
+- `components/auth/FeatureGate.tsx`
+- `types/stock.ts`
+- `supabase/schema.sql`
+- `supabase/migrations/20260611150000_pr18_war_room_debate.sql`
+- `__tests__/unit/mirofish-debate.test.ts`
+- `docs/MIROFISH_DEBATE_MODE.md`
+- `docs/AGENT_LOOPING_MVP.md`
+- `stockguru-roadmap.md`
+- `START_HERE.md`
+- `docs/IMPLEMENTATION.md`
+
+**สถานะ:** ✅ เสร็จสิ้น
+
+### Verification
+- `npm run typecheck` — **ผ่าน**
+- `npm test` — **ผ่าน** (61 tests passed)
+- `npm run build` — **ผ่าน**
+- Local `/war-room` smoke test — **ผ่าน** gate copy
+- Anonymous `POST /api/war-room/debate` — **ผ่าน** login gate
+
+**หมายเหตุ:** Test มี stderr เดิมจาก SET provider fallback ตอนดึง Siamchart history แต่ไม่ทำให้ test fail
+
+---
+
+## 13. MiroFish Swarm Simulation
+
+**Feature:** MiroFish-inspired swarm intelligence simulation
+
+**Files:**
+- `lib/mirofish-swarm/types.ts`
+- `lib/mirofish-swarm/profiles.ts`
+- `lib/mirofish-swarm/simulator.ts`
+- `lib/mirofish-swarm/schema.ts`
+- `app/api/mirofish/swarm/route.ts`
+- `app/mirofish/page.tsx`
+- `components/layout/Sidebar.tsx`
+- `__tests__/unit/mirofish-swarm.test.ts`
+- `docs/MIROFISH_SWARM.md`
+
+**Status:** ✅ Implemented
+
+### Verification
+- `npm run typecheck` — **ผ่าน**
+- `npm test` — **ผ่าน**
+- `npm run build` — **ผ่าน**
+- Playwright smoke — **ผ่าน** สำหรับ `/api/mirofish/swarm`: API ตอบ 200 และมี `Agent Swarm Personas` + `Scenario Map`
+
+**หมายเหตุ:** MVP ใช้ deterministic swarm simulation เป็น default และไม่ใช้ paid OpenRouter models
+
+**Test account:** ดู `docs/TEST_ACCOUNTS.md` สำหรับ MiroFish Smoke Pro account ที่ใช้ smoke test ผ่าน Playwright
+
+---
+
 ## สรุปสถานะรวม
 
 | # | ฟีเจอร์ | สถานะ | ไฟล์ที่แก้ไข |
@@ -198,8 +391,18 @@ export default function HomePage() {
 | 7 | Compare Page Real Chart | ✅ | `app/compare/page.tsx` |
 | 8 | Earnings Calendar User Custom | ✅ | มีอยู่แล้ว (`app/earnings/page.tsx`) |
 | 9 | DESIGN.md Design System | ✅ | `DESIGN.md` |
+| 10 | Agent Looping / Market War Room | ✅ | `lib/agent-loop/*`, `app/api/agent-loop/simulate`, `app/war-room`, tests, docs |
+| 11 | Trading System Backlog | ✅ documented | `docs/TRADING_SYSTEM_BACKLOG.md`, `stockguru-roadmap.md` |
+| 12 | MiroFish Debate Mode | ✅ | `lib/agent-loop/mirofish/*`, `lib/agent-loop/providers/openrouter-provider.ts`, `lib/agent-loop/providers/mimo-provider.ts`, `lib/agent-loop/providers/deepseek-provider.ts`, `lib/agent-loop/providers/model-router.ts`, `lib/agent-loop/providers/debate-assist.ts`, `lib/agent-loop/providers/reporter-draft.ts`, `app/api/war-room/debate`, `app/war-room`, Supabase tables, tests, docs |
+| 13 | SEGA Review Gate | ✅ | `lib/agent-loop/sega/*`, `app/api/sega/review`, `app/war-room`, tests, docs |
+| 14 | MiroFish Swarm Simulation | ✅ | `lib/mirofish-swarm/*`, `app/api/mirofish/swarm`, `app/mirofish`, components/layout/Sidebar.tsx, tests, docs |
+| 15 | Manual `/war-room` smoke test | ⏸ pending | Need logged-in Pro account |
+
 
 ## การตรวจสอบ Build
 
 - `npx tsc --noEmit` — **ผ่าน** (ไม่มี TypeScript errors)
+- `npm test` — **ผ่าน** (61 tests passed)
+- `npm run build` — **ผ่าน**
+- Playwright smoke — **ผ่าน** สำหรับ `/api/mirofish/swarm` ด้วย MiroFish Smoke Pro account: API ตอบ 200 และมี `Agent Swarm Personas` + `Scenario Map`
 - ไม่มี syntax errors หรือ type mismatch ในทุกไฟล์ที่แก้ไข

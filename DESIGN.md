@@ -170,6 +170,21 @@ Motion is intentional, never decorative. It guides attention to what changed, no
 - **Sidebar:** Infographic card (headline metric + bullets), related symbols, references.
 - **Refresh note:** Small text indicating auto-refresh interval (~1-2 hours).
 
+### Agent Looping / MiroFish Debate War Room
+- **Intent:** Premium research cockpit, not trading terminal. The page should feel like a closed-loop analyst desk plus debate transcript: ask a question, let Moderator and specialist agents discuss, inspect evidence, then read reporter summary and verifier-approved risks/next checks. Model routing should show which model strengths are assigned to research, reasoning, quant, Thai explanation, and verification. DeepSeek and Xiaomi MiMo are separate provider APIs, not OpenRouter.
+- **Layout:** Left/main panel owns the run form, debate question input, and result summary. Right rail shows closed-loop phases, debate graph, and verifier trace. On wide desktop, agent cards and transcript panels should remain scannable.
+- **MiroFish Swarm:** `/mirofish` should feel like a social simulation lab: event injector, persona swarm, simulated Twitter/Reddit feed, sentiment, scenario map, risks, opportunities, blind spots, and no paid OpenRouter model policy.
+
+---
+
+### MiroFish Swarm Simulation
+- **Intent:** Social simulation lab for ideas, news, campaigns, features, and market events. The page should show personas, simulated Twitter/Reddit feed, sentiment, scenario map, risks, opportunities, blind spots, and checks.
+- **Layout:** Left panel owns event injector and explanation. Main panel shows agent swarm, social feed, scenario cards, and risk/opportunity/checklist panels.
+- **States:** Idle form, running simulation, result with scenario map, upgrade/auth gate, and error state.
+- **Copy rules:** Use Thai-first decision-support language. Avoid “prediction”, “guaranteed outcome”, “buy/sell now”, or “autonomous action”.
+- **Evidence rules:** Separate fact, assumption, risk, and unknown. Every result must carry disclaimer that simulation is not investment advice or a forecast.
+- **Validation:** Run `npm run typecheck`, `npm run build`, `npm test`, and manual smoke test `/mirofish` with stock and marketing scenarios.
+
 ## Accessibility
 
 - **Contrast:** All text ≥4.5:1. Large text ≥3:1.

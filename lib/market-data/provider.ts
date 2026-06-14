@@ -8,6 +8,7 @@ export interface MarketDataProvider {
 
   getQuote(symbol: string): Promise<MarketDataResult<StockQuote>>
   getHistory(symbol: string, timeframe: Timeframe): Promise<MarketDataResult<StockCandle[]>>
+  searchStocksWithMeta(query: string): Promise<MarketDataResult<StockSearchResult[]>>
   searchStocks(query: string): Promise<StockSearchResult[]>
   getTrending(): Promise<MarketDataResult<TrendingStock[]>>
   getMarketIndices(): Promise<MarketDataResult<MarketIndex[]>>

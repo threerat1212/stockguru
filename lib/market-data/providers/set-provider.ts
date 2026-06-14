@@ -1,6 +1,6 @@
 import type { MarketDataProvider } from '@/lib/market-data/provider'
 import type { MarketDataMeta, MarketDataResult } from '@/lib/market-data/types'
-import { cacheMeta, demoMeta, liveMeta } from '@/lib/market-data/types'
+import { cacheMeta, liveMeta } from '@/lib/market-data/types'
 import { quoteCache, historyCache, searchCache } from '@/lib/cache'
 import type { MarketIndex, StockCandle, StockQuote, StockSearchResult, Timeframe, TrendingStock } from '@/types/stock'
 import { yahooProvider } from '@/lib/market-data/providers/yahoo-provider'
@@ -8,7 +8,10 @@ import { yahooProvider } from '@/lib/market-data/providers/yahoo-provider'
 export const MARKET_DATA_PROVIDER_SET = 'set'
 
 const SIAMCHART_STOCK_LIST_URL = 'https://siamchart.com/stock/'
-const SIAMCHART_HISTORY_URL = 'http://siamchart.com/query/history'
+const SIAMCHART_HISTORY_URL = 'https://siamchart.com/query/history'
+const SIAMCHART_TIMEOUT_MS = 8_000
+const SIAMCHART_MAX_RETRIES = 2
+const SIAMCHART_RETRY_DELAY_MS = 100
 const SIAMCHART_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'
 
@@ -79,20 +82,50 @@ function joinCookies(setCookies: string[]): string {
   return setCookies.map((c) => c.split(';')[0].trim()).filter(Boolean).join('; ')
 }
 
-async function siamFetch(url: string, init: RequestInit = {}): Promise<string> {
+function formatSiamchartError(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = SIAMCHART_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function siamFetch(url: string, init: RequestInit = {}, retries = SIAMCHART_MAX_RETRIES): Promise<string> {
   const headers: Record<string, string> = { ...SIAMCHART_HEADERS, ...(init.headers as Record<string, string> | undefined) }
   if (siamCookie) headers.Cookie = siamCookie
 
-  const res = await fetch(url, { ...init, headers })
-  const setCookie = res.headers.getSetCookie?.()
-  if (setCookie?.length) siamCookie = joinCookies(setCookie)
+  let lastError: unknown
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetchWithTimeout(url, { ...init, headers })
+      const setCookie = res.headers.getSetCookie?.()
+      if (setCookie?.length) siamCookie = joinCookies(setCookie)
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    throw new Error(`SiamChart API ${res.status}: ${body.slice(0, 160)}`)
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        throw new Error(`SiamChart API ${res.status}: ${body.slice(0, 160)}`)
+      }
+
+      return res.text()
+    } catch (error) {
+      lastError = error
+      if (attempt < retries) await delay(SIAMCHART_RETRY_DELAY_MS * (attempt + 1))
+    }
   }
 
-  return res.text()
+  throw new Error(`SiamChart API failed after ${retries + 1} attempts: ${formatSiamchartError(lastError)}`)
 }
 
 function parseNumber(value: unknown): number | undefined {
@@ -216,16 +249,65 @@ function timeframeToDays(timeframe: Timeframe): number {
   }
 }
 
-export function parseSiamchartHistory(html: string): StockCandle[] {
-  const data = JSON.parse(html) as SiamchartHistoryResponse
-  if (data.s !== 'ok') return []
+function assertNumberArray(value: unknown, name: string): number[] {
+  if (!Array.isArray(value) || !value.every((item) => typeof item === 'number' && Number.isFinite(item))) {
+    throw new Error(`Invalid SiamChart history response: ${name} must be an array of numbers`)
+  }
+  return value
+}
 
-  const timestamps = data.t ?? []
-  const open = data.o ?? []
-  const high = data.h ?? []
-  const low = data.l ?? []
-  const close = data.c ?? []
-  const volume = data.v ?? []
+function validateSiamchartHistoryResponse(value: unknown): SiamchartHistoryResponse {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Invalid SiamChart history response: expected object')
+  }
+
+  const data = value as Partial<SiamchartHistoryResponse>
+  if (data.s !== 'ok') throw new Error('Invalid SiamChart history response: status is not ok')
+
+  const timestamps = assertNumberArray(data.t, 't')
+  const open = assertNumberArray(data.o, 'o')
+  const high = assertNumberArray(data.h, 'h')
+  const low = assertNumberArray(data.l, 'l')
+  const close = assertNumberArray(data.c, 'c')
+  const length = timestamps.length
+
+  for (const [name, values] of Object.entries({ o: open, h: high, l: low, c: close })) {
+    if (values.length !== length) {
+      throw new Error(`Invalid SiamChart history response: ${name} length does not match t`)
+    }
+  }
+
+  return {
+    s: 'ok',
+    t: timestamps,
+    o: open,
+    h: high,
+    l: low,
+    c: close,
+    v: Array.isArray(data.v) ? assertNumberArray(data.v, 'v') : [],
+  }
+}
+
+function parseSiamchartJsonResponse<T>(html: string, label: string): T {
+  const trimmed = html.trim()
+  if (!trimmed) throw new Error(`SiamChart ${label} response is empty`)
+  if (!trimmed.startsWith('{')) throw new Error(`SiamChart ${label} response is not JSON`)
+
+  try {
+    return JSON.parse(trimmed) as T
+  } catch {
+    throw new Error(`Invalid SiamChart ${label} response: expected JSON`)
+  }
+}
+
+export function parseSiamchartHistory(html: string): StockCandle[] {
+  const data = validateSiamchartHistoryResponse(parseSiamchartJsonResponse<SiamchartHistoryResponse>(html, 'history'))
+  const timestamps = data.t
+  const open = data.o
+  const high = data.h
+  const low = data.l
+  const close = data.c
+  const volume = data.v
 
   return timestamps
     .map((timestamp, index) => {
@@ -266,17 +348,26 @@ export async function fetchSiamchartHistory(symbol: string, timeframe: Timeframe
 }
 
 async function getRecentHistory(symbol: string, timeframe: Timeframe): Promise<StockCandle[]> {
-  try {
-    return await fetchSiamchartHistory(symbol, timeframe)
-  } catch (error) {
-    console.error(`[set-provider] history fallback for ${symbol}:`, error)
-    const result = await yahooProvider.getHistory(`${symbol}.BK`, timeframe)
-    return result.data
-  }
+  return fetchSiamchartHistory(symbol, timeframe)
 }
 
 function meta(provider = 'SiamChart', source: MarketDataMeta['source'] = 'siamchart'): MarketDataMeta {
   return liveMeta(source, provider)
+}
+
+function fallbackMeta(result: MarketDataMeta, warning: string): MarketDataMeta {
+  return {
+    ...result,
+    source: 'fallback',
+    warning: result.warning ? `${warning}; ${result.warning}` : warning,
+  }
+}
+
+function withFallbackMeta<T>(result: MarketDataResult<T>, warning: string): MarketDataResult<T> {
+  return {
+    ...result,
+    meta: fallbackMeta(result.meta, warning),
+  }
 }
 
 function toSearchResult(row: SiamchartStockRow): StockSearchResult {
@@ -320,7 +411,13 @@ async function getQuoteFromSiamchart(symbol: string): Promise<MarketDataResult<S
   const row = rows.get(symbol) ?? rows.get(normalized) ?? rows.get(`${normalized}.BK`)
   if (!row) throw new Error(`ไม่พบข้อมูลราคาสำหรับ ${symbol}`)
 
-  const history = await getRecentHistory(normalized, '1M')
+  let history: StockCandle[] = []
+  try {
+    history = await getRecentHistory(normalized, '1M')
+  } catch (error) {
+    void error
+  }
+
   const last = history[history.length - 1]
   const previous = history[history.length - 2]
   const price = row.close || last?.close || 0
@@ -365,10 +462,11 @@ async function getHistoryFromSiamchart(symbol: string, timeframe: Timeframe): Pr
 
 async function getMarketIndicesFromSiamchart(): Promise<MarketDataResult<MarketIndex[]>> {
   const cacheKey = 'market:set-indices'
-  const cached = quoteCache.get<MarketIndex[]>(cacheKey)
-  if (cached) return { data: cached.data, meta: cacheMeta('SiamChart') }
+  const cached = quoteCache.get<MarketDataResult<MarketIndex[]>>(cacheKey)
+  if (cached) return cached.data
 
   const indices: MarketIndex[] = []
+  const errors: string[] = []
   for (const index of INDEX_SYMBOLS) {
     try {
       const candles = await fetchSiamchartHistory(index.symbol, '1M')
@@ -388,21 +486,22 @@ async function getMarketIndicesFromSiamchart(): Promise<MarketDataResult<MarketI
         changePercent,
       })
     } catch (error) {
-      console.error(`[set-provider] index ${index.symbol} failed:`, error)
+      errors.push(`${index.symbol}: ${formatSiamchartError(error)}`)
     }
   }
 
   if (!indices.length) {
-    const yahooResult = await yahooProvider.getMarketIndices()
-    quoteCache.set(cacheKey, yahooResult.data, 60)
+    const warning = `ไม่พบข้อมูลดัชนี SET/mai จาก SiamChart — ใช้ Yahoo Finance เป็น fallback${errors.length ? ` (${errors.slice(0, 2).join('; ')})` : ''}`
+    const yahooResult = withFallbackMeta(await yahooProvider.getMarketIndices(), warning)
+    quoteCache.set(cacheKey, yahooResult, 60)
     return yahooResult
   }
 
-  quoteCache.set(cacheKey, indices, 300)
+  quoteCache.set(cacheKey, { data: indices, meta: meta('SiamChart') }, 300)
   return { data: indices, meta: meta('SiamChart') }
 }
 
-async function searchThaiStocks(query: string): Promise<StockSearchResult[]> {
+async function searchThaiStocksWithMeta(query: string): Promise<MarketDataResult<StockSearchResult[]>> {
   const normalizedQuery = query.trim().toUpperCase()
   const rows = await fetchSiamchartStockRows()
   const results = rows
@@ -413,10 +512,30 @@ async function searchThaiStocks(query: string): Promise<StockSearchResult[]> {
     .slice(0, 20)
     .map(toSearchResult)
 
-  if (results.length) return results
+  if (results.length) return { data: results, meta: meta('SiamChart') }
 
-  const yahooResults = await yahooProvider.searchStocks(query)
-  return yahooResults
+  const yahooResult = await yahooProvider.searchStocksWithMeta(query)
+  return withFallbackMeta(yahooResult, 'ไม่พบข้อมูลหุ้นไทยใน SiamChart — ใช้ Yahoo Finance เป็น fallback')
+}
+
+async function searchStocksWithMeta(query: string): Promise<MarketDataResult<StockSearchResult[]>> {
+  const cacheKey = `search:set:${query.toLowerCase()}`
+  const cached = searchCache.get<MarketDataResult<StockSearchResult[]>>(cacheKey)
+  if (cached) return cached.data
+
+  try {
+    const result = await searchThaiStocksWithMeta(query)
+    searchCache.set(cacheKey, result)
+    return result
+  } catch (error) {
+    void error
+    const result = withFallbackMeta(
+      await yahooProvider.searchStocksWithMeta(query),
+      'SiamChart ไม่สามารถค้นหาหุ้นไทยได้ — ใช้ Yahoo Finance เป็น fallback'
+    )
+    searchCache.set(cacheKey, result)
+    return result
+  }
 }
 
 export const setProvider: MarketDataProvider = {
@@ -432,11 +551,14 @@ export const setProvider: MarketDataProvider = {
       try {
         return await getQuoteFromSiamchart(symbol)
       } catch (error) {
-        console.error(`[set-provider] quote failed:`, error)
+        void error
+        const yahooResult = await yahooProvider.getQuote(symbol)
+        return withFallbackMeta(yahooResult, `SiamChart ไม่สามารถดึงข้อมูลราคาสำหรับ ${symbol} ได้ — ใช้ Yahoo Finance เป็น fallback`)
       }
     }
 
-    return yahooProvider.getQuote(symbol)
+    const result = await yahooProvider.getQuote(symbol)
+    return result
   },
 
   async getHistory(symbol: string, timeframe: Timeframe = '3M'): Promise<MarketDataResult<StockCandle[]>> {
@@ -446,26 +568,22 @@ export const setProvider: MarketDataProvider = {
       try {
         return await getHistoryFromSiamchart(symbol, timeframe)
       } catch (error) {
-        console.error(`[set-provider] history failed:`, error)
+        void error
+        const yahooResult = await yahooProvider.getHistory(symbol, timeframe)
+        return withFallbackMeta(yahooResult, `SiamChart ไม่สามารถดึงข้อมูลกราฟสำหรับ ${symbol} ได้ — ใช้ Yahoo Finance เป็น fallback`)
       }
     }
 
     return yahooProvider.getHistory(symbol, timeframe)
   },
 
-  async searchStocks(query: string): Promise<StockSearchResult[]> {
-    const cacheKey = `search:set:${query.toLowerCase()}`
-    const cached = searchCache.get<StockSearchResult[]>(cacheKey)
-    if (cached) return cached.data
+  async searchStocksWithMeta(query: string): Promise<MarketDataResult<StockSearchResult[]>> {
+    return searchStocksWithMeta(query)
+  },
 
-    try {
-      const results = await searchThaiStocks(query)
-      searchCache.set(cacheKey, results)
-      return results
-    } catch (error) {
-      console.error(`[set-provider] search failed:`, error)
-      return yahooProvider.searchStocks(query)
-    }
+  async searchStocks(query: string): Promise<StockSearchResult[]> {
+    const result = await searchStocksWithMeta(query)
+    return result.data
   },
 
   async getTrending(): Promise<MarketDataResult<TrendingStock[]>> {
@@ -484,12 +602,8 @@ export const setProvider: MarketDataProvider = {
       quoteCache.set(cacheKey, trending, 300)
       return { data: trending, meta: meta('SiamChart') }
     } catch (error) {
-      console.error(`[set-provider] trending failed:`, error)
-      const yahooResult = await yahooProvider.getTrending()
-      return {
-        ...yahooResult,
-        meta: yahooResult.meta.isDemo ? demoMeta(yahooResult.meta.warning ?? 'ไม่สามารถดึงข้อมูล SET/mai ได้') : yahooResult.meta,
-      }
+      void error
+      return { data: [], meta: meta('SiamChart') }
     }
   },
 

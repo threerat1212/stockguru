@@ -83,7 +83,7 @@ export default function NewsPage() {
               key={cat.value}
               onClick={() => setActiveCategory(cat.value)}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap',
+                'flex min-h-10 items-center gap-2 px-3 text-sm font-medium rounded-md transition-all whitespace-nowrap',
                 activeCategory === cat.value
                   ? 'bg-brand-card text-brand-text-primary shadow-sm'
                   : 'text-brand-text-secondary hover:text-brand-text-primary'

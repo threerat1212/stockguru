@@ -6,28 +6,28 @@
 
 @layer base {
   :root {
-    /* ==== Emerald Dark Theme — matching reference image ==== */
-    --brand-bg: #060A0E;
-    --brand-bg-secondary: #0B1218;
-    --brand-card: #0F171F;
-    --brand-primary: #10B981;
-    --brand-primary-hover: #34D399;
+    /* ==== Emerald Dark Theme — market desk product surface ==== */
+    --brand-bg: #060A12;
+    --brand-bg-secondary: #0B111D;
+    --brand-card: #111A29;
+    --brand-primary: #34D399;
+    --brand-primary-hover: #10B981;
     --brand-success: #10B981;
-    --brand-danger: #EF4444;
+    --brand-danger: #F43F5E;
     --brand-warning: #F59E0B;
     --brand-accent: #22D3EE;
-    --brand-text-primary: #F0F5FA;
-    --brand-text-secondary: #8B9DB3;
-    --brand-text-muted: #4A6074;
-    --brand-surface-hover: #162029;
-    --brand-border: #1A2D3A;
-    --brand-border-light: #243A4A;
+    --brand-text-primary: #F8FAFC;
+    --brand-text-secondary: #A8B5C7;
+    --brand-text-muted: #718196;
+    --brand-surface-hover: #172437;
+    --brand-border: #2A3A4F;
+    --brand-border-light: #35475F;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    --gradient-card: linear-gradient(180deg, rgba(15, 23, 31, 0.95) 0%, rgba(8, 14, 18, 0.98) 100%);
+    --gradient-primary: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+    --gradient-card: linear-gradient(180deg, rgba(17, 26, 41, 0.96) 0%, rgba(8, 14, 22, 0.98) 100%);
     --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
-    --gradient-sidebar: linear-gradient(180deg, #0B1218 0%, #070D12 100%);
+    --gradient-sidebar: linear-gradient(180deg, #0B111D 0%, #070B14 100%);
 
     /* Easing */
     --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -40,6 +40,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -48,11 +49,12 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     background-image:
-      radial-gradient(ellipse at 30% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.04) 0%, transparent 40%),
-      linear-gradient(180deg, #060A0E 0%, #05090C 50%, #040608 100%);
+      radial-gradient(ellipse at 30% 0%, rgba(52, 211, 153, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.035) 0%, transparent 40%),
+      linear-gradient(180deg, #060A12 0%, #050812 50%, #04070D 100%);
     background-attachment: fixed;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 }
 
@@ -98,43 +100,30 @@
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
   }
 
-  /* ==== Glassmorphism Cards ==== */
+  /* ==== Product Panels ==== */
   .card-modern {
     background: var(--gradient-card);
-    border: 1px solid rgba(26, 45, 58, 0.9);
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.4),
-      0 2px 4px -2px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(42, 58, 79, 0.88);
   }
 
   .card-modern-hover {
-    transition: all 0.25s var(--ease-out-quart);
+    transition: border-color 0.18s var(--ease-out-quart), background-color 0.18s var(--ease-out-quart), color 0.18s var(--ease-out-quart);
   }
 
   .card-modern-hover:hover {
-    border-color: rgba(16, 185, 129, 0.45);
-    box-shadow:
-      0 8px 12px -1px rgba(0, 0, 0, 0.5),
-      0 4px 8px -2px rgba(0, 0, 0, 0.4),
-      0 0 20px rgba(16, 185, 129, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    transform: translateY(-1px);
+    border-color: rgba(52, 211, 153, 0.45);
+    background-color: rgba(23, 36, 55, 0.72);
   }
 
-  /* ==== Glass Panel (for chart area) ==== */
+  /* ==== Panel variants ==== */
   .glass-panel {
-    background: rgba(11, 18, 24, 0.7);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(26, 45, 58, 0.6);
+    background: rgba(11, 17, 29, 0.94);
+    border: 1px solid rgba(42, 58, 79, 0.72);
   }
 
   .glass-strong {
-    background: rgba(15, 23, 31, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(36, 58, 74, 0.6);
+    background: rgba(17, 26, 41, 0.96);
+    border: 1px solid rgba(42, 58, 79, 0.82);
   }
 
   /* ==== Market Frame (hero/chart section) ==== */
@@ -142,10 +131,10 @@
     position: relative;
     overflow: hidden;
     background:
-      linear-gradient(180deg, rgba(6, 10, 14, 0.3), rgba(6, 10, 14, 0.85)),
-      radial-gradient(ellipse at 50% 90%, rgba(16, 185, 129, 0.12), transparent 55%),
-      linear-gradient(180deg, rgba(12, 20, 28, 0.95), rgba(4, 8, 12, 0.98));
-    border: 1px solid rgba(26, 45, 58, 0.8);
+      linear-gradient(180deg, rgba(6, 10, 18, 0.3), rgba(6, 10, 18, 0.86)),
+      radial-gradient(ellipse at 50% 90%, rgba(52, 211, 153, 0.13), transparent 55%),
+      linear-gradient(180deg, rgba(12, 20, 32, 0.95), rgba(4, 8, 14, 0.98));
+    border: 1px solid rgba(42, 58, 79, 0.82);
   }
 
   .market-frame::before {
@@ -185,7 +174,7 @@
   /* ==== Sidebar ==== */
   .sidebar-emerald {
     background: var(--gradient-sidebar);
-    border-right: 1px solid rgba(26, 45, 58, 0.8);
+    border-right: 1px solid rgba(42, 58, 79, 0.82);
   }
 
   .sidebar-item {
@@ -198,9 +187,9 @@
   }
 
   .sidebar-item-active {
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(52, 211, 153, 0.13);
     color: var(--brand-primary);
-    border-right: 2px solid var(--brand-primary);
+    outline: 1px solid rgba(52, 211, 153, 0.18);
   }
 
   .dashboard-shell {
@@ -208,24 +197,22 @@
   }
 
   .dashboard-title {
-    letter-spacing: -0.025em;
+    letter-spacing: 0;
     text-wrap: balance;
   }
 
   .market-panel {
     background:
-      linear-gradient(180deg, rgba(15, 23, 31, 0.92), rgba(9, 15, 22, 0.96));
-    border: 1px solid rgba(26, 45, 58, 0.82);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      linear-gradient(180deg, rgba(17, 26, 41, 0.92), rgba(9, 15, 24, 0.96));
+    border: 1px solid rgba(42, 58, 79, 0.82);
   }
 
   .market-tile {
     position: relative;
     overflow: hidden;
     background:
-      linear-gradient(180deg, rgba(15, 23, 31, 0.94), rgba(7, 13, 18, 0.96));
-    border: 1px solid rgba(26, 45, 58, 0.82);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      linear-gradient(180deg, rgba(17, 26, 41, 0.94), rgba(7, 12, 20, 0.96));
+    border: 1px solid rgba(42, 58, 79, 0.82);
   }
 
   .market-tile::before {
@@ -246,7 +233,7 @@
     color: rgba(139, 157, 179, 0.82);
     font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
   }
 
   .table-compact td {
@@ -322,12 +309,8 @@
     50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
   }
 
-  /* ==== Gradient text ==== */
   .text-gradient-emerald {
-    background: linear-gradient(135deg, #10B981, #34D399);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--brand-primary);
   }
 
   .text-gradient-primary {
@@ -377,25 +360,6 @@
   .market-frame::before, .pulse-glow {
     animation: none !important;
   }
-}
-
-/* ==== Custom Scrollbar ==== */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--brand-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--brand-border);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--brand-border-light);
 }
 
 /* ==== Chart container ==== */

@@ -135,6 +135,31 @@ function AccordionSection({ title, icon, children, defaultOpen = false }: Accord
   )
 }
 
+function SectionHeading({
+  icon,
+  title,
+  tone = 'primary',
+}: {
+  icon: React.ReactNode
+  title: string
+  tone?: 'primary' | 'success' | 'warning'
+}) {
+  const toneStyles = {
+    primary: 'border-brand-primary/25 bg-brand-primary/5 text-brand-primary',
+    success: 'border-brand-success/25 bg-brand-success/5 text-brand-success',
+    warning: 'border-brand-warning/25 bg-brand-warning/5 text-brand-warning',
+  }[tone]
+
+  return (
+    <div className={cn('flex items-center gap-3 rounded-xl border px-4 py-3', toneStyles)}>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-current/10">
+        {icon}
+      </span>
+      <h2 className="text-lg font-semibold text-brand-text-primary">{title}</h2>
+    </div>
+  )
+}
+
 export default function LearnPage() {
   return (
     <div className="space-y-6">
@@ -150,10 +175,7 @@ export default function LearnPage() {
       </div>
 
       {/* Technical Analysis Basics */}
-      <div className="flex items-center gap-3 border-l-4 border-brand-primary pl-4">
-        <BarChart3 size={22} className="text-brand-primary" />
-        <h2 className="text-lg font-semibold text-brand-text-primary">พื้นฐานการวิเคราะห์ทางเทคนิค</h2>
-      </div>
+      <SectionHeading icon={<BarChart3 size={22} />} title="พื้นฐานการวิเคราะห์ทางเทคนิค" />
 
       <div className="space-y-3">
         <AccordionSection
@@ -167,7 +189,7 @@ export default function LearnPage() {
           </p>
           <LearningVisual type="indicators" />
           <div className="relative aspect-[21/9] overflow-hidden rounded-xl border border-brand-border">
-            <Image src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80" alt="กราฟหุ้นและการวิเคราะห์" fill className="object-cover" unoptimized />
+            <Image src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80" alt="กราฟหุ้นและการวิเคราะห์" fill className="object-cover" priority unoptimized />
           </div>
           <p>หลักการสำคัญ 3 ข้อ:</p>
           <ul className="list-disc list-inside space-y-1 ml-4">
@@ -375,8 +397,8 @@ export default function LearnPage() {
             </svg>
           </div>
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>Volume สูง + ราคาขึ้น = สัญญาณขาขึ้นที่แข็งแกร่ง</li>
-            <li>Volume สูง + ราคาลง = สัญญาณขาลงที่แข็งแกร่ง</li>
+            <li>Volume สูง + ราคาขึ้น = สะท้อนแรงซื้อที่แข็งแรงขึ้น</li>
+            <li>Volume สูง + ราคาลง = สะท้อนแรงขายที่ต้องจัดการความเสี่ยง</li>
             <li>Volume ต่ำ + ราคาขึ้น = อาจเป็นการขึ้นที่ไม่ยั่งยืน</li>
             <li>Volume ต่ำ + ราคาลง = แรงขายอ่อน อาจใกล้จุดกลับตัว</li>
           </ul>
@@ -384,10 +406,7 @@ export default function LearnPage() {
       </div>
 
       {/* Indicators Guide */}
-      <div className="flex items-center gap-3 border-l-4 border-brand-success pl-4">
-        <TrendingUp size={22} className="text-brand-success" />
-        <h2 className="text-lg font-semibold text-brand-text-primary">ตัวชี้วัดและเครื่องมือวิเคราะห์</h2>
-      </div>
+      <SectionHeading icon={<TrendingUp size={22} />} title="ตัวชี้วัดและเครื่องมือวิเคราะห์" tone="success" />
 
       <div className="space-y-3">
         <AccordionSection
@@ -454,8 +473,8 @@ export default function LearnPage() {
             <strong>RSI</strong> เป็น Momentum Oscillator ที่วัดความเร็วและการเปลี่ยนแปลงของราคา มีค่าระหว่าง 0-100
           </p>
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li><strong>RSI &gt; 70</strong> = ภาวะ Overbought (ซื้อมากเกินไป) — อาจเป็นสัญญาณขาย</li>
-            <li><strong>RSI &lt; 30</strong> = ภาวะ Oversold (ขายมากเกินไป) — อาจเป็นสัญญาณซื้อ</li>
+            <li><strong>RSI &gt; 70</strong> = ภาวะ Overbought (ซื้อมากเกินไป) — ควรตรวจแรงขายและความเสี่ยงการพักตัว</li>
+            <li><strong>RSI &lt; 30</strong> = ภาวะ Oversold (ขายมากเกินไป) — ควรตรวจแรงดีดกลับและเหตุผลที่ราคาถูกกด</li>
             <li><strong>RSI 50</strong> = จุดกึ่งกลาง เป็นเส้นแบ่งระหว่างแนวโน้มขาขึ้นและขาลง</li>
           </ul>
           <div className="relative aspect-[16/7] overflow-hidden rounded-xl border border-brand-border bg-brand-bg-secondary">
@@ -484,10 +503,10 @@ export default function LearnPage() {
             <li><strong>Signal Line</strong> = EMA 9 ของ MACD Line</li>
             <li><strong>Histogram</strong> = MACD Line - Signal Line</li>
           </ul>
-          <p><strong>สัญญาณ:</strong></p>
+          <p><strong>สิ่งที่ใช้ตีความ:</strong></p>
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>MACD ตัด Signal ขึ้น = สัญญาณซื้อ</li>
-            <li>MACD ตัด Signal ลง = สัญญาณขาย</li>
+            <li>MACD ตัด Signal ขึ้น = โมเมนตัมเริ่มฟื้น ต้องตรวจ volume และแนวโน้มหลักประกอบ</li>
+            <li>MACD ตัด Signal ลง = โมเมนตัมเริ่มอ่อน ต้องตรวจแนวรับและข่าวประกอบ</li>
             <li>Histogram ใหญ่ขึ้น = แนวโน้มกำลังแข็งแกร่ง</li>
           </ul>
           <div className="relative aspect-[16/7] overflow-hidden rounded-xl border border-brand-border bg-brand-bg-secondary">
@@ -559,10 +578,7 @@ export default function LearnPage() {
       </div>
 
       {/* Investment Concepts */}
-      <div className="flex items-center gap-3 border-l-4 border-brand-warning pl-4">
-        <Lightbulb size={22} className="text-brand-warning" />
-        <h2 className="text-lg font-semibold text-brand-text-primary">แนวคิดและกลยุทธ์การลงทุน</h2>
-      </div>
+      <SectionHeading icon={<Lightbulb size={22} />} title="แนวคิดและกลยุทธ์การลงทุน" tone="warning" />
 
       <div className="space-y-3">
         <AccordionSection
@@ -709,10 +725,7 @@ export default function LearnPage() {
       </div>
 
       {/* FAQ */}
-      <div className="flex items-center gap-3 border-l-4 border-brand-primary pl-4">
-        <HelpCircle size={22} className="text-brand-primary" />
-        <h2 className="text-lg font-semibold text-brand-text-primary">คำถามที่พบบ่อย (FAQ)</h2>
-      </div>
+      <SectionHeading icon={<HelpCircle size={22} />} title="คำถามที่พบบ่อย (FAQ)" />
 
       <div className="space-y-3">
         <AccordionSection

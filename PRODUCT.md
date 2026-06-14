@@ -10,7 +10,7 @@ Thai retail investors, active traders, and early-stage investors who need a sing
 
 ## Product Purpose
 
-StockGuru Thailand helps users research Thai and foreign stocks with AI-supported summaries, technical context, screeners, watchlists, market overview, news, alerts, and learning material. Success means users can move from "what is happening in the market?" to "which symbols deserve attention?" to "what should I verify next?" without leaving the product or trusting an unexplained recommendation.
+StockGuru Thailand helps users research Thai and foreign stocks with AI-supported summaries, technical context, screeners, watchlists, market overview, news, alerts, learning material, Agent Looping / MiroFish Debate War Room, SEGA Review Gate, and MiroFish Swarm Simulation. Success means users can move from "what is happening in the market?" to "which symbols deserve attention?" to "what should I verify next?" without leaving the product or trusting an unexplained recommendation.
 
 ## Brand Personality
 
@@ -18,7 +18,7 @@ Focused, credible, and fast. The product should feel like a calm market desk for
 
 ## Anti-references
 
-Avoid ad-heavy finance portals that bury market data under banners, decorative fintech dashboards that reduce trust with oversized effects, and dense trading terminals that make beginners decode too much at once. Avoid presenting AI output as guaranteed advice, hiding risk context, or using color in a way that makes gain/loss states ambiguous.
+Avoid ad-heavy finance portals that bury market data under banners, decorative fintech dashboards that reduce trust with oversized effects, and dense trading terminals that make beginners decode too much at once. Avoid presenting AI output as guaranteed advice, hiding risk context, using color in a way that makes gain/loss states ambiguous, or implying that StockGuru currently executes trades.
 
 ## Design Principles
 

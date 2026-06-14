@@ -3,6 +3,13 @@ export const MARKET_DATA_PROVIDER_SET = 'set'
 export const MARKET_DATA_PROVIDER_STOCKGURU_DEMO = 'stockguru-demo'
 
 export type MarketDataSource = 'yahoo' | 'siamchart' | 'cache' | 'fallback'
+export type MarketDataWarningType = 'stale' | 'fallback' | 'demo' | 'partial' | 'missing'
+
+export interface MarketDataWarning {
+  type: MarketDataWarningType
+  message: string
+  field?: string
+}
 
 export interface MarketDataMeta {
   source: MarketDataSource
@@ -10,6 +17,7 @@ export interface MarketDataMeta {
   provider: string
   updatedAt: number
   warning?: string
+  warnings?: MarketDataWarning[]
 }
 
 export interface MarketDataResult<T> {

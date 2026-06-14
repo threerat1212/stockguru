@@ -30,6 +30,10 @@ const FEATURE_COPY: Record<FeatureKey, { title: string; description: string }> =
     title: 'Export CSV',
     description: 'ส่งออกข้อมูลเป็น CSV ต้องการแผน Pro',
   },
+  agentLoop: {
+    title: 'Agent Looping / MiroFish Debate / Swarm',
+    description: 'Closed Loop + MiroFish-style debate และ MiroFish Swarm Simulation สำหรับจำลองสังคม/scenario: Seed → Agent Discussion → Risk/Contrarian → Reporter → Verifier หรือ Event → Personas → Social Feed → Scenario Map ต้องการแผน Pro',
+  },
 }
 
 interface FeatureGateProps {

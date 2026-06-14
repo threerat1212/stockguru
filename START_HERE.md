@@ -7,10 +7,11 @@
 
 ## โปรเจกต์คืออะไร
 
-**StockGuru** คือ Thai-first stock research workspace สำหรับนักลงทุนไทย  
-ดูหุ้น SET/mai + ต่างประเทศ, AI สรุปข้อมูล, screener, watchlist, alerts, portfolio, Trading Journal
+**StockGuru** คือ Thai-first stock research workspace สำหรับนักลงทุนไทย
+ดูหุ้น SET/mai + ต่างประเทศ, AI สรุปข้อมูล, screener, watchlist, alerts, portfolio, Trading Journal, Agent Looping War Room, SEGA Review Gate, และ MiroFish Swarm
 
 **ไม่ใช่** ที่ปรึกษาการลงทุน — ห้ามใช้ภาษา "สัญญาณซื้อ", "การันตีกำไร", "AI บอกให้ซื้อ"
+**ไม่ใช่** trading execution system — Agent Looping เป็น decision support/rehearsal ไม่ใช่ส่ง order จริง
 
 ---
 
@@ -22,6 +23,8 @@
 4. **SKILLS.md** — เลือก skill ตามงาน
 5. **AGENTS.md** — กฎสำหรับ AI agents
 
+สำหรับงานวิศวกรรมที่ไม่ใช่งานเล็กมาก หรือเมื่อต้องนำ workflow จาก external agent skills มาปรับใช้ ให้เริ่มจาก `skills/stockguru-agent-workflow/SKILL.md` แล้วค่อยอ่าน domain skill ที่เกี่ยวข้อง
+
 ---
 
 ## Tech Stack
@@ -32,7 +35,7 @@
 | State | TanStack Query, Zustand |
 | Auth/DB | Supabase (RLS) |
 | Billing | Stripe |
-| AI | MiMo (`MIMO_API_KEY`) |
+| AI | MiMo (`MIMO_API_KEY`) สำหรับ AI chat/news refresh; War Room Debate MVP เป็น rule-based ก่อนต่อ OpenRouter/Xiaomi MiMo/DeepSeek model routing ภายหลัง |
 | Market data | Yahoo Finance (proxy) + fallback ตัวอย่าง |
 | Charts | TradingView widget (stock detail) + lightweight-charts (internal compare charts) |
 | Deploy | Render (`render.yaml`) |
@@ -46,6 +49,8 @@ app/api/health/           # health check สำหรับ Render
 app/api/billing/portal/   # Stripe Customer Portal
 components/news/NewsImpactPanel.tsx
 lib/hooks/use-news.ts     # news hooks (แทน useStock.ts ที่ลบแล้ว)
+lib/agent-loop/           # Agent Looping orchestrator, agents, verifier, SEGA review gate
+app/war-room/             # Market War Room UI
 lib/subscription/         # plan-utils, server gating
 lib/market-data/          # data source metadata
 START_HERE.md             # เอกสารนี้
@@ -65,11 +70,18 @@ START_HERE.md             # เอกสารนี้
 - UI: `<FeatureGate feature="...">`
 - Server: `requireFeature()` ใน `lib/subscription/server.ts`
 
-### 3. ข่าว = AI Market Brief
+### 4. ข่าว = AI Market Brief
 - ไม่ใช่ wire ข่าวจริง — ต้องมี disclaimer ทุกหน้า
 - สรุปผลกระทบข่าว (impact score / impact points) = **Pro** เท่านั้น
 
-### 4. Secrets
+### 5. Agent Looping + SEGA + MiroFish Swarm = decision support
+- Agent Looping / War Room ต้องผ่าน verifier gate: ไม่มี buy/sell advice, มี disclaimer, มี evidence, มี risk checklist
+- SEGA Review Gate review thesis, downside, exit plan, allocation envelope, risk score และ approval decision โดยไม่สร้างสัญญาณใหม่หรือส่ง order
+- MiroFish Swarm ใช้จำลองสังคม multi-agent: personas, memory, beliefs, simulated Twitter/Reddit, scenario map, risks, opportunities, blind spots
+- ห้ามเชื่อม broker / ส่ง order / autonomous trading ใน PR16/PR18/PR19/PR20
+- Trading system เป็น future backlog: Trade Plan → Paper Trading → optional user-approved execution
+
+### 6. Secrets
 - **ห้าม commit** `.env.local`, API keys
 
 ---
@@ -106,17 +118,44 @@ START_HERE.md             # เอกสารนี้
 - [x] อัปเดต `DESIGN.md` ให้บันทึก Home Dashboard polish rule, empty watchlist behavior, และ validation checklist
 - [x] Verification: `npm run typecheck`, `npm run build`, `npm test`, local `/` smoke test, browser snapshot/console check
 
----
+### รอบที่ 5 — PR16 Agent Looping / Market War Room
+- [x] **PR16** — Agent Looping backend: types, schema, data collector, agents, verifier, orchestrator
+- [x] **PR16** — `POST /api/agent-loop/simulate` gated by Pro plan
+- [x] **PR16** — `/war-room` UI with scope selector, scenario input, closed-loop trace, agent cards, verifier, risk/checklist
+- [x] **PR16** — docs: `docs/AGENT_LOOPING_MVP.md`, `docs/TRADING_SYSTEM_BACKLOG.md`
+- [x] Verification: `npm run typecheck`, `npm run build`, `npm test`
+- [ ] Manual browser smoke test `/war-room` with logged-in Pro account
 
+### รอบที่ 6 — PR18 MiroFish Debate Mode
+- [x] **PR18** — MiroFish-style debate backend: seed extractor, personas, graph, rounds, reporter, verifier
+- [x] **PR18** — `POST /api/war-room/debate` gated by Pro plan
+- [x] **PR18** — `/war-room` Debate Mode UI with question input, transcript, verifier, risk/checklist
+- [x] **PR18** — Supabase debate tables + migration `20260611150000_pr18_war_room_debate.sql`
+- [x] **PR18** — docs: `docs/MIROFISH_DEBATE_MODE.md`, updated `docs/AGENT_LOOPING_MVP.md`
+- [x] Verification: `npm run typecheck`, `npm run build`, `npm test`, local `/war-room` gate smoke test, anonymous API gate check
+
+### รอบที่ 7 — SEGA Review Gate
+- [x] **SEGA** — Finance Division / Capital Allocation & Risk Agent สำหรับ review Agent Loop / MiroFish Debate result
+- [x] **SEGA** — proposal schema, adapters, deterministic approval gate, Thai Storycraft renderer
+- [x] **SEGA** — `POST /api/sega/review` รับ explicit proposal หรือ derive proposal จาก result
+- [x] **SEGA** — `/war-room` render approval/storycraft payload จาก server โดยตรง
+- [x] Verification: `npm run typecheck`, `npm run lint`, `npm test`, SEGA targeted unit tests 19 passed
+
+### รอบที่ 8 — Agent Workflow Adapter
+- [x] เพิ่ม `skills/stockguru-agent-workflow/SKILL.md` เพื่อปรับ lifecycle/quality-gate ideas จาก `https://github.com/addyosmani/agent-skills` ให้เข้ากับ StockGuru
+- [x] ระบุชัดว่าไม่ copy upstream ทั้ง repo, slash commands, platform folders, hooks, personas, zip packaging, หรือ generic docs เข้ามาโดยไม่ review
+- [x] อัปเดต `SKILLS.md` และ `docs/IMPLEMENTATION_UPDATE.md`
+
+---
 ## Gap Analysis: StockGuru vs Top 5 Market Platforms
 
-> **เอกสารหลัก:** `docs/TOP5_GAP_ROADMAP.md`  
-> **Benchmark:** TradingView, Investing.com, Yahoo Finance, Finviz, Seeking Alpha + Thai local context: SET.or.th, Kaohoon, SETTRADE, broker apps  
+> **เอกสารหลัก:** `docs/TOP5_GAP_ROADMAP.md`
+> **Benchmark:** TradingView, Investing.com, Yahoo Finance, Finviz, Seeking Alpha + Thai local context: SET.or.th, Kaohoon, SETTRADE, broker apps
 > **Positioning:** StockGuru ควรเป็น **Thai market research cockpit + AI assistant** ไม่ใช่ TradingView clone
 
 ### Strategic conclusion
 
-StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscription, AI brief, watchlist, alerts, portfolio, journal, compare, screener, news, deploy pipeline  
+StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscription, AI brief, watchlist, alerts, portfolio, journal, compare, screener, news, deploy pipeline
 แต่ช่องว่างใหญ่สุดก่อนขาย paid product คือ:
 
 1. **ข้อมูล SET/mai ที่น่าเชื่อถือและครอบคลุม**
@@ -142,6 +181,10 @@ StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscr
 - **PR14 — Portfolio Analytics**
 - **PR15 — PWA + Push Notifications**
 
+- **PR16 — Agent Looping / Market War Room** ✅ Implemented
+- **PR18 — MiroFish Debate Mode** ✅ Implemented
+- **PR17 — Trade Plan + Paper Trading** 🧊 Future backlog
+
 รายละเอียด full benchmark, acceptance criteria, first engineering tickets, และ definition of done อยู่ใน `docs/TOP5_GAP_ROADMAP.md`
 
 ### สิ่งที่ข้ามไปก่อน จนกว่าจะมี data/provider/legal พร้อม
@@ -152,6 +195,7 @@ StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscr
 - News wire จริงที่มี source/citation
 - PWA push infrastructure
 - Broker CSV import / live execution
+- Trade Plan + Paper Trading (PR17 future)
 - Backtesting engine เต็มรูปแบบ
 - Social feed / public ideas
 
@@ -225,7 +269,7 @@ npm run test:e2e
 - [ ] อ่าน START_HERE.md + skill ที่เกี่ยวข้อง
 - [ ] Pro feature → `PLAN_LIMITS` + `FeatureGate` + server check
 - [ ] ราคา → ส่ง `meta` + badge
-- [ ] AI → disclaimer, ไม่ buy/sell advice
+- [ ] AI / Agent Loop → disclaimer, ไม่ buy/sell advice, มี verifier/evidence/risk checklist
 - [ ] `npm run typecheck && npm run build && npm test`
 - [ ] อัปเดต START_HERE.md ถ้าเปลี่ยน architecture หรือเพิ่มงานที่ข้าม
 
@@ -238,4 +282,4 @@ npm run test:e2e
 
 ---
 
-*อัปเดตล่าสุด: มิถุนายน 2026 — รอบที่ 3 (PR3-PR8 เสร็จสมบูรณ์, `as any` = 0)*
+*อัปเดตล่าสุด: มิถุนายน 2026 — PR3-PR8 เสร็จสมบูรณ์, PR16 Agent Looping implemented, PR17 Trading Backlog documented*

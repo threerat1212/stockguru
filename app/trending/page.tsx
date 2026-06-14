@@ -8,7 +8,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Flame,
   RefreshCw,
 } from 'lucide-react'
 import { useTrending } from '@/lib/hooks/use-stock'
@@ -91,12 +90,12 @@ export default function TrendingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-warning/10 rounded-lg flex items-center justify-center">
-            <Flame size={20} className="text-brand-warning" />
+          <div className="w-10 h-10 bg-brand-primary/10 rounded-lg flex items-center justify-center">
+            <ArrowUpDown size={20} className="text-brand-primary" />
           </div>
           <div>
-            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">หุ้นมาแรงวันนี้</h1>
-            <p className="text-sm text-brand-text-secondary">Top 10 หุ้นขึ้น-ลง มากที่สุด</p>
+            <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">หุ้นเคลื่อนไหวสูง</h1>
+            <p className="text-sm text-brand-text-secondary">เรียงตาม % เปลี่ยนแปลงและ volume ล่าสุด</p>
           </div>
         </div>
         <Button

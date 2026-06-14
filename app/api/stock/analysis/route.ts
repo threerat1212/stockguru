@@ -4,13 +4,14 @@ import { analyzeStock } from '@/lib/services/ai-service'
 import { apiSuccess, apiBadRequest, apiError } from '@/lib/api/response'
 import { createClient } from '@/lib/supabase/server'
 import { effectivePlan } from '@/lib/subscription/plan-utils'
+import { getLifetimePlanForEmail } from '@/lib/subscription/lifetime'
 import { rateLimit } from '@/lib/middleware/rate-limit'
 
 const ANALYSIS_MONTHLY_LIMIT: Record<string, number> = {
   free: 5,
   pro: 100,
   founding_pro: 100,
-  trader: 200,
+  trader: 999999,
 }
 
 /**
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
     .eq('user_id', user.id)
     .single()
 
-  const plan = effectivePlan(subData?.plan, subData?.status)
+  const plan = getLifetimePlanForEmail(user.email) ?? effectivePlan(subData?.plan, subData?.status)
   const monthlyLimit = ANALYSIS_MONTHLY_LIMIT[plan] ?? 5
 
   const monthStart = new Date()

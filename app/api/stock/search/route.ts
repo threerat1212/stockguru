@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { searchStocks } from '@/lib/services/stock-service'
+import { searchStocksWithMeta } from '@/lib/services/stock-service'
 import { apiSuccess, apiBadRequest, apiError } from '@/lib/api/response'
 import { rateLimit } from '@/lib/middleware/rate-limit'
 
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const results = await searchStocks(parse.data.q.trim())
-    return apiSuccess(results)
+    const result = await searchStocksWithMeta(parse.data.q.trim())
+    return apiSuccess(result.data, { meta: result.meta, cached: result.meta.source === 'cache' })
   } catch (error) {
     return apiError((error as Error).message)
   }

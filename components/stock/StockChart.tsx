@@ -177,7 +177,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
               key={tf}
               onClick={() => setTimeframe(tf)}
               className={cn(
-                'px-2.5 py-1 text-xs font-medium rounded-md transition-all',
+                'min-h-9 px-3 text-xs font-medium rounded-md transition-all',
                 timeframe === tf
                   ? 'bg-brand-card text-brand-text-primary shadow-sm'
                   : 'text-brand-text-secondary hover:text-brand-text-primary'
@@ -195,7 +195,7 @@ export default function StockChart({ data, symbol, height = 400 }: StockChartPro
               key={ind.value}
               onClick={() => toggleIndicator(ind.value)}
               className={cn(
-                'px-2 py-1 text-xs font-medium rounded-md border transition-all',
+                'min-h-9 px-3 text-xs font-medium rounded-md border transition-all',
                 indicators.includes(ind.value)
                   ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary'
                   : 'bg-transparent border-brand-border text-brand-text-secondary hover:border-brand-primary/30'

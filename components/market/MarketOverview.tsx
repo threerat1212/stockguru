@@ -28,7 +28,7 @@ export default function MarketOverview() {
         return (
           <Link
             key={index.symbol}
-            href="/screener"
+            href={`/stock/${encodeURIComponent(index.symbol)}`}
             className={cn(
               'group block rounded-lg border border-brand-border bg-brand-card p-4 transition-colors duration-200',
               'hover:border-brand-primary/40 hover:bg-brand-surface-hover/70 cursor-pointer'

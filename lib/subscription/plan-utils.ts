@@ -1,4 +1,4 @@
-import { PLAN_LIMITS, type Plan } from '@/lib/hooks/use-subscription'
+import { PLAN_LIMITS, type Plan } from '@/lib/subscription/plans'
 
 export type FeatureKey = keyof (typeof PLAN_LIMITS)['free']['features']
 

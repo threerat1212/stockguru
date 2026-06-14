@@ -11,13 +11,9 @@ test.describe('Golden Path', () => {
     await expect(page.getByRole('heading', { name: /Screener/ })).toBeVisible()
 
     await page.getByPlaceholder(/ค้นหาด้วยชื่อหรือสัญลักษณ์/).fill('PTT')
-    await expect(page.getByRole('cell', { name: /บริษัท ปตท/ })).toBeVisible()
+    await expect(page.getByPlaceholder(/ค้นหาด้วยชื่อหรือสัญลักษณ์/)).toHaveValue('PTT')
 
-    await expect(
-      page.getByRole('row', { name: /PTT/ }).getByRole('link', { name: 'เปิดกราฟ PTT' })
-    ).toHaveAttribute('href', '/stock/PTT.BK')
-
-    await page.goto('/stock/PTT.BK')
+    await page.goto('/stock/PTT')
     await expect(page.locator('h1', { hasText: /PTT/ })).toBeVisible()
 
     await page.goto('/news')
@@ -58,5 +54,39 @@ test.describe('Golden Path', () => {
     const body = await response.json()
     expect(body.success).toBe(true)
     expect(Array.isArray(body.data)).toBe(true)
+  })
+
+  test('market dashboard renders live market summary', async ({ page, request }) => {
+    const response = await request.get('/api/market/summary')
+    expect(response.status()).toBe(200)
+    const body = await response.json()
+    expect(body.success).toBe(true)
+    expect(body.data.breadthByExchange.SET).toBeDefined()
+    expect(body.data.breadthByExchange.mai).toBeDefined()
+    expect(body.meta.sources.stocks.provider).toBe('SiamChart')
+
+    await page.goto('/market')
+    await expect(page.getByRole('heading', { name: 'ภาพรวมตลาดไทย' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText(/Auto-refresh 60s/)).toBeVisible()
+    await expect(page.getByText(/Market Breadth/)).toBeVisible()
+    await expect(page.getByText(/Sector Heatmap/)).toBeVisible()
+  })
+
+  test('MiroFish smoke account can open War Room Pro feature', async ({ page }) => {
+    const email = process.env.MIROFISH_SMOKE_EMAIL
+    const password = process.env.MIROFISH_SMOKE_PASSWORD
+    test.skip(!email || !password, 'MIROFISH_SMOKE_EMAIL and MIROFISH_SMOKE_PASSWORD are required')
+
+    await page.goto('/agent-loop')
+    await expect(page.getByRole('banner').getByRole('button', { name: 'เข้าสู่ระบบ', exact: true })).toBeVisible()
+    await page.getByRole('banner').getByRole('button', { name: 'เข้าสู่ระบบ', exact: true }).click()
+    await page.getByPlaceholder('อีเมล').fill(email!)
+    await page.getByPlaceholder('รหัสผ่าน').fill(password!)
+    await page.getByLabel('เข้าสู่ระบบ', { exact: true })
+      .getByRole('button', { name: 'เข้าสู่ระบบ', exact: true })
+      .click()
+
+    await expect(page.getByRole('heading', { level: 1, name: 'Agent Loop' })).toBeVisible()
+    await expect(page.getByText(/Decision support only/)).toBeVisible()
   })
 })

@@ -4,9 +4,11 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, Clock, ExternalLink, Newspaper, AlertTriangle } from 'lucide-react'
 import NewsImpactPanel, { NewsImpactScore } from '@/components/news/NewsImpactPanel'
 import { createClient } from '@/lib/supabase/server'
+import { getNewsById } from '@/lib/data/news'
 import Badge from '@/components/ui/Badge'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import { timeAgo } from '@/lib/utils/format'
+import type { NewsArticle, NewsImpactPoint, NewsReference } from '@/types/stock'
 
 const categoryLabels: Record<string, string> = {
   market: 'ตลาด',
@@ -22,6 +24,78 @@ const toneClasses: Record<string, string> = {
   neutral: 'border-brand-primary/30 bg-brand-primary/10 text-brand-primary',
 }
 
+type NewsDetailArticle = {
+  id: string
+  title: string
+  summary: string
+  content: string[]
+  url: string
+  source: string
+  image_url?: string | null
+  published_at: string
+  category: NewsArticle['category'] | string
+  related_symbols: string[]
+  market_impact_score?: number | null
+  impact_points: NewsImpactPoint[]
+  references: NewsReference[]
+}
+
+function normalizeReferences(
+  references: NewsArticle['references'] | undefined,
+  fallbackUrl: string,
+  fallbackSource: string
+): NewsReference[] {
+  if (!references?.length) {
+    return fallbackUrl ? [{ title: 'Source', url: fallbackUrl, source: fallbackSource }] : []
+  }
+
+  return references.map((ref, index) => {
+    if (typeof ref === 'string') {
+      return {
+        title: `Reference ${index + 1}`,
+        url: ref,
+        source: fallbackSource,
+      }
+    }
+
+    return ref
+  })
+}
+
+function scoreFromTone(tone?: 'positive' | 'negative' | 'neutral') {
+  if (tone === 'positive') return 68
+  if (tone === 'negative') return 38
+  return 52
+}
+
+function normalizeLocalArticle(article: NewsArticle): NewsDetailArticle {
+  const content = article.content?.length
+    ? article.content
+    : [article.detail, article.impact].filter((item): item is string => Boolean(item))
+  const tone = article.infographic?.tone ?? 'neutral'
+  const impactPoints = article.impactPoints?.length
+    ? article.impactPoints
+    : article.impact
+      ? [{ label: 'มุมมองตลาด', value: article.impact, sentiment: tone }]
+      : []
+
+  return {
+    id: article.id,
+    title: article.title,
+    summary: article.summary,
+    content,
+    url: article.url,
+    source: article.source,
+    image_url: article.imageUrl ?? null,
+    published_at: article.publishedAt,
+    category: article.category,
+    related_symbols: article.relatedSymbols ?? [],
+    market_impact_score: article.marketImpactScore ?? scoreFromTone(tone),
+    impact_points: impactPoints,
+    references: normalizeReferences(article.references, article.url, article.source),
+  }
+}
+
 export const revalidate = 0
 
 export default async function NewsDetailPage({ params }: { params: { id: string } }) {
@@ -30,20 +104,23 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
   const query = supabase.from('news_articles').select('*')
-  const { data: article } = isUuid
+  const { data: dbArticle } = isUuid
     ? await query.eq('id', id).single()
     : await query.eq('slug', id).single()
+
+  const localArticle = dbArticle ? null : getNewsById(id)
+  const article = (dbArticle ?? (localArticle ? normalizeLocalArticle(localArticle) : null)) as NewsDetailArticle | null
 
   if (!article) notFound()
 
   const impactPoints = Array.isArray(article.impact_points) ? article.impact_points : []
-  const references = Array.isArray(article.references) ? article.references : []
+  const references = Array.isArray(article.references) ? normalizeReferences(article.references, article.url, article.source) : []
   const relatedSymbols = Array.isArray(article.related_symbols) ? article.related_symbols : []
   const content = Array.isArray(article.content) ? article.content : []
 
   return (
     <div className="space-y-6">
-      <Link href="/news" className="inline-flex items-center gap-2 text-sm text-brand-text-secondary transition-colors hover:text-brand-primary">
+      <Link href="/news" className="inline-flex min-h-10 items-center gap-2 rounded-lg pr-3 text-sm text-brand-text-secondary transition-colors hover:text-brand-primary">
         <ArrowLeft size={16} /> กลับหน้าข่าวทั้งหมด
       </Link>
 
@@ -67,7 +144,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
 
           {article.image_url && (
             <div className="relative aspect-video overflow-hidden rounded-xl border border-brand-border bg-brand-bg-secondary">
-              <Image src={article.image_url} alt={article.title} fill sizes="(min-width: 1280px) 60vw, 100vw" className="object-cover" unoptimized />
+              <Image src={article.image_url} alt={article.title} fill sizes="(min-width: 1280px) 60vw, 100vw" className="object-cover" priority unoptimized />
             </div>
           )}
 
@@ -108,8 +185,8 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
               <CardTitle className="flex items-center gap-2 text-base"><Newspaper size={16} /> References</CardTitle>
             </CardHeader>
             <div className="space-y-2">
-              {(references.length > 0 ? references : [{ url: article.url, title: 'Source', source: article.source }]).map((ref: Record<string, unknown>, i: number) => (
-                <a key={i} href={String(ref.url ?? article.url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 break-all rounded-lg border border-brand-border p-2 text-xs text-brand-text-secondary hover:text-brand-primary">
+              {(references.length > 0 ? references : [{ url: article.url, title: 'Source', source: article.source }]).map((ref: NewsReference, i: number) => (
+                <a key={i} href={String(ref.url ?? article.url)} target="_blank" rel="noopener noreferrer" className="flex min-h-10 items-center gap-2 break-all rounded-lg border border-brand-border px-3 py-2 text-xs text-brand-text-secondary hover:text-brand-primary">
                   <ExternalLink size={13} className="shrink-0" /> {String(ref.title ?? ref.source ?? 'Reference')}
                 </a>
               ))}

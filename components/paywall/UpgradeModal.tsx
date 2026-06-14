@@ -26,7 +26,8 @@ export default function UpgradeModal({
       <div className="relative mx-4 w-full max-w-md rounded-xl border border-brand-border bg-brand-card p-6 text-center">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-bg-secondary transition-colors"
+          aria-label="ปิดหน้าต่างอัปเกรด"
+          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-lg text-brand-text-secondary transition-colors hover:bg-brand-bg-secondary hover:text-brand-text-primary"
         >
           <X size={18} />
         </button>

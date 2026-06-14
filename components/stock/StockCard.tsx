@@ -61,7 +61,7 @@ export default function StockCard({ stock, rank }: StockCardProps) {
             onClick={toggleWatchlist}
             aria-label={inWatchlist ? `ลบ ${stock.symbol} จากรายการโปรด` : `เพิ่ม ${stock.symbol} เข้ารายการโปรด`}
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
+              'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
               inWatchlist
                 ? 'text-brand-warning bg-brand-warning/10'
                 : 'text-brand-text-secondary hover:text-brand-warning hover:bg-brand-warning/10 sm:opacity-0 sm:group-hover:opacity-100'

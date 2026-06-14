@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { effectivePlan, type FeatureKey, canAccessFeature } from '@/lib/subscription/plan-utils'
+import { getLifetimePlanForEmail } from '@/lib/subscription/lifetime'
 import type { Plan } from '@/lib/hooks/use-subscription'
 
 export interface ServerSubscriptionContext {
@@ -15,6 +16,11 @@ export async function getServerSubscription(): Promise<ServerSubscriptionContext
 
   if (!user) {
     return { userId: null, plan: 'free' }
+  }
+
+  const lifetimePlan = getLifetimePlanForEmail(user.email)
+  if (lifetimePlan) {
+    return { userId: user.id, plan: lifetimePlan }
   }
 
   const { data: subData } = await supabase

@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   Activity,
@@ -10,53 +9,93 @@ import {
   Clock,
   Layers3,
   PieChart,
-  TrendingUp,
 } from 'lucide-react'
-import MarketOverview from '@/components/market/MarketOverview'
-import { LoadingCard } from '@/components/ui/Loading'
-import type { MarketMover, MarketSectorSummary, MarketSummary } from '@/types/stock'
+import Button from '@/components/ui/Button'
+import { DataHonestyBanner } from '@/components/market/DataSourceBadge'
+import IndexCards from '@/components/market/IndexCards'
+import MarketStatusBanner from '@/components/market/MarketStatusBanner'
+import SectorHeatmap from '@/components/market/SectorHeatmap'
+import { useMarketSummary } from '@/lib/hooks/use-stock'
+import type { MarketBreadthSegment, MarketMover, MarketSummary } from '@/types/stock'
 import { cn, formatCurrency, formatNumber, formatPercent, formatVolume, getPriceColor } from '@/lib/utils/format'
-
-interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-  meta?: unknown
-}
 
 function toneClass(change: number) {
   return change > 0 ? 'text-brand-success' : change < 0 ? 'text-brand-danger' : 'text-brand-text-secondary'
 }
 
-function bgToneClass(change: number) {
-  return change > 0 ? 'bg-brand-success/10' : change < 0 ? 'bg-brand-danger/10' : 'bg-brand-text-secondary/10'
+function breadthRatio(segment?: MarketBreadthSegment) {
+  if (!segment?.total) return 0
+  return segment.advancing / segment.total
 }
 
-function SectorBar({ sector }: { sector: MarketSectorSummary }) {
-  const max = 12
-  const width = Math.max(4, Math.min(100, Math.abs(sector.avgChangePercent) / max * 100))
+function BreadthSegmentCard({
+  title,
+  segment,
+}: {
+  title: string
+  segment?: MarketBreadthSegment
+}) {
+  if (!segment) {
+    return (
+      <div className="rounded-lg border border-brand-border/50 bg-brand-bg-secondary p-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-brand-text-primary">{title}</p>
+          <span className="text-xs text-brand-text-muted">รอข้อมูล</span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-bg-secondary" />
+        <p className="mt-2 text-xs text-brand-text-secondary">กำลังโหลด breadth</p>
+      </div>
+    )
+  }
+
+  const ratio = breadthRatio(segment)
+  const balance = (ratio - 0.5) * 200
+  const tone = toneClass(segment.advancing - segment.declining)
+
   return (
-    <div className="rounded-xl border border-brand-border bg-brand-card p-3 transition-colors hover:border-brand-primary/30">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-brand-text-primary">{sector.sector}</p>
-          <p className="mt-1 text-xs text-brand-text-secondary">
-            {sector.count} หุ้น • นำโดย {sector.topSymbol}
-          </p>
-        </div>
-        <div className={cn('shrink-0 rounded-md px-2 py-1 text-xs font-semibold', bgToneClass(sector.avgChangePercent), toneClass(sector.avgChangePercent))}>
-          {formatPercent(sector.avgChangePercent)}
-        </div>
+    <div className="rounded-lg border border-brand-border/50 bg-brand-bg-secondary p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-brand-text-primary">{title}</p>
+        <span className={cn('text-xs font-mono-nums font-semibold', tone)}>{formatPercent(balance)}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-brand-bg-secondary">
-        <div
-          className={cn('h-full rounded-full transition-all', sector.avgChangePercent >= 0 ? 'bg-brand-success' : 'bg-brand-danger')}
-          style={{ width: `${width}%` }}
-        />
+        <div className="h-full rounded-full bg-brand-success transition-all" style={{ width: `${ratio * 100}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-brand-text-muted">
-        <span>ขึ้น {sector.advancing}</span>
-        <span>ลง {sector.declining}</span>
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-text-secondary">
+        <span className="text-brand-success">ขึ้น {segment.advancing}</span>
+        <span className="text-brand-danger">ลง {segment.declining}</span>
+        <span>ไม่เปลี่ยน {segment.unchanged}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-brand-text-muted">
+        <span>Vol {formatVolume(segment.volume)}</span>
+        <span>Value {formatCurrency(segment.value, 'THB')}</span>
+      </div>
+    </div>
+  )
+}
+
+function BreadthPanel({ summary }: { summary: MarketSummary }) {
+  const totalRatio = breadthRatio(summary.breadth)
+  const split = summary.breadthByExchange
+
+  return (
+    <div>
+      <div className="mb-3 h-2 overflow-hidden rounded-full bg-brand-bg-secondary">
+        <div className="h-full rounded-full bg-brand-success transition-all" style={{ width: `${totalRatio * 100}%` }} />
+      </div>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <BreadthSegmentCard title="SET" segment={split.SET} />
+        <BreadthSegmentCard title="mai" segment={split.mai} />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+        <div className="rounded-lg bg-brand-bg-secondary p-3">
+          <p className="text-brand-text-muted">มูลค่าซื้อขายโดยประมาณ</p>
+          <p className="mt-1 font-mono-nums font-semibold text-brand-text-primary">{formatCurrency(summary.breadth.value, 'THB')}</p>
+        </div>
+        <div className="rounded-lg bg-brand-bg-secondary p-3">
+          <p className="text-brand-text-muted">ปริมาณซื้อขาย</p>
+          <p className="mt-1 font-mono-nums font-semibold text-brand-text-primary">{formatVolume(summary.breadth.volume)}</p>
+        </div>
       </div>
     </div>
   )
@@ -77,7 +116,7 @@ function MoverRow({ item }: { item: MarketMover }) {
       </div>
       <div className="text-right">
         <p className="text-sm font-mono-nums font-semibold text-brand-text-primary">{formatNumber(item.price, 2)}</p>
-        <p className={cn('text-xs font-mono-nums font-semibold', toneClass(item.changePercent))}>
+        <p className={cn('text-xs font-mono-nums font-semibold', getPriceColor(item.changePercent))}>
           {formatPercent(item.changePercent)}
         </p>
       </div>
@@ -85,73 +124,143 @@ function MoverRow({ item }: { item: MarketMover }) {
   )
 }
 
-function MoverColumn({ title, items, empty }: { title: string; items: MarketMover[]; empty: string }) {
+function MoverColumn({ title, items, empty, limit = 5 }: { title: string; items: MarketMover[]; empty: string; limit?: number }) {
+  const visibleItems = items.slice(0, limit)
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-brand-text-primary">{title}</h3>
-        <Activity size={15} className="text-brand-primary" />
+        <span className="text-[11px] text-brand-text-muted">Top {Math.min(limit, items.length || limit)}</span>
       </div>
       {items.length === 0 ? (
         <div className="rounded-lg border border-brand-border p-4 text-center text-sm text-brand-text-secondary">{empty}</div>
       ) : (
-        items.map((item) => <MoverRow key={`${title}-${item.symbol}`} item={item} />)
+        visibleItems.map((item) => <MoverRow key={`${title}-${item.symbol}`} item={item} />)
       )}
     </div>
   )
 }
 
-export default function MarketPage() {
-  const [summary, setSummary] = useState<MarketSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+function PageError({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <div className="rounded-xl border border-brand-danger/30 bg-brand-danger/5 p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-brand-text-primary">ไม่สามารถโหลดข้อมูลตลาด</h2>
+          <p className="mt-1 text-sm text-brand-text-secondary">{error}</p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={onRetry}>ลองอีกครั้ง</Button>
+      </div>
+    </div>
+  )
+}
 
-  useEffect(() => {
-    let mounted = true
-    async function load() {
-      try {
-        const res = await fetch('/api/market/summary', { cache: 'no-store' })
-        const json = (await res.json()) as ApiResponse<MarketSummary>
-        if (!res.ok || !json.success) throw new Error(json.error ?? 'ไม่สามารถโหลดข้อมูลตลาดได้')
-        if (mounted) setSummary(json.data ?? null)
-      } catch (err) {
-        if (mounted) setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูลตลาดได้')
-      } finally {
-        if (mounted) setIsLoading(false)
-      }
-    }
-    load()
-    return () => {
-      mounted = false
-    }
-  }, [])
+function EmptyState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="rounded-xl border border-brand-border bg-brand-card p-8 text-center">
+      <BarChart3 size={32} className="mx-auto text-brand-text-muted" />
+      <h2 className="mt-4 text-lg font-bold text-brand-text-primary">ยังไม่พบข้อมูลตลาด</h2>
+      <p className="mt-1 text-sm text-brand-text-secondary">ลองรีเฟรชเพื่อตรวจสอบข้อมูลล่าสุด</p>
+      <div className="mt-4">
+        <Button variant="secondary" size="sm" onClick={onRetry}>รีเฟรชข้อมูล</Button>
+      </div>
+    </div>
+  )
+}
 
-  const breadthRatio = useMemo(() => {
-    if (!summary?.breadth.total) return 0
-    return summary.breadth.advancing / summary.breadth.total
-  }, [summary])
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6 fade-in">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <LoadingCard />
-          <LoadingCard />
-          <LoadingCard />
+function MarketLoadingState() {
+  return (
+    <div className="space-y-6 fade-in" aria-busy="true">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-primary">Market Dashboard</p>
+          <h1 className="heading-balance mt-2 text-2xl font-bold text-brand-text-primary">ภาพรวมตลาดไทย</h1>
+          <p className="mt-1 text-sm text-brand-text-secondary">
+            กำลังโหลด breadth, sector heatmap และหุ้นเคลื่อนไหวสูงสุดจากข้อมูลล่าสุด
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-brand-text-muted">
+          <div className="flex min-h-10 items-center gap-1 rounded-lg border border-brand-border bg-brand-card px-2.5">
+            <Clock size={14} />
+            Auto-refresh 60s
+          </div>
+          <div className="flex min-h-10 items-center gap-1 rounded-lg border border-brand-border bg-brand-card px-2.5">
+            <Activity size={14} />
+            รอข้อมูลล่าสุด
+          </div>
         </div>
       </div>
-    )
-  }
 
-  if (error || !summary) {
-    return (
-      <div className="rounded-xl border border-brand-danger/30 bg-brand-danger/5 p-6 text-sm text-brand-danger">
-        {error ?? 'ไม่พบข้อมูลตลาด'}
+      <div className="rounded-xl border border-brand-border bg-brand-card p-5">
+        <div className="flex items-center gap-3 text-sm text-brand-text-secondary">
+          <Activity size={18} className="animate-spin text-brand-primary" />
+          กำลังโหลดข้อมูลตลาด...
+        </div>
       </div>
-    )
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_360px]">
+        <div className="space-y-4">
+          <div className="rounded-xl border border-brand-border bg-brand-card p-4">
+            <div className="mb-4 flex items-center gap-2">
+              <PieChart size={18} className="text-brand-primary" />
+              <h2 className="text-sm font-semibold text-brand-text-primary">Market Breadth</h2>
+            </div>
+            <div className="h-28 animate-pulse rounded-lg bg-brand-bg-secondary" />
+          </div>
+
+          <div className="rounded-xl border border-brand-border bg-brand-card p-4">
+            <div className="mb-4 flex items-center gap-2">
+              <Layers3 size={18} className="text-brand-primary" />
+              <h2 className="text-sm font-semibold text-brand-text-primary">Sector Heatmap</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="h-16 animate-pulse rounded-lg bg-brand-bg-secondary" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <aside className="rounded-xl border border-brand-border bg-brand-card p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-brand-text-primary">Movers</h2>
+            <BarChart3 size={16} className="text-brand-primary" />
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="h-12 animate-pulse rounded-lg bg-brand-bg-secondary" />
+            ))}
+          </div>
+        </aside>
+      </div>
+    </div>
+  )
+}
+
+export default function MarketPage() {
+  const { data: summary, meta, error, isLoading, isFetching, refetch } = useMarketSummary()
+
+  const isEmpty = Boolean(
+    summary &&
+      (!summary.indices.length || !summary.breadth.total || !summary.sectors.length)
+  )
+
+  if (isLoading) {
+    return <MarketLoadingState />
   }
 
-  const setIndex = summary.indices.find((index) => index.symbol === 'SET') ?? summary.indices[0]
+  if ((error || isEmpty) && !summary) {
+    return <PageError error={error instanceof Error ? error.message : 'ไม่พบข้อมูลตลาด'} onRetry={() => refetch()} />
+  }
+
+  if (isEmpty) {
+    return <EmptyState onRetry={() => refetch()} />
+  }
+
+  if (!summary) {
+    return <EmptyState onRetry={() => refetch()} />
+  }
 
   return (
     <div className="space-y-6 fade-in">
@@ -163,72 +272,44 @@ export default function MarketPage() {
             SET / mai breadth, sector heatmap, และหุ้นเคลื่อนไหวสูงสุดจากข้อมูลล่าสุด
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-brand-text-muted">
-          <Clock size={14} />
-          อัปเดต {new Date(summary.updatedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-brand-text-muted">
+          <div className="flex items-center gap-1 rounded-lg border border-brand-border bg-brand-card px-2.5 py-1.5">
+            <Clock size={14} />
+            Auto-refresh 60s
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-brand-border bg-brand-card px-2.5 py-1.5">
+            <Activity size={14} />
+            {summary.breadth.total} หุ้นติดตาม
+          </div>
         </div>
       </div>
 
+      <DataHonestyBanner meta={meta} />
+      <MarketStatusBanner summary={summary} meta={meta} isFetching={isFetching} refetch={() => refetch()} />
+      <IndexCards indices={summary.indices} />
+
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_360px]">
         <div className="space-y-4">
-          <MarketOverview />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-brand-border bg-brand-card p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <PieChart size={18} className="text-brand-primary" />
-                  <h2 className="text-sm font-semibold text-brand-text-primary">Market Breadth</h2>
-                </div>
-                <span className="text-xs text-brand-text-muted">{summary.breadth.total} หุ้น</span>
+          <div className="rounded-xl border border-brand-border bg-brand-card p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PieChart size={18} className="text-brand-primary" />
+                <h2 className="text-sm font-semibold text-brand-text-primary">Market Breadth</h2>
               </div>
-              <div className="mb-3 flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-xs text-brand-text-secondary">ขึ้น / ลง / ไม่เปลี่ยน</p>
-                  <p className="mt-1 text-2xl font-mono-nums font-bold text-brand-text-primary">
-                    {summary.breadth.advancing} / {summary.breadth.declining} / {summary.breadth.unchanged}
-                  </p>
-                </div>
-                <p className={cn('text-lg font-mono-nums font-bold', toneClass(summary.breadth.advancing - summary.breadth.declining))}>
-                  {formatPercent((breadthRatio - 0.5) * 200)}
-                </p>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-brand-bg-secondary">
-                <div className="h-full rounded-full bg-brand-success" style={{ width: `${breadthRatio * 100}%` }} />
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
-                <div className="rounded-lg bg-brand-bg-secondary p-3">
-                  <p className="text-brand-text-muted">มูลค่าซื้อขายโดยประมาณ</p>
-                  <p className="mt-1 font-mono-nums font-semibold text-brand-text-primary">{formatCurrency(summary.breadth.value, 'THB')}</p>
-                </div>
-                <div className="rounded-lg bg-brand-bg-secondary p-3">
-                  <p className="text-brand-text-muted">ปริมาณซื้อขาย</p>
-                  <p className="mt-1 font-mono-nums font-semibold text-brand-text-primary">{formatVolume(summary.breadth.volume)}</p>
-                </div>
-              </div>
+              <span className="text-xs text-brand-text-muted">SET vs mai</span>
             </div>
+            <BreadthPanel summary={summary} />
+          </div>
 
-            <div className="rounded-xl border border-brand-border bg-brand-card p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers3 size={18} className="text-brand-primary" />
-                  <h2 className="text-sm font-semibold text-brand-text-primary">Top Sectors</h2>
-                </div>
-                <Link href="/sector" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
+          <div className="rounded-xl border border-brand-border bg-brand-card p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers3 size={18} className="text-brand-primary" />
+                <h2 className="text-sm font-semibold text-brand-text-primary">Sector Heatmap</h2>
               </div>
-              <div className="space-y-3">
-                {summary.sectors.slice(0, 5).map((sector) => (
-                  <div key={sector.sector} className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-brand-text-primary">{sector.sector}</p>
-                      <p className="text-xs text-brand-text-muted">top {sector.topSymbol} • {formatPercent(sector.topChangePercent)}</p>
-                    </div>
-                    <span className={cn('text-xs font-mono-nums font-semibold', toneClass(sector.avgChangePercent))}>
-                      {formatPercent(sector.avgChangePercent)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <Link href="/sector" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
             </div>
+            <SectorHeatmap sectors={summary.sectors} />
           </div>
         </div>
 
@@ -236,35 +317,28 @@ export default function MarketPage() {
           <div className="rounded-xl border border-brand-border bg-brand-card p-4">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs text-brand-text-secondary">SET Index</p>
-                <p className="mt-1 text-3xl font-mono-nums font-bold text-brand-text-primary">{formatNumber(setIndex?.price ?? 0, 2)}</p>
+                <h2 className="text-sm font-semibold text-brand-text-primary">Movers</h2>
+                <p className="text-[11px] text-brand-text-muted">แสดงเฉพาะตัวที่ควร scan ก่อน</p>
               </div>
-              <div className={cn('rounded-xl p-3', bgToneClass(setIndex?.change ?? 0))}>
-                {setIndex && setIndex.change >= 0 ? <ArrowUpRight className={toneClass(setIndex.change)} /> : <ArrowDownRight className={toneClass(setIndex?.change ?? 0)} />}
-              </div>
+              <Link href="/trending" className="text-xs font-semibold text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
             </div>
-            <div className={cn('text-sm font-mono-nums font-semibold', toneClass(setIndex?.change ?? 0))}>
-              {setIndex ? `${formatPercent(setIndex.changePercent)} (${formatNumber(setIndex.change, 2)})` : '—'}
+            <div className="space-y-4">
+              <MoverColumn title="Gainers" items={summary.movers.gainers} empty="ไม่มีข้อมูล" limit={5} />
+              <MoverColumn title="Losers" items={summary.movers.losers} empty="ไม่มีข้อมูล" limit={5} />
             </div>
           </div>
 
           <div className="rounded-xl border border-brand-border bg-brand-card p-4">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-brand-text-primary">Movers</h2>
-              <BarChart3 size={16} className="text-brand-primary" />
+              <h2 className="text-sm font-semibold text-brand-text-primary">Active Volume</h2>
+              <span className="text-[11px] text-brand-text-muted">Top 6</span>
             </div>
-            <div className="space-y-4">
-              <MoverColumn title="Gainers" items={summary.movers.gainers} empty="ไม่มีข้อมูล" />
-              <MoverColumn title="Losers" items={summary.movers.losers} empty="ไม่มีข้อมูล" />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-brand-border bg-brand-card p-4">
-            <h2 className="mb-2 text-sm font-semibold text-brand-text-primary">Active by Volume</h2>
             <div className="space-y-2">
-              {summary.movers.active.slice(0, 5).map((item) => (
-                <MoverRow key={`active-${item.symbol}`} item={item} />
-              ))}
+              {summary.movers.active.length === 0 ? (
+                <div className="rounded-lg border border-brand-border p-4 text-center text-sm text-brand-text-secondary">ไม่มีข้อมูล volume</div>
+              ) : (
+                summary.movers.active.slice(0, 6).map((item: MarketMover) => <MoverRow key={`active-${item.symbol}`} item={item} />)
+              )}
             </div>
           </div>
         </aside>

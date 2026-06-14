@@ -407,6 +407,238 @@ npm install -D @playwright/test
 
 ---
 
+## PR16 — Agent Looping / Market War Room ✅ Implemented
+
+**Goal:** นำแนวคิด Agent Looping / MiroFish มาทำเป็น StockGuru-specific Closed Loop Agent System สำหรับตลาดหุ้นไทย โดยไม่ clone MiroFish ทั้งระบบ
+
+### Product scope
+- หน้า `/war-room` สำหรับรัน Agent Loop
+- Decision support สำหรับ watchlist/portfolio/scenario
+- Agents: Data → Technical → Fundamental → News → Risk → Portfolio → Report → Verifier
+- Verifier gate ห้ามภาษาแนะนำซื้อ/ขายทันที ห้ามการันตีผลตอบแทน และต้องมี evidence/risk checklist
+- ใช้เป็นฐานของ AI Daily Brief 2.0, Watchlist Intelligence, Portfolio Risk Drill และ Scenario Simulator
+
+### Files changed
+1. `lib/agent-loop/` — types, schema, context collector, agents, verifier, orchestrator
+2. `app/api/agent-loop/simulate/route.ts` — POST endpoint gated by Pro
+3. `app/war-room/page.tsx` — War Room UI
+4. `components/layout/Sidebar.tsx` — nav link
+5. `components/auth/FeatureGate.tsx` — gate copy
+6. `lib/hooks/use-subscription.ts` — `agentLoop` feature flag
+7. `__tests__/unit/agent-loop-schema.test.ts`, `__tests__/unit/agent-loop-verifier.test.ts`
+
+### Acceptance criteria
+- [x] รัน `npm run typecheck` ผ่าน
+- [x] UI แสดง closed loop phases, scenario input, symbols, timeframe
+- [x] API ใช้ zod schema และ `requireFeature('agentLoop')`
+- [x] Verifier ปฏิเสธ output ที่มีคำว่า “ซื้อเลย/ขายเลย/การันตี”
+- [x] ผลลัพธ์มี risks, suggestedChecks, disclaimer, verifier trace
+- [x] `npm test` passed
+- [x] `npm run build` passed
+- [ ] Manual test `/war-room` ด้วย watchlist, portfolio, market preset, custom symbols
+
+### Verify
+- `npm run typecheck` → passed
+- `npm test` → passed
+- `npm run build` → passed
+- Manual test `/war-room` gate copy → passed
+
+---
+
+## PR18 — MiroFish Debate Mode ✅ Implemented
+
+**Goal:** เพิ่ม MiroFish-inspired Agent Discussion Layer ใน War Room เพื่อให้ user พิมพ์คำถาม แล้ว agents discuss เป็นรอบก่อน Reporter สรุปและ Verifier gate ตรวจ safety/evidence
+
+### Product scope
+- `/war-room` มี MiroFish Debate Mode
+- User พิมพ์คำถามภาษาไทย เช่น `PTT ถ้ามูลค่าน้ำมันลงและบาทแข็ง จะกระทบอะไร`
+- Seed Extractor แปลคำถามเป็น symbols, scenario, timeframe, intent, mode
+- Debate personas: Moderator, Market Data, Technical, Fundamental, News, Portfolio, Risk, Contrarian, Reporter, Verifier
+- UI แสดง final summary, transcript, verifier, risk checklist, debate graph
+- Persistence: `war_room_debate_runs`, `war_room_debate_messages`, `war_room_debate_evidence`, `war_room_debate_verifications`
+
+### Files changed
+1. `lib/agent-loop/mirofish/` — seed, graph, personas, reporter, debate orchestrator, schema, persistence
+2. `lib/agent-loop/providers/openrouter-provider.ts` — OpenRouter-compatible LLM provider
+3. `lib/agent-loop/providers/mimo-provider.ts` — Xiaomi MiMo provider
+4. `lib/agent-loop/providers/deepseek-provider.ts` — DeepSeek provider
+5. `lib/agent-loop/providers/model-router.ts` — model routing by strengths
+6. `lib/agent-loop/providers/debate-assist.ts` — optional multi-model debate assist
+7. `lib/agent-loop/providers/reporter-draft.ts` — reporter provider selection
+8. `app/api/war-room/debate/route.ts` — Pro-gated debate endpoint
+9. `app/war-room/page.tsx` — Debate Mode UI, transcript, final answer
+10. `supabase/migrations/20260611150000_pr18_war_room_debate.sql` — debate persistence migration
+11. `supabase/schema.sql` — fresh schema reference
+12. `__tests__/unit/mirofish-debate.test.ts`
+13. `docs/MIROFISH_DEBATE_MODE.md`, `docs/AGENT_LOOPING_MVP.md`
+
+### Acceptance criteria
+- [x] รัน `npm run typecheck` ผ่าน
+- [x] รัน `npm test` ผ่าน
+- [x] รัน `npm run build` ผ่าน
+- [x] Manual test `/war-room` gate copy ผ่าน
+- [x] Anonymous API gate ผ่าน
+- [x] Supabase debate tables apply ผ่าน
+- [x] Verifier ผ่าน safety gate
+- [x] ไม่เชื่อม broker / ไม่แนะนำซื้อ-ขาย / ไม่การันตีกำไร
+
+### Verify
+- `npm run typecheck` → passed
+- `npm test` → 59 tests passed
+- `npm run build` → passed
+- `/war-room` gate smoke test → passed
+- `POST /api/war-room/debate` anonymous request → login gate
+
+### Notes
+- External LLM runtime ยังไม่ได้ validate ด้วย API key จริงใน session นี้
+- Debate MVP มาจาก rule-based MiroFish engine
+- OpenRouter / MiMo / DeepSeek provider adapters พร้อมเปิดผ่าน env; ถ้า provider ไม่พร้อมหรือ env ไม่ครบ จะ fallback กลับไป rule-based debate
+
+---
+
+## PR19 — MiroFish Swarm Simulation ✅ Implemented
+
+**Goal:** นำแนวคิด MiroFish กลับสู่ core idea: swarm intelligence engine ที่จำลองสังคมจาก agent หลาย persona มี memory, beliefs, simulated Twitter + Reddit feed, scenario map, sentiment และ blind spots
+
+### Product scope
+- `/mirofish` สำหรับ event injector และ scenario map
+- `POST /api/mirofish/swarm`
+- 12 personas: long-term investor, momentum trader, risk manager, skeptical retail, institutional analyst, competitor, FOMO retail, contrarian, regulator, influencer, customer, support/sales
+- 3 rounds: First Reaction → Social Contagion → Second-Order Thinking
+- Output: social feed, belief updates, sentiment, scenarios, risks, opportunities, blind spots, suggested checks
+- ใช้ deterministic swarm เป็น default และ **ไม่ใช้ paid OpenRouter models**
+
+### Files changed
+1. `lib/mirofish-swarm/types.ts`
+2. `lib/mirofish-swarm/profiles.ts`
+3. `lib/mirofish-swarm/simulator.ts`
+4. `lib/mirofish-swarm/schema.ts`
+5. `app/api/mirofish/swarm/route.ts`
+6. `app/mirofish/page.tsx`
+7. `components/layout/Sidebar.tsx`
+8. `__tests__/unit/mirofish-swarm.test.ts`
+9. `docs/MIROFISH_SWARM.md`, `START_HERE.md`, `docs/IMPLEMENTATION.md`, `stockguru-roadmap.md`
+
+### Acceptance criteria
+- [x] มี `/api/mirofish/swarm`
+- [x] มี `/mirofish`
+- [x] มี 12 personas พร้อม memory / beliefs / worldview
+- [x] มี simulated Twitter + Reddit feed
+- [x] มี 3 rounds
+- [x] มี sentiment summary
+- [x] มี scenario map
+- [x] มี risks / opportunities / blind spots / suggested checks
+- [x] ไม่ใช้ paid OpenRouter models
+- [x] มี disclaimer
+- [x] unit tests ผ่าน
+
+### Verify
+- `npm run typecheck` → passed
+- `npm test` → 61 tests passed
+- `npm run build` → passed
+- Playwright smoke → `/api/mirofish/swarm` returned 200 with `Agent Swarm Personas` + `Scenario Map`
+
+### Notes
+- MVP ใช้ deterministic swarm simulation ก่อน ไม่ผูกกับ LLM paid model
+- อนาคตถ้าเพิ่ม LLM assist ให้ใช้เฉพาะ free OpenRouter models หรือ MiMo/DeepSeek API ของตัวเอง
+
+---
+
+## PR20 — SEGA Review Gate ✅ Implemented
+
+**Goal:** เพิ่ม Finance Division / Capital Allocation & Risk Agent บน War Room เพื่อ review thesis, downside, exit plan, allocation envelope, risk score และ approval decision ก่อนใช้ Agent Loop / MiroFish Debate result ต่อ
+
+### Product scope
+- `/war-room` มี SEGA Review Gate หลังมี Agent Loop หรือ MiroFish Debate result
+- SEGA ไม่สร้างสัญญาณหลัก ไม่ดึง market data เป็น primary role และไม่ส่ง order
+- SEGA review:
+  - thesis / downside / exit plan
+  - allocation envelope
+  - risk score
+  - kill criteria / monitoring triggers
+  - protected failure modes
+  - approval decision: `Go`, `Conditional Go`, `No-Go`
+- Storycraft แปล approval เป็น Thai brief สำหรับ War Room UI
+
+### Files changed
+1. `lib/agent-loop/sega/persona.ts` — persona registry, heuristics, failure modes
+2. `lib/agent-loop/sega/schema.ts` — SEGA proposal schema
+3. `lib/agent-loop/sega/types.ts` — shared SEGA types
+4. `lib/agent-loop/sega/approval.ts` — deterministic approval gate
+5. `lib/agent-loop/sega/adapters.ts` — adapters จาก Agent Loop / MiroFish Debate result
+6. `lib/agent-loop/sega/storycraft.ts` — Thai Storycraft renderer
+7. `app/api/sega/review/route.ts` — Pro-gated review endpoint
+8. `app/war-room/page.tsx` — SEGA Review Gate UI
+9. `__tests__/unit/sega-approval.test.ts`, `__tests__/unit/sega-adapters.test.ts`, `__tests__/unit/sega-personas.test.ts`, `__tests__/unit/sega-storycraft.test.ts`
+10. `docs/IMPLEMENTATION.md`, `docs/AGENT_LOOPING_MVP.md`, `docs/MIROFISH_DEBATE_MODE.md`, `START_HERE.md`, `PRODUCT.md`
+
+### Acceptance criteria
+- [x] รัน `npm run typecheck` ผ่าน
+- [x] รัน `npm run lint` ผ่าน
+- [x] SEGA targeted unit tests ผ่าน
+- [x] War Room แสดง SEGA Review Gate หลังมี Agent Loop / MiroFish Debate result
+- [x] API รับ explicit `proposal` หรือ derive proposal จาก result
+- [x] Response shape เป็น `{ approval, story, persona }`
+- [x] SEGA ไม่เป็น primary signal generator / trade executor
+
+### Verify
+- `npm run typecheck` → passed
+- `npm run lint` → passed
+- `npm test` → 102 tests passed, 1 skipped
+- SEGA targeted unit tests → 19 tests passed
+
+### Notes
+- SEGA เป็น review gate ไม่ใช่ market-data fetcher หรือ trade executor
+- ไม่ duplicate Data / Technical / Fundamental / News / Risk agents
+
+---
+
+## PR17 — Trade Plan + Paper Trading 🧊 Future backlog
+
+**Goal:** เพิ่มระบบเทรดแบบปลอดภัยในระยะถัดไป โดยเริ่มจาก Trade Plan และ Paper Trading ก่อน ไม่เชื่อม broker และไม่ทำ autonomous trading
+
+### Why later
+
+Trading system มี risk layer ใหม่ที่หนักกว่า research:
+
+- order routing / partial fill / failed order
+- broker/API integration
+- user permission และ audit trail
+- latency/data freshness
+- position sizing และ kill switch
+- compliance/suitability concerns
+
+ดังนั้น PR16 Agent Looping ต้องอยู่ฝั่ง research/rehearsal ก่อน ส่วน execution ให้เป็น PR แยก
+
+### Scope
+
+- Trade plan: thesis, entry zone, invalidation, target, position size, risk per trade
+- Paper trade simulation
+- Link trade plan กับ journal, Agent Loop result, news/evidence
+- ไม่ส่ง order จริง
+- ไม่ให้ AI สั่งซื้อ/ขายอัตโนมัติ
+
+### Files to change later
+
+1. `supabase/schema.sql` — trade plans / paper trades tables
+2. `lib/services/trade-plan-service.ts`
+3. `lib/hooks/use-trade-plans.ts`
+4. `app/trade-plans/page.tsx`
+5. `app/paper-trades/page.tsx`
+6. `components/trading/`
+7. `app/journal/new/page.tsx` — link trade plan เข้า journal
+8. `app/api/trade-plans/**`
+
+### Safety rules
+
+- No real broker order
+- No autonomous trading
+- Every plan ต้องมี invalidation condition
+- Every plan ต้องมี max loss / position size
+- Paper trade ต้อง label ชัดว่าเป็น simulation
+
+---
+
 ## Backlog reference
 
 รายละเอียด gap analysis, benchmark, acceptance criteria และ first engineering tickets อยู่ใน:

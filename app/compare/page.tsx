@@ -239,7 +239,8 @@ function CompareColumn({
         </Link>
         <button
           onClick={onRemove}
-          className="p-1.5 text-brand-text-secondary hover:text-brand-danger rounded-lg hover:bg-brand-danger/10 transition-colors"
+          aria-label={`ลบ ${quote.symbol} ออกจากการเปรียบเทียบ`}
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-brand-text-secondary transition-colors hover:bg-brand-danger/10 hover:text-brand-danger"
         >
           <X size={14} />
         </button>
@@ -369,7 +370,7 @@ export default function ComparePage() {
                   onClick={() => !added && addSymbol(sym)}
                   disabled={added}
                   className={cn(
-                    'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all',
+                    'min-h-10 px-3 text-xs font-medium rounded-lg border transition-all',
                     added
                       ? 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary'
                       : 'bg-brand-card border-brand-border text-brand-text-secondary hover:text-brand-text-primary hover:border-brand-primary/30'

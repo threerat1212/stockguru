@@ -9,6 +9,8 @@ description: Use for StockGuru AI prompts, AI chat, AI analysis, journal review,
 
 StockGuru AI is for research summaries, education, and risk checks. It must not provide licensed investment advice.
 
+For generic finance wording, read `references/finance-wording.md`. Use that wording bank for UI copy, AI responses, alerts, news, War Room, MiroFish, SEGA, and journal feedback instead of inventing buy/sell language.
+
 Avoid:
 
 - buy

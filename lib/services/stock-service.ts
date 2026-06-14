@@ -12,6 +12,7 @@ import { yahooProvider } from '@/lib/market-data/providers/yahoo-provider'
 export const getQuote = (symbol: string) => activeMarketDataProvider.getQuote(symbol)
 export const getHistory = (symbol: string, timeframe: Timeframe = '3M') => activeMarketDataProvider.getHistory(symbol, timeframe)
 export const searchStocks = (query: string) => activeMarketDataProvider.searchStocks(query)
+export const searchStocksWithMeta = (query: string) => activeMarketDataProvider.searchStocksWithMeta(query)
 export const getTrending = () => activeMarketDataProvider.getTrending()
 export const getMarketIndices = () => activeMarketDataProvider.getMarketIndices()
 

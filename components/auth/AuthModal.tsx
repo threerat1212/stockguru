@@ -118,7 +118,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <button
           onClick={onClose}
           aria-label="ปิดหน้าต่างเข้าสู่ระบบ"
-          className="absolute top-4 right-4 p-1 text-brand-text-secondary hover:text-brand-text-primary rounded-lg hover:bg-brand-bg-secondary transition-colors"
+          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-lg text-brand-text-secondary transition-colors hover:bg-brand-bg-secondary hover:text-brand-text-primary"
         >
           <X size={18} />
         </button>
@@ -192,7 +192,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="mt-4 text-center">
           <button
             onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }}
-            className="text-sm text-brand-primary hover:underline"
+            className="min-h-10 rounded-lg px-3 text-sm text-brand-primary hover:bg-brand-primary/10 hover:underline"
           >
             {mode === 'signin' ? 'ยังไม่มีบัญชี? สมัครเลย' : 'มีบัญชีแล้ว? เข้าสู่ระบบ'}
           </button>
