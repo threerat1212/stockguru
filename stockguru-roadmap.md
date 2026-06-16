@@ -48,9 +48,9 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ---
 
-## PR4 — Alerts ทำงานจริง ✅
+## PR4 — Alerts cron + conditional notifications ✅
 
-**Goal:** Cron job เช็คราคา + ส่ง email/web-push เมื่อแตะเป้า
+**Goal:** Cron job เช็คราคา + ส่ง email/web-push เมื่อแตะเป้า ถ้า provider/env พร้อม
 
 ### Schema (มี alerts แล้ว แต่ต้องเพิ่ม columns)
 ```sql
@@ -61,14 +61,15 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ### Files to change
 1. `render.yaml` — เพิ่ม cron job `stockguru-alerts-check`
-2. `app/api/alerts/check/route.ts` — ใหม่: ดึง alerts ที่ยังไม่ triggered, เช็คราคา, mark triggered, ส่ง notification
-3. `app/api/alerts/notify/route.ts` — ใหม่: web-push / email notification endpoint
-4. `app/alerts/page.tsx` — แทน localStorage ด้วย Supabase (คล้าย PR3)
-5. `lib/hooks/use-alerts.ts` — ใหม่ (hybrid: Supabase + local fallback)
+2. `app/api/alerts/check/route.ts` — ดึง alerts ที่ยังไม่ triggered, เช็คราคา, mark triggered, ส่ง email/push ผ่าน notification-service
+3. `app/api/alerts/push/*` — web-push subscribe/unsubscribe/public-key endpoints
+4. `app/alerts/page.tsx` — Supabase alerts + push subscription UI
+5. `lib/hooks/use-alerts.ts` — Supabase-backed alerts hooks
 
 ### Verify
 - Cron job เรียก `/api/alerts/check` ด้วย CRON_SECRET header
-- Alert แตะเป้า → triggered=true + ได้รับ notification
+- Alert แตะเป้า → triggered=true + email/push ถ้า RESEND/VAPID configured
+- Cron secret mismatch หรือ provider ไม่พร้อม → fail/log ไม่ส่ง notification
 - ป้องกัน double-trigger (check triggered ก่อน)
 
 ---
@@ -92,27 +93,28 @@ create index if not exists idx_holdings_symbol on public.holdings(symbol);
 
 ---
 
-## PR6 — Hardening ✅
+## PR6 — Hardening pass ✅ (Sentry pending)
 
-**Goal:** zod validate env + input, rate limiting, Sentry
+**Goal:** zod validate env + input, selected API rate limiting; Sentry moved to production observability backlog
 
 ### Dependencies
 ```bash
-npm install zod @sentry/nextjs
+npm install zod
 ```
 
 ### Files to change
-1. `lib/env.ts` — ใหม่: zod schema สำหรับ env vars
+1. `lib/env.ts` — zod schema สำหรับ env vars
 2. `app/api/**/route.ts` — ใส่ zod validation ให้ request body
-3. `lib/middleware/rate-limit.ts` — ใหม่: rate limiting สำหรับ Yahoo proxy
-4. `next.config.js` — Sentry config
-5. `instrumentation.ts` — Sentry init
+3. `lib/middleware/rate-limit.ts` — rate limiting สำหรับ API routes
+4. Production observability — เพิ่ม Sentry/structured logging ใน PR แยกต่างหาก
 
 ### Verify
 - `npm run build` ผ่าน
-- Missing env → error ตอน build/dev
+- Missing env → warning/error ตอน production
 - Invalid input → 400 Bad Request
-- Rate limit → 429 Too Many Requests
+- Rate limit → 429 Too Many Requests สำหรับ routes ที่ใช้งาน
+- Sentry/observability ไม่ถูกนับว่าเป็น PR6 done จนกว่าจะติดตั้งและ config จริง
+- Cron routes ต้อง fail closed เมื่อ CRON_SECRET ไม่พร้อม
 
 ---
 
@@ -380,18 +382,20 @@ npm install -D @playwright/test
 
 ---
 
-## PR15 — PWA + Push Notifications ✅ Planned
+## PR15 — PWA + Push Notifications ⚠️ Improved, mobile smoke still pending
 
 **Goal:** ทำให้ StockGuru ใช้งานบนมือถือเหมือน app และรองรับ push สำหรับ alerts/daily brief
 
 ### Files to change
-1. `public/manifest.webmanifest` — PWA manifest
-2. `app/icon...` / `app/apple-icon...` — icons
-3. `service-worker.ts` หรือ Next PWA setup
-4. `app/api/push/subscribe/route.ts`
-5. `app/api/push/send/route.ts`
-6. `app/alerts/page.tsx` — subscribe/unsubscribe push
-7. `lib/services/push-service.ts`
+1. `app/manifest.ts` — PWA manifest
+2. `app/manifest.ts` — PWA manifest with SVG + PNG/maskable icons
+3. `public/service-worker.js` — offline shell cache + push notification icons
+4. `app/api/alerts/push/subscribe/route.ts`
+5. `app/api/alerts/push/unsubscribe/route.ts`
+6. `app/api/alerts/push/public-key/route.ts`
+7. `app/alerts/page.tsx` — subscribe/unsubscribe push
+8. `lib/services/notification-service.ts` — email/web-push sender
+9. `render.yaml` — VAPID env for Render web service
 
 ### Acceptance criteria
 - Browser สามารถ install app
@@ -399,6 +403,8 @@ npm install -D @playwright/test
 - Alert trigger ส่ง push ได้
 - Unsubscribe ได้
 - Service worker ไม่ break SSR
+- Push payload ใช้ PNG icon ที่ตรงกับ public assets
+- Render มี `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`
 
 ### Verify
 - Playwright mobile test
@@ -590,6 +596,100 @@ npm install -D @playwright/test
 ### Notes
 - SEGA เป็น review gate ไม่ใช่ market-data fetcher หรือ trade executor
 - ไม่ duplicate Data / Technical / Fundamental / News / Risk agents
+
+---
+
+## PR21 — Paid Hardening, PWA/Push, Data Honesty ✅ Implemented
+
+**Goal:** ปิด audit gaps รอบ paid features, data provenance, PWA/push และ security hygiene โดยไม่ลบ artifacts ที่ยังไม่ได้รับอนุญาต
+
+### Product scope
+- `exportCsv` ถูกบังคับที่ API สำหรับ Screener และ Portfolio
+- `newsImpact` ไม่ leak ผ่าน direct `news_articles` read เพราะ impact fields แยกตารางและ gate ด้วย RLS
+- Portfolio/Journal/War Room มี RLS plan gates ตาม entitlement
+- Home sample chart/static surfaces แสดง badge/sample warning ชัดเจน
+- PWA มี PNG/maskable icons, VAPID Render env, และ offline shell cache
+
+### Files changed
+1. `app/api/screener/export/route.ts` — server-side Screener CSV export gated by `exportCsv`
+2. `app/api/portfolio/export/route.ts` — server-side Portfolio CSV export gated by `exportCsv`
+3. `app/screener/page.tsx` — download from server export endpoint
+4. `app/portfolio/page.tsx` — download from server export endpoint
+5. `supabase/schema.sql` — plan-gated RLS for portfolio/journal/war-room/news impact
+6. `app/manifest.ts`, `public/icons/*`, `public/service-worker.js` — PWA icon and offline shell hardening
+7. `render.yaml` — shared `CRON_SECRET` and VAPID env placeholders
+8. `app/api/stock/earnings/route.ts`, `app/api/stock/fundamental/route.ts`, `app/api/stock/backtest/route.ts`, `app/page.tsx` — provenance/sample metadata
+9. `.gitignore` — safely ignore backup/render MCP artifacts without deleting them
+
+### Acceptance criteria
+- [x] Free user cannot export CSV through API
+- [x] Paid impact data is not readable from `news_articles`
+- [x] RLS plan gates cover portfolio/journal/war-room surfaces
+- [x] PWA manifest includes PNG and maskable icons
+- [x] Service worker caches offline shell and handles `SKIP_WAITING`
+- [x] Static/sample surfaces carry visible warnings or `meta.isDemo`
+
+### Verify
+- `npm run typecheck` → passed
+- `npm run lint` → passed
+- `npm test` → passed
+- `npm run build` → passed
+
+---
+
+## PR22 — Research Memory / Obsidian Workflow ✅
+
+**Goal:** ใช้ Obsidian-style vault เป็น research memory สำหรับบทความจาก market snapshot ทุก 30–60 นาที โดยแยกจาก real-time data provider
+
+### Scope
+- `knowledge/` vault: `_raw`, `articles`, `topics`, `sources`
+- Markdown frontmatter: `snapshotAt`, `snapshotIntervalMinutes`, `sources`, `aiAssisted`, `status`
+- `lib/research-notes/` parser/types
+- `GET /api/research-notes`
+- `/research` UI สำหรับดู reviewed/published notes
+- `scripts/import-research-notes.mjs` สำหรับ validate/preview
+- Unit test สำหรับ parser
+
+### Safety rules
+- Research Memory เป็น near-real-time snapshot ไม่ใช่อัปเดต real-time
+- AI-generated finance content ต้องแยก source fact / AI inference / human review
+- ต้องมี `snapshotAt`, `sources`, และ disclaimer ก่อน publish
+
+### Verify
+- `npm run typecheck` → passed
+- `npm run lint` → passed
+- `npm test` → passed
+- `npm run build` → passed
+
+---
+
+## PR23 — Security Hardening Sweep ✅ Implemented
+
+**Goal:** ปิดช่องโหว่ที่ audit พบหลัง PR22 — cron endpoint เปิดโปร่ง, RLS ขาด WITH CHECK, ไฟล์ log/output หลุดเข้า git
+
+### Changes
+- `app/api/data/fetch/route.ts`: เพิ่ม CRON_SECRET gate (เดิมเปิดให้ใครก็ POST trigger data fetch ได้ — DoS/cost abuse)
+- `scripts/fetch-data.js`: แนบ `Authorization: Bearer ${CRON_SECRET}` ตาม pattern cron route อื่น
+- `render.yaml`: เพิ่ม `CRON_SECRET` env var ให้ `stockguru-data-fetch` cron job
+- `.gitignore`: ครอบ `.playwright-cli/`, `playwright-report/`, `test-results/`, `coverage/`
+- `git rm --cached .playwright-cli output`: เลิก track log/output ที่ค้างอยู่ (ไฟล์ยังอยู่บน disk)
+- `lib/data/scheduler.ts`: กำจัด `null as any` × 5 → typed `FetchAllResults` interface ใช้ `Awaited<ReturnType<>>`
+- `supabase/schema.sql` + `supabase/migrations/20260616000000_rls_with_check_hardening.sql`: เพิ่ม `WITH CHECK (auth.uid() = user_id)` ให้ watchlists, alerts, push_subscriptions
+
+### Audit findings (verified safe — no action needed)
+- ไม่มี hardcoded secret ในไฟล์ที่ git-tracked (สแกน sk_live/sk_test/service_role/postgres://, API key assignments)
+- `.env.local` ไม่เคยเข้า git history
+- `/api/webhooks/stripe` verify signature ถูกต้อง
+- cron routes อื่น (`news/refresh`, `news/seed`, `alerts/check`) ตรวจ CRON_SECRET ครบ
+- ทุก sensitive per-user route (portfolio/export, journal/review, chat, war-room/debate, agent-loop, mirofish/swarm, sega/review, billing/*) require auth + feature gate
+- `news_articles` ให้ `anon` อ่านได้ → **intended** (public news like Yahoo/Investing); impact score แยกอยู่ใน `news_article_impact` ที่ gate ด้วย `canAccessFeature('newsImpact')` แล้ว
+
+### Verify
+- `npm run typecheck` → passed
+- `npm run lint` → passed
+- `npm test` → passed
+- `npm run build` → passed
+- Deploy step: ตั้ง `CRON_SECRET` ใน Render dashboard สำหรับ cron service ด้วย (sync: false = manual)
 
 ---
 

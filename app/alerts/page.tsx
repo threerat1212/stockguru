@@ -76,11 +76,11 @@ function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; type: A
   const quoteResults = useQueries({
     queries: activeSymbols.map((symbol) => ({
       queryKey: ['quote', symbol] as const,
-      queryFn: async (): Promise<{ data: StockQuote; meta?: unknown }> => {
+      queryFn: async (): Promise<StockQuote> => {
         const res = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(symbol)}`)
         const json = await res.json()
         if (!json.success) throw new Error(json.error || 'API request failed')
-        return json.data as { data: StockQuote; meta?: unknown }
+        return json.data as StockQuote
       },
       enabled: activeSymbols.length > 0,
       refetchInterval: 30_000,
@@ -90,7 +90,7 @@ function AlertChecker({ alerts, onTrigger }: { alerts: { symbol: string; type: A
 
   useEffect(() => {
     const quoteBySymbol = activeSymbols.reduce<Record<string, StockQuote | undefined>>((acc, symbol, index) => {
-      acc[symbol] = quoteResults[index]?.data?.data
+      acc[symbol] = quoteResults[index]?.data
       return acc
     }, {})
 

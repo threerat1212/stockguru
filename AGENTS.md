@@ -59,8 +59,7 @@ For Google skills:
 
 **Custom MCP Server Location:**
 - Path: `E:\งาน\หุ้น\stockguru\render-mcp-server\render-mcp-server\dist\index.js`
-- Config: `C:\Users\Admin\.cursor\mcp.json`
-- API Key: rnd_y33qaICujGVzgCJmTGAqv0ZtFwf5
+- Config: keep Render API credentials in your local MCP config only; do not commit API keys here.
 
 **Available Tools:**
 1. `render_list_services` — List all services (with IDs, status, URLs)
@@ -86,10 +85,10 @@ For Google skills:
 - Can diagnose and fix issues automatically without manual Dashboard access
 
 **Current Services:**
-- stockguru-web (web service): srv-d8i5hdi8qa3s73e3o600
-- stockguru-data-fetch (cron job): crn-d8jujbmgvqtc73erft60 (Singapore)
-- stockguru-news-refresh (cron job): crn-d8jujbmgvqtc73erft50 (Singapore)
-- stockguru-alerts-check (cron job): crn-d8jujbmgvqtc73erft4g (Singapore)
+- stockguru-web (web service): `srv-d8i5hdi8qa3s73e3o600`
+- stockguru-data-fetch (cron job): `crn-d8jujbmgvqtc73erft60` (Singapore)
+- stockguru-news-refresh (cron job): `crn-d8jujbmgvqtc73erft50` (Singapore)
+- stockguru-alerts-check (cron job): `crn-d8jujbmgvqtc73erft4g` (Singapore)
 
 ## Supabase Management API Access
 

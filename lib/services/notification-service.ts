@@ -133,6 +133,7 @@ export async function sendWebPushAlert(subscription: WebPushSubscription, notifi
       title: `StockGuru แจ้งเตือน: ${displaySym}`,
       body: `${displaySym} ${alertTypeText} ${conditionText} ${notification.targetPrice} (ปัจจุบัน ${notification.currentPrice})`,
       icon: '/icons/icon-192.png',
+      badge: '/icons/icon-maskable-512.png',
       data: {
         userId: notification.userId,
         alertId: notification.alertId ?? notification.userId,

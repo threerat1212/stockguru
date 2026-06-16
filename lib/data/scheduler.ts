@@ -8,6 +8,23 @@ import { existsSync } from 'fs'
 
 const CACHE_DIR = join(process.cwd(), 'lib', 'data', 'cache')
 
+// Derive the value type each fetcher resolves to, without exporting the
+// fetchers' private interfaces. | null marks the "fetch failed / not run" slot.
+type SetIndexResult = Awaited<ReturnType<typeof fetchSetIndexData>> | null
+type ThaiStocksResult = Awaited<ReturnType<typeof fetchThaiStocksData>> | null
+type CryptoResult = Awaited<ReturnType<typeof fetchCryptoData>> | null
+type FearGreedResult = Awaited<ReturnType<typeof fetchFearGreedData>> | null
+type MacroResult = Awaited<ReturnType<typeof fetchMacroData>> | null
+
+export interface FetchAllResults {
+  setIndex: SetIndexResult
+  thaiStocks: ThaiStocksResult
+  crypto: CryptoResult
+  fearGreed: FearGreedResult
+  macro: MacroResult
+  timestamp: string
+}
+
 // Ensure cache directory exists
 async function ensureCacheDir() {
   if (!existsSync(CACHE_DIR)) {
@@ -15,15 +32,15 @@ async function ensureCacheDir() {
   }
 }
 
-export async function fetchAllData() {
+export async function fetchAllData(): Promise<FetchAllResults> {
   await ensureCacheDir()
 
-  const results = {
-    setIndex: null as any,
-    thaiStocks: null as any,
-    crypto: null as any,
-    fearGreed: null as any,
-    macro: null as any,
+  const results: FetchAllResults = {
+    setIndex: null,
+    thaiStocks: null,
+    crypto: null,
+    fearGreed: null,
+    macro: null,
     timestamp: new Date().toISOString(),
   }
 

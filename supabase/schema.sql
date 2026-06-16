@@ -40,6 +40,70 @@ create table if not exists public.subscriptions (
 
 alter table public.subscriptions enable row level security;
 
+create or replace function public.subscription_plan(target_user_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+declare
+  plan_value text;
+begin
+  select s.plan into plan_value
+  from public.subscriptions s
+  where s.user_id = target_user_id
+    and s.status = 'active'
+  limit 1;
+
+  if plan_value is null then
+    select p.plan into plan_value
+    from public.profiles p
+    where p.id = target_user_id
+      and p.plan in ('pro', 'founding_pro', 'trader')
+    limit 1;
+  end if;
+
+  return coalesce(plan_value, 'free');
+end;
+$$;
+
+create or replace function public.can_access_feature(feature text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+declare
+  plan_value text;
+begin
+  if auth.uid() is null then
+    return false;
+  end if;
+
+  plan_value := public.subscription_plan(auth.uid());
+
+  if plan_value in ('pro', 'founding_pro', 'trader') then
+    return feature in ('advancedScreener', 'compare', 'portfolio', 'newsImpact', 'exportCsv', 'agentLoop');
+  end if;
+
+  return false;
+end;
+$$;
+
+create or replace function public.can_access_journal()
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+begin
+  return auth.uid() is not null and public.subscription_plan(auth.uid()) = 'trader';
+end;
+$$;
+
 create policy "Users can view own subscription"
   on public.subscriptions for select
   using (auth.uid() = user_id);
@@ -87,7 +151,8 @@ alter table public.watchlists enable row level security;
 
 create policy "Users can CRUD own watchlist"
   on public.watchlists for all
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- Alerts (server-side persistence)
 create table if not exists public.alerts (
@@ -138,7 +203,8 @@ alter table public.push_subscriptions enable row level security;
 
 create policy "Users can CRUD own alerts"
   on public.alerts for all
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create policy "Users can view own alert deliveries"
   on public.alert_deliveries for select
@@ -146,7 +212,8 @@ create policy "Users can view own alert deliveries"
 
 create policy "Users can CRUD own push subscriptions"
   on public.push_subscriptions for all
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- AI usage logs
 create table if not exists public.ai_usage_logs (
@@ -231,21 +298,66 @@ create table if not exists public.news_articles (
   updated_at timestamptz default now(),
   category text not null check (category in ('market', 'sector', 'company', 'global', 'crypto')),
   related_symbols text[] default '{}',
-  market_impact_score int check (market_impact_score >= 0 and market_impact_score <= 100),
-  impact_points jsonb default '[]',
   references jsonb default '[]',
   created_at timestamptz default now()
 );
 
 alter table public.news_articles enable row level security;
 
-create policy "Anyone can read news articles"
+create policy "Anyone can read public news articles"
   on public.news_articles for select
   to authenticated, anon
   using (true);
 
 create policy "Only service role can manage news"
   on public.news_articles for all
+  to service_role
+  using (true)
+  with check (true);
+
+create table if not exists public.news_article_impact (
+  article_id uuid references public.news_articles on delete cascade primary key,
+  market_impact_score int check (market_impact_score >= 0 and market_impact_score <= 100),
+  impact_points jsonb default '[]',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'news_articles'
+      and column_name = 'market_impact_score'
+  ) then
+    execute $migration$
+      insert into public.news_article_impact (article_id, market_impact_score, impact_points)
+      select id, market_impact_score, impact_points
+      from public.news_articles
+      where market_impact_score is not null or coalesce(impact_points, '[]'::jsonb) <> '[]'::jsonb
+      on conflict (article_id) do update set
+        market_impact_score = excluded.market_impact_score,
+        impact_points = excluded.impact_points,
+        updated_at = now()
+    $migration$;
+  end if;
+end;
+$$;
+
+alter table public.news_articles drop column if exists market_impact_score;
+alter table public.news_articles drop column if exists impact_points;
+
+alter table public.news_article_impact enable row level security;
+
+create policy "Pro users can read news impact"
+  on public.news_article_impact for select
+  to authenticated
+  using (public.can_access_feature('newsImpact'));
+
+create policy "Only service role can manage news impact"
+  on public.news_article_impact for all
   to service_role
   using (true)
   with check (true);
@@ -281,10 +393,10 @@ create table if not exists public.holdings (
 
 alter table public.holdings enable row level security;
 
-create policy "Users can CRUD own holdings"
+create policy "Portfolio Pro users can CRUD own holdings"
   on public.holdings for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('portfolio'))
+  with check (auth.uid() = user_id and public.can_access_feature('portfolio'));
 
 create index if not exists idx_holdings_user_id on public.holdings(user_id);
 create index if not exists idx_holdings_symbol on public.holdings(symbol);
@@ -308,10 +420,10 @@ create table if not exists public.portfolios (
 alter table public.portfolios enable row level security;
 
 drop policy if exists "Users can CRUD own portfolios" on public.portfolios;
-create policy "Users can CRUD own portfolios"
+create policy "Portfolio Pro users can CRUD own portfolios"
   on public.portfolios for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('portfolio'))
+  with check (auth.uid() = user_id and public.can_access_feature('portfolio'));
 
 create table if not exists public.trades (
   id uuid default gen_random_uuid() primary key,
@@ -343,10 +455,10 @@ create table if not exists public.trades (
 alter table public.trades enable row level security;
 
 drop policy if exists "Users can CRUD own trades" on public.trades;
-create policy "Users can CRUD own trades"
+create policy "Portfolio Pro users can CRUD own trades"
   on public.trades for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('portfolio'))
+  with check (auth.uid() = user_id and public.can_access_feature('portfolio'));
 
 create table if not exists public.journal_reviews (
   id uuid default gen_random_uuid() primary key,
@@ -367,9 +479,9 @@ create table if not exists public.journal_reviews (
 alter table public.journal_reviews enable row level security;
 
 drop policy if exists "Users can view own reviews" on public.journal_reviews;
-create policy "Users can view own reviews"
+create policy "Trader users can view own reviews"
   on public.journal_reviews for select
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_journal());
 
 alter table public.ai_usage_logs
   alter column prompt drop not null,
@@ -481,56 +593,56 @@ create policy "Users can view own war room debate runs"
   on public.war_room_debate_runs
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can insert own war room debate runs" on public.war_room_debate_runs;
 create policy "Users can insert own war room debate runs"
   on public.war_room_debate_runs
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can view own war room debate messages" on public.war_room_debate_messages;
 create policy "Users can view own war room debate messages"
   on public.war_room_debate_messages
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can insert own war room debate messages" on public.war_room_debate_messages;
 create policy "Users can insert own war room debate messages"
   on public.war_room_debate_messages
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can view own war room debate evidence" on public.war_room_debate_evidence;
 create policy "Users can view own war room debate evidence"
   on public.war_room_debate_evidence
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can insert own war room debate evidence" on public.war_room_debate_evidence;
 create policy "Users can insert own war room debate evidence"
   on public.war_room_debate_evidence
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can view own war room debate verifications" on public.war_room_debate_verifications;
 create policy "Users can view own war room debate verifications"
   on public.war_room_debate_verifications
   for select
   to authenticated
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 drop policy if exists "Users can insert own war room debate verifications" on public.war_room_debate_verifications;
 create policy "Users can insert own war room debate verifications"
   on public.war_room_debate_verifications
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check (auth.uid() = user_id and public.can_access_feature('agentLoop'));
 
 grant select, insert on public.war_room_debate_runs to authenticated;
 grant select, insert on public.war_room_debate_messages to authenticated;

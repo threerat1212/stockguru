@@ -1,6 +1,10 @@
-import { randomUUID } from 'node:crypto'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+// Use the Web Crypto API (available in both Node 18+ and jsdom) instead of
+// `node:crypto`, which Vite externalizes for browser compatibility and breaks
+// this suite's import even when the tests are skipped via describe.skipIf.
+const randomUUID = () => globalThis.crypto.randomUUID()
 
 type RlsUser = {
   id: string

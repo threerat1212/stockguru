@@ -1,10 +1,13 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Session } from '@supabase/supabase-js'
+import { canAccessFeature, effectivePlan, type FeatureKey } from '@/lib/subscription/plan-utils'
+import type { Plan } from '@/lib/subscription/plans'
 
 export interface SessionResult {
   response: NextResponse
   session: Session | null
+  plan: Plan | null
 }
 
 export async function updateSession(request: NextRequest): Promise<SessionResult> {
@@ -18,7 +21,7 @@ export async function updateSession(request: NextRequest): Promise<SessionResult
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !key) {
-    return { response, session: null }
+    return { response, session: null, plan: null }
   }
 
   const supabase = createServerClient(
@@ -52,6 +55,17 @@ export async function updateSession(request: NextRequest): Promise<SessionResult
   )
 
   const { data: { session } } = await supabase.auth.getSession()
+  let plan: Plan | null = null
 
-  return { response, session }
+  if (session?.user) {
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('user_id', session.user.id)
+      .single()
+
+    plan = effectivePlan(subscription?.plan, subscription?.status)
+  }
+
+  return { response, session, plan }
 }

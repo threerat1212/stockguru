@@ -3,16 +3,19 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { getQuote } from '@/lib/services/stock-service'
 import { sendAlertEmail, sendWebPushAlert } from '@/lib/services/notification-service'
 import { mapSmartAlert, shouldTriggerAlert } from '@/lib/alerts/types'
-import type { AlertChannel } from '@/lib/alerts/types'
+import type { AlertChannel, SmartAlertRecord, PushSubscriptionRecord } from '@/lib/alerts/types'
+import type { StockQuote } from '@/types/stock'
 
-type AlertRow = Record<string, any>
-type PushSubscriptionRow = Record<string, any>
+type TriggeredAlertRow = SmartAlertRecord & {
+  _current_value?: number
+  _quote?: StockQuote
+}
 
-function isDuplicateDelivery(error: any) {
+function isDuplicateDelivery(error: { code?: string; message?: string }) {
   return error?.code === '23505' || /duplicate key/i.test(error?.message ?? '')
 }
 
-async function claimDelivery(supabase: ReturnType<typeof createAdminClient>, alert: AlertRow, channel: AlertChannel, deliveryKey: string) {
+async function claimDelivery(supabase: ReturnType<typeof createAdminClient>, alert: Pick<SmartAlertRecord, 'id' | 'user_id'>, channel: AlertChannel, deliveryKey: string) {
   const { error } = await supabase.from('alert_deliveries').insert({
     alert_id: alert.id,
     user_id: alert.user_id,
@@ -32,8 +35,13 @@ async function claimDelivery(supabase: ReturnType<typeof createAdminClient>, ale
   return true
 }
 
-async function markDelivery(supabase: ReturnType<typeof createAdminClient>, alert: AlertRow, channel: AlertChannel, deliveryKey: string, status: 'sent' | 'failed', error?: string) {
-  const payload: Record<string, any> = {
+async function markDelivery(supabase: ReturnType<typeof createAdminClient>, alert: Pick<SmartAlertRecord, 'id'>, channel: AlertChannel, deliveryKey: string, status: 'sent' | 'failed', error?: string) {
+  const payload: {
+    status: 'sent' | 'failed'
+    last_attempt_at: string
+    sent_at?: string
+    error?: string
+  } = {
     status,
     last_attempt_at: new Date().toISOString(),
   }
@@ -87,7 +95,7 @@ export async function POST(request: NextRequest) {
     let triggeredCount = 0
     let notifiedCount = 0
     const triggeredIds: string[] = []
-    const triggeredAlerts: AlertRow[] = []
+    const triggeredAlerts: TriggeredAlertRow[] = []
 
     for (const rawAlert of alerts) {
       const alert = mapSmartAlert(rawAlert)
@@ -132,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
 
     for (const alert of triggeredAlerts) {
-      const smartAlert = mapSmartAlert(alert as any)
+      const smartAlert = mapSmartAlert(alert)
       const channels = smartAlert.notificationChannels.length > 0 ? smartAlert.notificationChannels : ['email']
       const deliveryKey = `${smartAlert.id}:${alert.triggered_at ?? new Date().toISOString()}`
 
@@ -168,7 +176,7 @@ export async function POST(request: NextRequest) {
             if (subscriptionError) {
               console.error(`Failed to fetch push subscriptions for user ${smartAlert.userId}:`, subscriptionError)
             } else {
-              const pushPayloads = (subscriptions ?? []).map((row: PushSubscriptionRow) => ({
+              const pushPayloads = (subscriptions ?? []).map((row: PushSubscriptionRecord) => ({
                 endpoint: row.endpoint,
                 keys: {
                   p256dh: row.p256dh,

@@ -129,9 +129,9 @@ export async function callOpenRouterChatCompletion(options: OpenRouterCompletion
       const text = await response.text()
       if (!response.ok) {
         if (response.status === 429) {
-          throw new OpenRouterRateLimitError(`OpenRouter API rate limit on one key: ${text}`)
+          throw new OpenRouterRateLimitError('OpenRouter API rate limit on one key')
         }
-        throw new Error(`OpenRouter API error ${response.status}: ${text}`)
+        throw new Error(`OpenRouter API error ${response.status}`)
       }
 
       const data = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }> }

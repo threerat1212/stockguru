@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await getFundamentalData(symbol.trim().toUpperCase())
-    return apiSuccess(data)
+    const result = await getFundamentalData(symbol.trim().toUpperCase())
+    return apiSuccess(result.data, { meta: result.meta })
   } catch (error) {
     return apiError((error as Error).message)
   }

@@ -192,19 +192,13 @@ function parseNewsJson(raw: string): Array<Record<string, unknown>> {
 }
 
 export async function POST(request: Request) {
-  // Debug logging
-  console.log('POST called - MIMO_BASE_URL:', process.env.MIMO_BASE_URL)
-  console.log('POST called - MIMO_API_KEY:', process.env.MIMO_API_KEY ? '***configured***' : 'not configured')
-  console.log('POST called - Computed MIMO_BASE_URL:', MIMO_BASE_URL)
-  console.log('POST called - Computed MIMO_API_URL:', MIMO_API_URL)
-  // Verify cron secret or skip auth for cron jobs
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    // Also allow if no CRON_SECRET is set (dev mode)
-    if (cronSecret) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 })
+  }
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const apiKey = getApiKey()
@@ -232,7 +226,7 @@ export async function POST(request: Request) {
     console.log('Parsed articles count:', articles.length)
 
     const now = new Date().toISOString()
-    const toInsert = articles.map((a: Record<string, unknown>) => ({
+    const toInsertArticles = articles.map((a: Record<string, unknown>) => ({
       slug: a.slug,
       title: a.title,
       summary: a.summary,
@@ -241,18 +235,34 @@ export async function POST(request: Request) {
       source: a.source ?? 'StockGuru AI Analysis',
       url: a.url ?? 'https://www.set.or.th',
       related_symbols: a.relatedSymbols ?? [],
-      market_impact_score: Number(a.marketImpactScore) || 50,
-      impact_points: a.impactPoints ?? [],
       references: a.references ?? [{ title: 'SET', url: 'https://www.set.or.th', source: 'SET' }],
       published_at: now,
     }))
 
-    console.log('Inserting articles count:', toInsert.length)
+    console.log('Inserting articles count:', toInsertArticles.length)
 
-    const { error } = await supabase.from('news_articles').insert(toInsert)
+    const { data: insertedArticles, error } = await supabase
+      .from('news_articles')
+      .insert(toInsertArticles)
+      .select('id')
+
     if (error) {
       console.error('Supabase insert error:', error)
       throw error
+    }
+
+    const toInsertImpact = (insertedArticles ?? []).map((article, index) => ({
+      article_id: article.id,
+      market_impact_score: Number(articles[index].marketImpactScore) || 50,
+      impact_points: articles[index].impactPoints ?? [],
+    }))
+
+    if (toInsertImpact.length > 0) {
+      const { error: impactError } = await supabase.from('news_article_impact').insert(toInsertImpact)
+      if (impactError) {
+        console.error('Supabase news impact insert error:', impactError)
+        throw impactError
+      }
     }
 
     console.log('Insert successful')
@@ -260,7 +270,7 @@ export async function POST(request: Request) {
     // Keep only last 200 articles to prevent table bloat
     await supabase.rpc('cleanup_old_news')
 
-    return NextResponse.json({ success: true, count: toInsert.length })
+    return NextResponse.json({ success: true, count: toInsertArticles.length })
   } catch (err) {
     console.error('News refresh error:', err)
     const message = err instanceof Error ? err.message : 'Unknown error'

@@ -81,7 +81,7 @@ export async function callDeepSeekChatCompletion(options: DeepSeekCompletionOpti
 
     const text = await response.text()
     if (!response.ok) {
-      throw new Error(`DeepSeek API error ${response.status}: ${text}`)
+      throw new Error(`DeepSeek API error ${response.status}`)
     }
 
     const data = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }> }

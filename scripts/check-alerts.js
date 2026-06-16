@@ -26,15 +26,8 @@ const options = {
 };
 
 const req = https.request(url, options, (res) => {
-  let data = '';
-
-  res.on('data', (chunk) => {
-    data += chunk;
-  });
-
   res.on('end', () => {
     console.log(`Response status: ${res.statusCode}`);
-    console.log(`Response body: ${data}`);
 
     if (res.statusCode >= 200 && res.statusCode < 300) {
       console.log('Alerts check successful');

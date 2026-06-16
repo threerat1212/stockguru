@@ -10,6 +10,5 @@ export async function GET() {
     ok: true,
     service: 'stockguru',
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV ?? 'development',
   })
 }

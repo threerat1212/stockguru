@@ -1,6 +1,12 @@
 import { NextRequest } from 'next/server'
 import { apiSuccess, apiBadRequest, apiError } from '@/lib/api/response'
+import { demoMeta, liveMeta, type MarketDataMeta } from '@/lib/market-data/types'
 import type { EarningsCalendarEvent } from '@/types/stock'
+
+type EarningsCalendarResponse = {
+  events: EarningsCalendarEvent[]
+  meta: MarketDataMeta
+}
 
 const YAHOO_BASE = 'https://query1.finance.yahoo.com'
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -30,12 +36,13 @@ export async function GET(request: NextRequest) {
 
   try {
     // Try Yahoo Finance earnings calendar
-    const events = await fetchYahooEarningsCalendar(month, year)
-    return apiSuccess(events)
+    const result = await fetchYahooEarningsCalendar(month, year)
+    return apiSuccess(result.events, { meta: result.meta })
   } catch (error) {
-    // Fall back to mock data if Yahoo API fails
     const events = generateMockEarnings(month, year)
-    return apiSuccess(events)
+    return apiSuccess(events, {
+      meta: demoMeta('Earnings calendar is demo data because the provider calendar could not be fetched.'),
+    })
   }
 }
 
@@ -46,7 +53,7 @@ export async function GET(request: NextRequest) {
 async function fetchYahooEarningsCalendar(
   month: number,
   year: number,
-): Promise<EarningsCalendarEvent[]> {
+): Promise<EarningsCalendarResponse> {
   // Calculate start/end timestamps for the month
   const startDate = new Date(year, month - 1, 1)
   const endDate = new Date(year, month, 0) // last day of month
@@ -66,21 +73,25 @@ async function fetchYahooEarningsCalendar(
   const data = await res.json()
 
   const earnings = data.earningsCalendar?.earnings || []
+  if (!earnings.length) throw new Error('Yahoo earnings calendar returned no events')
 
-  return earnings.map((item: Record<string, unknown>) => ({
-    symbol: item.symbol || '',
-    name: item.companyShortName || undefined,
-    earningsDate: item.startDateTime || item.earningsDate || '',
-    earningsCallTime: item.time || undefined,
-    epsEstimate: item.epsEstimate ?? undefined,
-    epsActual: item.epsActual ?? undefined,
-    revenueEstimate: item.revenueEstimate ?? undefined,
-    revenueActual: item.revenueActual ?? undefined,
-    quarter: item.quarter ?? undefined,
-    year: item.year ?? undefined,
-    epsSurprise: item.epsDifference ?? undefined,
-    epsSurprisePercent: item.surprisePercent ?? undefined,
-  }))
+  return {
+    events: earnings.map((item: Record<string, unknown>) => ({
+      symbol: item.symbol || '',
+      name: item.companyShortName || undefined,
+      earningsDate: item.startDateTime || item.earningsDate || '',
+      earningsCallTime: item.time || undefined,
+      epsEstimate: item.epsEstimate ?? undefined,
+      epsActual: item.epsActual ?? undefined,
+      revenueEstimate: item.revenueEstimate ?? undefined,
+      revenueActual: item.revenueActual ?? undefined,
+      quarter: item.quarter ?? undefined,
+      year: item.year ?? undefined,
+      epsSurprise: item.epsDifference ?? undefined,
+      epsSurprisePercent: item.surprisePercent ?? undefined,
+    })),
+    meta: liveMeta('yahoo', 'Yahoo Finance earnings calendar'),
+  }
 }
 
 /**

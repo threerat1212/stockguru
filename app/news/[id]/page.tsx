@@ -5,6 +5,8 @@ import { ArrowLeft, Clock, ExternalLink, Newspaper, AlertTriangle } from 'lucide
 import NewsImpactPanel, { NewsImpactScore } from '@/components/news/NewsImpactPanel'
 import { createClient } from '@/lib/supabase/server'
 import { getNewsById } from '@/lib/data/news'
+import { canAccessFeature } from '@/lib/subscription/plan-utils'
+import { getServerSubscription } from '@/lib/subscription/server'
 import Badge from '@/components/ui/Badge'
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card'
 import { timeAgo } from '@/lib/utils/format'
@@ -108,8 +110,23 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
     ? await query.eq('id', id).single()
     : await query.eq('slug', id).single()
 
+  const subscription = await getServerSubscription()
+  const canShowImpact = Boolean(dbArticle) && canAccessFeature(subscription.plan, 'newsImpact')
+  const dbImpactResult = canShowImpact
+    ? await supabase.from('news_article_impact').select('*').eq('article_id', dbArticle.id).single()
+    : null
+  const dbImpact = dbImpactResult?.data ?? null
+
   const localArticle = dbArticle ? null : getNewsById(id)
-  const article = (dbArticle ?? (localArticle ? normalizeLocalArticle(localArticle) : null)) as NewsDetailArticle | null
+  const article = (dbArticle
+    ? {
+      ...dbArticle,
+      market_impact_score: dbImpact?.market_impact_score ?? null,
+      impact_points: Array.isArray(dbImpact?.impact_points) ? dbImpact.impact_points : [],
+    }
+    : localArticle
+      ? normalizeLocalArticle(localArticle)
+      : null) as NewsDetailArticle | null
 
   if (!article) notFound()
 

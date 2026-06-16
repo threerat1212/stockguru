@@ -79,7 +79,7 @@ export async function callMimoChatCompletion(options: MimoCompletionOptions): Pr
 
     const text = await response.text()
     if (!response.ok) {
-      throw new Error(`MiMo API error ${response.status}: ${text}`)
+      throw new Error(`MiMo API error ${response.status}`)
     }
 
     const data = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }> }

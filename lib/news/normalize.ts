@@ -29,6 +29,7 @@ export function normalizeNewsArticle(row: Record<string, unknown>): NewsArticle 
       ? (row.references as NewsArticle['references'])
       : undefined,
     infographic: row.infographic as NewsArticle['infographic'],
+    isDemo: typeof row.is_demo === 'boolean' ? row.is_demo : true,
   }
 }
 

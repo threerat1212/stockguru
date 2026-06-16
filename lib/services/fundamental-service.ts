@@ -1,4 +1,6 @@
 import type { FundamentalData } from '@/types/stock'
+import type { MarketDataMeta } from '@/lib/market-data/types'
+import { demoMeta, liveMeta } from '@/lib/market-data/types'
 import { fundamentalCache } from '@/lib/cache'
 import { getQuote } from '@/lib/services/stock-service'
 
@@ -25,13 +27,18 @@ async function yfetch(path: string, params: Record<string, string> = {}) {
   return res.json()
 }
 
+export interface FundamentalDataResult {
+  data: FundamentalData
+  meta: MarketDataMeta
+}
+
 /**
  * Fetch fundamental data for a stock symbol via Yahoo Finance quoteSummary.
  * Results are cached for 10 minutes.
  */
-export async function getFundamentalData(symbol: string): Promise<FundamentalData> {
+export async function getFundamentalData(symbol: string): Promise<FundamentalDataResult> {
   const cacheKey = `fundamental:${symbol}`
-  const cached = fundamentalCache.get<FundamentalData>(cacheKey)
+  const cached = fundamentalCache.get<FundamentalDataResult>(cacheKey)
   if (cached) return cached.data
 
   const upper = symbol.toUpperCase()
@@ -125,8 +132,9 @@ export async function getFundamentalData(symbol: string): Promise<FundamentalDat
       numberOfAnalystOpinions: fin.numberOfAnalystOpinions?.raw,
     }
 
-    fundamentalCache.set(cacheKey, fundamental)
-    return fundamental
+    const meta = liveMeta('yahoo', 'Yahoo Finance quoteSummary')
+    fundamentalCache.set(cacheKey, { data: fundamental, meta })
+    return { data: fundamental, meta }
   } catch (error) {
     console.warn(`[getFundamentalData] ${upper} quoteSummary failed:`, error)
 
@@ -141,9 +149,12 @@ export async function getFundamentalData(symbol: string): Promise<FundamentalDat
         fiftyTwoWeekHigh: quote.week52High,
         fiftyTwoWeekLow: quote.week52Low,
       }
+      const meta = quoteResult.meta.source === 'fallback' || quoteResult.meta.isDemo
+        ? demoMeta('Fundamental profile is partial fallback data derived from quote fields.')
+        : { ...quoteResult.meta, provider: `${quoteResult.meta.provider} quote fallback` }
 
-      fundamentalCache.set(cacheKey, fallback, 60)
-      return fallback
+      fundamentalCache.set(cacheKey, { data: fallback, meta }, 60)
+      return { data: fallback, meta }
     } catch (fallbackError) {
       throw new Error(`Failed to fetch fundamental data for ${upper}: ${(fallbackError as Error).message}`)
     }

@@ -220,51 +220,21 @@ const PIE_COLORS = [
   '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
 ]
 
-function csvEscape(value: string | number) {
-  const text = String(value ?? '')
-  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`
-  return text
-}
-
-function exportPortfolioCsv(summary: PortfolioAnalyticsSummary) {
-  const header = [
-    'Symbol',
-    'Quantity',
-    'Buy Price',
-    'Current Price',
-    'Cost',
-    'Current Value',
-    'P/L',
-    'P/L %',
-    'Weight',
-  ]
-
-  const rows = summary.holdings.map((h) => [
-    h.symbol,
-    h.quantity,
-    h.buyPrice,
-    h.currentPrice,
-    h.cost,
-    h.value,
-    h.pnl,
-    h.pnlPercent,
-    h.weight,
-  ])
-
-  const csv = [
-    header.join(','),
-    ...rows.map((row) => row.map(csvEscape).join(',')),
-  ].join('\n')
-
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `stockguru-portfolio-${new Date().toISOString().slice(0, 10)}.csv`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+async function exportPortfolioCsv() {
+  try {
+    const res = await fetch('/api/portfolio/export')
+    if (!res.ok) throw new Error('Export failed')
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `stockguru-portfolio-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch {
+  }
 }
 
 function usePortfolioBenchmark() {
@@ -396,7 +366,7 @@ function PortfolioAnalytics({ portfolio, benchmark }: { portfolio: PortfolioAnal
               </Button>
             </FeatureGate>
           ) : (
-            <Button variant="secondary" size="sm" onClick={() => exportPortfolioCsv(portfolio)} className="gap-1">
+            <Button variant="secondary" size="sm" onClick={() => exportPortfolioCsv()} className="gap-1">
               <Download size={14} />
               Export CSV
             </Button>

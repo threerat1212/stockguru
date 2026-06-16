@@ -27,10 +27,7 @@ import { useScreenerUniverse } from '@/lib/hooks/use-screener'
 import { canAccessFeature } from '@/lib/subscription/plan-utils'
 import FeatureGate from '@/components/auth/FeatureGate'
 import type { ScreenerFilters, ScreenerStock, SortField, SortOrder } from '@/types/stock'
-import {
-  exportScreenerCsv,
-  screenStocks,
-} from '@/lib/screener/utils'
+import { screenStocks } from '@/lib/screener/utils'
 import {
   formatCurrency,
   formatNumber,
@@ -345,9 +342,27 @@ export default function ScreenerPage() {
     setSavedScreens((current) => current.filter((screen) => screen.id !== id))
   }
 
-  const exportCsv = () => {
+  const exportCsv = async () => {
     if (!hasExport) return
-    exportScreenerCsv(filteredStocks, filters, `stockguru-screener-${nowLabel()}.csv`)
+    try {
+      const res = await fetch('/api/screener/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filters }),
+      })
+      if (!res.ok) throw new Error('Export failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `stockguru-screener-${nowLabel()}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      setSaveMessage('Export CSV ล้มเหลว กรุณาลองใหม่')
+    }
   }
 
   const SortIcon = ({ field }: { field: SortField }) => {

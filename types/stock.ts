@@ -92,6 +92,7 @@ export interface NewsArticle {
     tone: 'positive' | 'negative' | 'neutral'
     bullets: string[]
   }
+  isDemo?: boolean
 }
 
 // AI Analysis result
@@ -369,6 +370,7 @@ export interface EarningsCalendarEvent {
 export interface BacktestRequest {
   symbol: string
   strategy: 'sma_crossover' | 'rsi' | 'macd' | 'buy_and_hold'
+  period?: '3M' | '6M' | '1Y' | string
   startDate: string // YYYY-MM-DD
   endDate: string   // YYYY-MM-DD
   params?: {
@@ -389,7 +391,7 @@ export interface BacktestRequest {
 
 export interface BacktestTrade {
   date: string
-  action: 'BUY' | 'SELL'
+  action: 'ENTRY' | 'EXIT'
   price: number
   shares: number
   value: number
@@ -399,6 +401,7 @@ export interface BacktestTrade {
 export interface BacktestResult {
   symbol: string
   strategy: string
+  timeframe: '3M' | '6M' | '1Y'
   startDate: string
   endDate: string
   // Performance
@@ -426,4 +429,6 @@ export interface BacktestResult {
   // Detail
   trades: BacktestTrade[]
   equityCurve: { date: string; value: number }[]
+  disclaimer: string
+  isSimulation: boolean
 }

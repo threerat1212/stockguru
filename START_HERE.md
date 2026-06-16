@@ -35,8 +35,8 @@
 | State | TanStack Query, Zustand |
 | Auth/DB | Supabase (RLS) |
 | Billing | Stripe |
-| AI | MiMo (`MIMO_API_KEY`) สำหรับ AI chat/news refresh; War Room Debate MVP เป็น rule-based ก่อนต่อ OpenRouter/Xiaomi MiMo/DeepSeek model routing ภายหลัง |
-| Market data | Yahoo Finance (proxy) + fallback ตัวอย่าง |
+| AI | MiMo default + optional OpenRouter/DeepSeek model assist; deterministic debate fallback |
+| Market data | SiamChart SET/mai primary + Yahoo fallback/demo provenance |
 | Charts | TradingView widget (stock detail) + lightweight-charts (internal compare charts) |
 | Deploy | Render (`render.yaml`) |
 
@@ -48,8 +48,10 @@
 app/api/health/           # health check สำหรับ Render
 app/api/billing/portal/   # Stripe Customer Portal
 components/news/NewsImpactPanel.tsx
-lib/hooks/use-news.ts     # news hooks (แทน useStock.ts ที่ลบแล้ว)
+lib/hooks/use-news.ts     # news hooks (current hook path is use-stock.ts; legacy camel-case useStock.ts removed)
 lib/agent-loop/           # Agent Looping orchestrator, agents, verifier, SEGA review gate
+lib/research-notes/       # parser/types สำหรับ Research Memory markdown
+knowledge/                # Obsidian-style research vault: raw notes, articles, topics, sources
 app/war-room/             # Market War Room UI
 lib/subscription/         # plan-utils, server gating
 lib/market-data/          # data source metadata
@@ -69,20 +71,31 @@ START_HERE.md             # เอกสารนี้
 - `PLAN_LIMITS` ใน `use-subscription.ts`
 - UI: `<FeatureGate feature="...">`
 - Server: `requireFeature()` ใน `lib/subscription/server.ts`
+- Export/Data endpoints ต้องกันที่ API/RLS ด้วย ไม่ใช่แค่ UI
 
 ### 4. ข่าว = AI Market Brief
 - ไม่ใช่ wire ข่าวจริง — ต้องมี disclaimer ทุกหน้า
 - สรุปผลกระทบข่าว (impact score / impact points) = **Pro** เท่านั้น
 
-### 5. Agent Looping + SEGA + MiroFish Swarm = decision support
+### 5. Research Memory = near-real-time snapshot
+- ใช้ `knowledge/` เป็น Obsidian-style vault สำหรับบทความจาก market snapshot ทุก 30–60 นาที
+- ต้องมี `snapshotAt`, `sources`, `aiAssisted`, `status`, และ disclaimer
+- Research Memory ไม่ใช่ real-time market data provider
+
+### 6. Agent Looping + SEGA + MiroFish Swarm = decision support
 - Agent Looping / War Room ต้องผ่าน verifier gate: ไม่มี buy/sell advice, มี disclaimer, มี evidence, มี risk checklist
 - SEGA Review Gate review thesis, downside, exit plan, allocation envelope, risk score และ approval decision โดยไม่สร้างสัญญาณใหม่หรือส่ง order
 - MiroFish Swarm ใช้จำลองสังคม multi-agent: personas, memory, beliefs, simulated Twitter/Reddit, scenario map, risks, opportunities, blind spots
 - ห้ามเชื่อม broker / ส่ง order / autonomous trading ใน PR16/PR18/PR19/PR20
 - Trading system เป็น future backlog: Trade Plan → Paper Trading → optional user-approved execution
 
-### 6. Secrets
+### 7. Secrets
 - **ห้าม commit** `.env.local`, API keys
+
+### 8. Security smoke
+- ใช้ `npm run security:smoke` สำหรับ Playwright gate/disclaimer/PWA checks
+- ใช้ `npm run security:browser-use` เป็น optional exploratory runner; ต้องรันกับ sandbox/allowed_domains เท่านั้น
+- ดูรายละเอียดใน `docs/SECURITY_SMOKE.md`
 
 ---
 
@@ -90,13 +103,14 @@ START_HERE.md             # เอกสารนี้
 
 ### รอบที่ 1 — Hardening pass
 - [x] News link 404, field normalization, data honesty, paywall
-- [x] Journal = Trader only, fundamentals UI, schema merge
+- [x] Journal UI gate = Trader; server-side review gate and RLS plan gates added for portfolio/journal/war-room surfaces
+- [x] Fundamentals UI, schema merge
 - [x] Deploy config, e2e tests, START_HERE.md
 
 ### รอบที่ 2 — ทำต่อ (ไม่ต้องมี API ภายนอก)
-- [x] ลบ `lib/hooks/useStock.ts` (legacy mock hooks)
+- [x] ลบ `lib/hooks/useStock.ts` (legacy mock hooks); current `lib/hooks/use-stock.ts` ยังถูกใช้งาน
 - [x] Rebrand ข่าวเป็น **AI Market Brief** (หน้า news, home, sidebar, pricing)
-- [x] Gate สรุปผลกระทบข่าว (`newsImpact`) บนหน้า news detail
+- [x] Gate สรุปผลกระทบข่าว (`newsImpact`) แยกตาราง impact และ redaction ใน `/api/news`
 - [x] ขยาย universe หุ้น trending (~35 symbols SET+US)
 - [x] `GET /api/health` + `healthCheckPath` ใน render.yaml
 - [x] `POST /api/billing/portal` + ปุ่มจัดการแผนบน pricing
@@ -106,11 +120,11 @@ START_HERE.md             # เอกสารนี้
 
 ### รอบที่ 3 — PR3-PR8 (Auth, Stripe, Hardening, Tests, Polish)
 - [x] **PR3** — Portfolio holdings → Supabase (`holdings` table, `use-holdings.ts`)
-- [x] **PR4** — Alerts cron job (`/api/alerts/check`, `notification-service.ts`)
+- [x] **PR4** — Alerts cron job (`/api/alerts/check`, `notification-service.ts`) + conditional email/web-push
 - [x] **PR5** — Auth + Stripe gating (middleware route protection, checkout error handling)
-- [x] **PR6** — Hardening (`lib/env.ts` zod validation, rate limiting ครบทุก route, `err: any` → `instanceof Error`)
+- [x] **PR6** — Hardening (`lib/env.ts` zod validation, selected API rate limiting, `err: any` cleanup ส่วนใหญ่)
 - [x] **PR7** — Tests (e2e golden path ขยาย, CI workflow พร้อม)
-- [x] **PR8** — Polish (`as any` = 0 ทั้งโปรเจกต์, `Record<string, unknown>`, `Time` type จาก lightweight-charts)
+- [x] **PR8** — Polish (ลด `as any`; ยังเหลือ type debt บางจุด)
 
 ### รอบที่ 4 — Home Dashboard UX/UI Polish
 - [x] ปรับหน้า Home `/` เป็น market desk layout: market tiles, central chart stage, AI brief, watchlist/risk rail, scan presets, opportunity queue
@@ -142,9 +156,23 @@ START_HERE.md             # เอกสารนี้
 - [x] Verification: `npm run typecheck`, `npm run lint`, `npm test`, SEGA targeted unit tests 19 passed
 
 ### รอบที่ 8 — Agent Workflow Adapter
-- [x] เพิ่ม `skills/stockguru-agent-workflow/SKILL.md` เพื่อปรับ lifecycle/quality-gate ideas จาก `https://github.com/addyosmani/agent-skills` ให้เข้ากับ StockGuru
+- [x] ปรับ lifecycle/quality-gate ideas จาก `https://github.com/addyosmani/agent-skills` ให้เข้ากับ StockGuru
 - [x] ระบุชัดว่าไม่ copy upstream ทั้ง repo, slash commands, platform folders, hooks, personas, zip packaging, หรือ generic docs เข้ามาโดยไม่ review
 - [x] อัปเดต `SKILLS.md` และ `docs/IMPLEMENTATION_UPDATE.md`
+
+### รอบที่ 9 — PR22 Research Memory / Obsidian Workflow
+- [x] เพิ่ม `knowledge/` vault พร้อม `_raw`, `articles`, `topics`, `sources`
+- [x] เพิ่ม `lib/research-notes/` parser/types
+- [x] เพิ่ม `GET /api/research-notes` และ `/research`
+- [x] เพิ่ม `scripts/import-research-notes.mjs` และ unit test
+
+### รอบที่ 10 — PR23 Security Hardening Sweep
+- [x] `app/api/data/fetch/route.ts`: เพิ่ม CRON_SECRET gate (เดิมเปิดโปร่ง — DoS/cost abuse)
+- [x] `scripts/fetch-data.js` + `render.yaml`: แนบ `Authorization: Bearer ${CRON_SECRET}` ให้ data-fetch cron
+- [x] `.gitignore`: ครอบ `.playwright-cli/`, `playwright-report/`, `test-results/`, `coverage/` + `git rm --cached` log/output ที่ค้าง
+- [x] `lib/data/scheduler.ts`: กำจัด `null as any` × 5 → typed `FetchAllResults`
+- [x] `supabase/schema.sql` + migration `20260616000000_rls_with_check_hardening.sql`: เพิ่ม `WITH CHECK` ให้ watchlists/alerts/push_subscriptions
+- [x] Audit: ไม่พบ hardcoded secret; Stripe webhook/cron routes/sensitive per-user routes ทั้งหมด gated ครบ
 
 ---
 ## Gap Analysis: StockGuru vs Top 5 Market Platforms
@@ -172,14 +200,15 @@ StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscr
 
 - **PR9A — Market Data Provider Abstraction** ✅ Implemented
 - **PR9B — Reliable Thai Market Data** ⏸ Pending
-- **PR10 — Market Dashboard**
+- **PR10 — Market Dashboard** ✅ Implemented; gap คือ data reliability/coverage
 - **PR11 — Advanced Screener**
 
-- **PR12 — Smart Alerts + Push**
+- **PR12 — Smart Alerts + Push** ⏸ price/%/volume alerts มีบางส่วน; email/push ต้อง production verify
 - **PR13 — News Citations + AI Impact**
+- **PR21 — Research Memory / Obsidian Workflow** ✅ Implemented
 
 - **PR14 — Portfolio Analytics**
-- **PR15 — PWA + Push Notifications**
+- **PR15 — PWA + Push Notifications** ⏸ manifest/service worker/push subscribe มีบางส่วน
 
 - **PR16 — Agent Looping / Market War Room** ✅ Implemented
 - **PR18 — MiroFish Debate Mode** ✅ Implemented
@@ -193,7 +222,7 @@ StockGuru มีฐานที่ดีแล้ว: Thai-first UX, auth/subscr
 - Full SET/mai universe + sector mapping
 - Fund flow / foreign holding
 - News wire จริงที่มี source/citation
-- PWA push infrastructure
+- PWA push production config/asset audit
 - Broker CSV import / live execution
 - Trade Plan + Paper Trading (PR17 future)
 - Backtesting engine เต็มรูปแบบ
@@ -238,6 +267,8 @@ npm run test:e2e
 || ตัวแปร | จำเป็น prod | หมายเหตุ ||
 |--------|-------------|----------|
 | `MIMO_API_KEY` | ใช่ | AI + news refresh |
+| `DEEPSEEK_API_KEY` | ไม่บังคับ | Optional model assist |
+| `OPENROUTER_API_KEY` | ไม่บังคับ | Optional model assist / key rotation |
 | `NEXT_PUBLIC_SUPABASE_*` | ใช่ | Auth, DB |
 | `SUPABASE_SERVICE_ROLE_KEY` | ใช่ | Cron, webhooks |
 | `STRIPE_SECRET_KEY` | ใช่ (billing) | + เปิด Customer Portal ใน Dashboard |
@@ -248,9 +279,8 @@ npm run test:e2e
 | `YAHOO_FINANCE_PROXY` | ไม่บังคับ | ⏸ ตั้งเมื่อ Yahoo block |
 | `SET_API_KEY` | ไม่บังคับ (ตอนนี้) | ⏸ SET real-time data (Gap: Strategic) |
 | `NEWS_API_KEY` | ไม่บังคับ (ตอนนี้) | ⏸ News wire จริง (Gap: Strategic) |
-| `VAPID_PUBLIC_KEY` | ไม่บังคับ | ⏸ PWA Push (Gap: Quick Win) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | ไม่บังคับ | ⏸ PWA Push (Gap: Quick Win) |
 | `VAPID_PRIVATE_KEY` | ไม่บังคับ | ⏸ PWA Push (Gap: Quick Win) |
-| `VAPID_SUBJECT` | ไม่บังคับ | ⏸ PWA Push contact (mailto:...) |
 
 ---
 
@@ -282,4 +312,4 @@ npm run test:e2e
 
 ---
 
-*อัปเดตล่าสุด: มิถุนายน 2026 — PR3-PR8 เสร็จสมบูรณ์, PR16 Agent Looping implemented, PR17 Trading Backlog documented*
+*อัปเดตล่าสุด: มิถุนายน 2026 — PR3-PR8 เสร็จสมบูรณ์, PR16/PR18/PR19/PR20/PR21/PR22 implemented, PR23 Security Hardening Sweep ทำเสร็จ, PR17 Trading Backlog documented*

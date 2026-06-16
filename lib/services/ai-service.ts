@@ -31,8 +31,8 @@ async function callMimo(
   })
 
   if (!response.ok) {
-    const errBody = await response.text()
-    throw new Error(`MiMo API error ${response.status}: ${errBody}`)
+    await response.text()
+    throw new Error(`MiMo API error ${response.status}`)
   }
 
   const data = await response.json()

@@ -24,6 +24,10 @@ services:
         sync: false
       - key: NEXT_PUBLIC_APP_URL
         value: https://stockguru-web.onrender.com
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
@@ -39,7 +43,9 @@ services:
       - key: STRIPE_PRICE_TRADER
         sync: false
       - key: CRON_SECRET
-        generateValue: true
+        sync: false
+      - key: AGENT_LOOP_STRICT_VERIFIER
+        value: "true"
       - key: RESEND_API_KEY
         sync: false
       - key: RENDER_EXTERNAL_HOSTNAME
@@ -57,6 +63,8 @@ services:
     buildCommand: ""
     startCommand: node scripts/fetch-data.js
     envVars:
+      - key: CRON_SECRET
+        sync: false
       - key: RENDER_EXTERNAL_HOSTNAME
         value: stockguru-web.onrender.com
 
@@ -84,6 +92,10 @@ services:
     startCommand: node scripts/check-alerts.js
     envVars:
       - key: CRON_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
         sync: false
       - key: RENDER_EXTERNAL_HOSTNAME
         value: stockguru-web.onrender.com

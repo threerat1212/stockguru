@@ -150,12 +150,21 @@ export function useMarketSummary(): MarketSummaryHookResult {
 
 // ─── Fundamentals ──────────────────────────────────────────
 export function useFundamentals(symbol: string | null) {
-  return useQuery<FundamentalData>({
+  const queryClient = useQueryClient()
+  const query = useQuery<FundamentalData>({
     queryKey: ['fundamentals', symbol],
-    queryFn: () => fetchApi<FundamentalData>(`/api/stock/fundamental?symbol=${symbol}`),
+    queryFn: () => fetchApiWithMeta<FundamentalData>(`/api/stock/fundamental?symbol=${symbol}`).then((result) => {
+      queryClient.setQueryData(['fundamental-meta', symbol], result.meta)
+      return result.data
+    }),
     enabled: !!symbol,
     staleTime: 600_000,
   })
+
+  return {
+    ...query,
+    meta: queryClient.getQueryData<MarketDataMeta | undefined>(['fundamental-meta', symbol]),
+  }
 }
 
 // ─── AI Analysis ───────────────────────────────────────────

@@ -104,6 +104,7 @@ export default function EarningsPage() {
           </div>
           <div>
             <h1 className="heading-balance text-2xl font-bold text-brand-text-primary">ปฏิทินประกาศงบ</h1>
+            <Badge variant="warning" size="sm">ข้อมูลตัวอย่าง</Badge>
             <p className="text-sm text-brand-text-secondary">เลือกหุ้นที่ต้องการติดตามเอง แล้วระบบจะจำไว้ในเครื่องนี้</p>
           </div>
         </div>
@@ -113,6 +114,9 @@ export default function EarningsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base"><Star size={18} className="text-brand-warning" /> หุ้นที่ต้องการติดตาม</CardTitle>
         </CardHeader>
+        <div className="rounded-lg border border-brand-warning/30 bg-brand-warning/5 px-3 py-2 text-xs text-brand-text-secondary">
+          ปฏิทินประกาศงบเป็นข้อมูลตัวอย่างเพื่อสาธิต UI ยังไม่ใช่ข้อมูลจริงจาก SET
+        </div>
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row">
             <input value={customInput} onChange={(e) => setCustomInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addSymbol(customInput)} placeholder="เพิ่มหุ้น เช่น PTT, KBANK, AAPL" className="flex-1 rounded-lg border border-brand-border bg-brand-bg-secondary px-3 py-2 text-sm text-brand-text-primary outline-none focus:border-brand-primary" />

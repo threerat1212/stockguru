@@ -22,11 +22,11 @@ const fallbackStocks: TrendingStock[] = [
 ]
 
 const marketTiles: MarketTileData[] = [
-  { id: 'SET', label: 'SET', name: 'SET Index', price: 1387.45, change: 12.35, changePercent: 0.90, meta: 'มูลค่า 28,345 ลบ.', tone: 'up', path: 'M2 34 L12 26 L21 31 L30 18 L39 22 L48 10 L58 16 L68 6 L78 9' },
-  { id: 'MAI', label: 'mai', name: 'mai Index', price: 331.27, change: 3.28, changePercent: 1.00, meta: 'มูลค่า 1,234 ลบ.', tone: 'up', path: 'M2 18 L10 20 L18 31 L27 16 L35 21 L45 12 L54 16 L63 7 L78 10' },
-  { id: 'NASDAQ', label: 'NASDAQ', name: 'NASDAQ Composite', price: 18310.72, change: 103.47, changePercent: 0.57, meta: 'Vol. 4.12B', tone: 'up', path: 'M2 31 L10 27 L18 33 L26 24 L35 20 L44 11 L52 14 L61 6 L78 9' },
-  { id: 'SP500', label: 'S&P 500', name: 'S&P 500', price: 5291.34, change: 32.08, changePercent: 0.61, meta: 'Vol. 2.45B', tone: 'info', path: 'M2 28 L11 26 L20 23 L29 18 L38 20 L47 13 L56 9 L66 12 L78 5' },
-  { id: 'US10Y', label: 'US 10Y', name: 'US 10Y Yield', price: 4.28, change: -0.02, changePercent: -0.47, meta: 'Yield', tone: 'down', path: 'M2 8 L10 10 L18 16 L27 14 L36 20 L45 23 L54 28 L63 27 L78 34' },
+  { id: 'SET', label: 'SET', name: 'SET Index', price: 1387.45, change: 12.35, changePercent: 0.90, meta: 'ตัวอย่าง UI — เชื่อม market provider เพื่ออัปเดตจริง', tone: 'up', path: 'M2 34 L12 26 L21 31 L30 18 L39 22 L48 10 L58 16 L68 6 L78 9', sample: true },
+  { id: 'MAI', label: 'mai', name: 'mai Index', price: 331.27, change: 3.28, changePercent: 1.00, meta: 'ตัวอย่าง UI — เชื่อม market provider เพื่ออัปเดตจริง', tone: 'up', path: 'M2 18 L10 20 L18 31 L27 16 L35 21 L45 12 L54 16 L63 7 L78 10', sample: true },
+  { id: 'NASDAQ', label: 'NASDAQ', name: 'NASDAQ Composite', price: 18310.72, change: 103.47, changePercent: 0.57, meta: 'ตัวอย่าง UI — เชื่อม market provider เพื่ออัปเดตจริง', tone: 'up', path: 'M2 31 L10 27 L18 33 L26 24 L35 20 L44 11 L52 14 L61 6 L78 5', sample: true },
+  { id: 'SP500', label: 'S&P 500', name: 'S&P 500', price: 5291.34, change: 32.08, changePercent: 0.61, meta: 'ตัวอย่าง UI — เชื่อม market provider เพื่ออัปเดตจริง', tone: 'info', path: 'M2 28 L11 26 L20 23 L29 18 L38 20 L47 13 L56 9 L66 12 L78 5', sample: true },
+  { id: 'US10Y', label: 'US 10Y', name: 'US 10Y Yield', price: 4.28, change: -0.02, changePercent: -0.47, meta: 'ตัวอย่าง UI — เชื่อม market provider เพื่ออัปเดตจริง', tone: 'down', path: 'M2 8 L10 10 L18 16 L27 14 L36 20 L45 23 L54 28 L63 27 L78 34', sample: true },
 ]
 
 const scanPresets = [
@@ -60,6 +60,7 @@ type MarketTileData = {
   meta: string
   tone: MarketTone
   path: string
+  sample?: boolean
 }
 type LiveChartPoint = { price: number; volume: number; time: string }
 type RiskCheck = {
@@ -373,6 +374,11 @@ function MarketTile({
             {formatSignedNumber(tile.change)} ({formatSignedPercent(tile.changePercent)})
           </p>
           <p className="mt-2 text-[11px] text-brand-text-secondary">{tile.meta}</p>
+          {tile.sample && (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-md border border-brand-warning/25 bg-brand-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-brand-warning">
+              ตัวอย่าง
+            </span>
+          )}
         </div>
         <MiniSparkline id={`tile-${index}`} path={tile.path} tone={tile.tone} />
       </div>
@@ -397,12 +403,14 @@ function buildDashboardTiles(liveSetIndex?: MarketIndex) {
       changePercent: liveSetIndex.changePercent,
       meta: 'อัปเดตจาก market provider',
       tone: liveSetIndex.change >= 0 ? 'up' as const : 'down' as const,
+      sample: false,
     },
     ...rest,
   ]
 }
 
 function IntradayChartPanel({ market }: { market: MarketTileData }) {
+  const isSynthetic = market.sample
   const [range, setRange] = useState<ChartRange>('1D')
   const [chartMode, setChartMode] = useState<ChartMode>('area')
   const [chartPoints, setChartPoints] = useState<LiveChartPoint[]>(() => buildSeedIntradayPoints(market))
@@ -498,9 +506,17 @@ function IntradayChartPanel({ market }: { market: MarketTileData }) {
             <span className={cn('font-mono-nums', toneClass)}>
               {formatSignedNumber(stats.change)} ({formatSignedPercent(stats.changePercent)})
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-brand-primary/10 px-2 py-0.5 font-mono-nums text-[11px] text-brand-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-              Live {lastUpdated}
+            {isSynthetic && (
+              <span className="rounded-md border border-brand-warning/25 bg-brand-warning/10 px-2 py-0.5 text-[11px] font-medium text-brand-warning">
+                ข้อมูลจำลองจาก UI seed
+              </span>
+            )}
+            <span className={cn('inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono-nums text-[11px]', isSynthetic ? 'border border-brand-warning/25 bg-brand-warning/10 text-brand-warning' : 'bg-brand-primary/10 text-brand-primary')}>
+                <span className={cn('h-1.5 w-1.5 rounded-full', isSynthetic ? 'bg-brand-warning' : 'bg-brand-primary')} />
+                {isSynthetic ? 'Simulated' : `Live ${lastUpdated}`}
+              </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-brand-warning/25 bg-brand-warning/10 px-2 py-0.5 font-mono-nums text-[11px] text-brand-warning">
+              ข้อมูลจำลองประกอบ UI
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -779,7 +795,7 @@ function OpportunityQueue() {
   )
 }
 
-function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; empty?: boolean }) {
+function WatchlistPreview({ stocks, empty = false, sourceNote }: { stocks: TrendingStock[]; empty?: boolean; sourceNote?: string }) {
   return (
     <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -787,7 +803,8 @@ function WatchlistPreview({ stocks, empty = false }: { stocks: TrendingStock[]; 
           <h2 className="flex items-center gap-2 text-base font-semibold text-brand-text-primary">
             <Star size={17} className="text-brand-warning" /> หุ้นที่ต้องดูต่อ
           </h2>
-          {empty && <p className="mt-0.5 text-[11px] text-brand-text-muted">ยังไม่มีรายการโปรด — แสดงตัวอย่างจากตลาด</p>}
+          {sourceNote && <p className="mt-0.5 text-[11px] text-brand-warning">{sourceNote}</p>}
+          {empty && !sourceNote && <p className="mt-0.5 text-[11px] text-brand-text-muted">ยังไม่มีรายการโปรด — แสดงตัวอย่างจากตลาด</p>}
         </div>
         <Link href="/watchlist" className="text-xs text-brand-primary hover:text-emerald-300">ดูทั้งหมด</Link>
       </div>
@@ -837,13 +854,14 @@ function ScanPresetSection() {
   )
 }
 
-function VolumeLeaderTable({ stocks, title, icon: Icon }: { stocks: string[][]; title: string; icon: any }) {
+function VolumeLeaderTable({ stocks, title, icon: Icon, sourceNote }: { stocks: string[][]; title: string; icon: any; sourceNote?: string }) {
   return (
     <div className="market-panel rounded-xl p-4 lg:p-5">
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
         <Icon size={17} className="text-brand-primary" />
         <h2 className="text-base font-semibold text-brand-text-primary">{title}</h2>
+        {sourceNote && <span className="rounded-md border border-brand-warning/25 bg-brand-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-brand-warning">{sourceNote}</span>}
         </div>
         <Link href="/screener" className="text-xs text-brand-text-muted hover:text-brand-primary">ดูทั้งหมด</Link>
       </div>
@@ -865,7 +883,7 @@ function VolumeLeaderTable({ stocks, title, icon: Icon }: { stocks: string[][]; 
 }
 
 export default function HomePage() {
-  const { data: stocks = [] } = useTrending()
+  const trending = useTrending()
   const { data: marketIndices } = useMarketIndices()
   const { isInWatchlist } = useWatchlist()
   const chartPanelRef = useRef<HTMLDivElement>(null)
@@ -875,7 +893,8 @@ export default function HomePage() {
   const [marketMenuOpen, setMarketMenuOpen] = useState(false)
   const [briefCountdownSeconds, setBriefCountdownSeconds] = useState(AI_MARKET_BRIEF_REFRESH_SECONDS)
   const [briefLastUpdated, setBriefLastUpdated] = useState('รอซิงก์')
-  const displayStocks = stocks.length > 0 ? stocks : fallbackStocks
+  const displayStocks = trending.data?.length ? trending.data : fallbackStocks
+  const showTrendingDemo = trending.data?.length === 0
   const liveSetIndex = useMemo(() => findSetIndex(marketIndices), [marketIndices])
   const dashboardTiles = useMemo(() => buildDashboardTiles(liveSetIndex), [liveSetIndex])
   const activeMarket = useMemo(
@@ -999,8 +1018,12 @@ export default function HomePage() {
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Brain size={17} className="text-brand-accent" />
               <h2 className="text-base font-semibold text-brand-text-primary">AI Market Brief</h2>
+              <span className="rounded-md border border-brand-warning/25 bg-brand-warning/10 px-2 py-0.5 text-[11px] font-medium text-brand-warning">ตัวอย่างข้อความ</span>
               <div className="ml-auto flex flex-wrap items-center justify-end gap-2 text-[11px]">
                 <span className="text-brand-text-muted">อัปเดตล่าสุด {briefLastUpdated}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-brand-warning/25 bg-brand-warning/10 px-2 py-1 font-mono-nums font-semibold text-brand-warning">
+                  static brief
+                </span>
                 <span className="inline-flex items-center gap-1.5 rounded-md border border-brand-accent/25 bg-brand-accent/10 px-2 py-1 font-mono-nums font-semibold text-brand-accent">
                   <span className="h-1.5 w-1.5 rounded-full bg-brand-accent" />
                   รีเฟรชใน {formatCountdown(briefCountdownSeconds)}
@@ -1021,13 +1044,13 @@ export default function HomePage() {
             </div>
           </div>
 
-            <VolumeLeaderTable stocks={[['PTT', '33.75', '+0.50', '+1.51%'], ['ADVANC', '245.00', '-1.00', '-0.41%'], ['KBANK', '133.50', '+2.00', '+1.52%'], ['CPALL', '57.25', '+0.50', '+0.88%'], ['BBL', '153.00', '+1.50', '+0.99%']]} title="Volume leader" icon={BarChart3} />
-            <VolumeLeaderTable stocks={usLeaders} title="US leaders" icon={TrendingUp} />
+            <VolumeLeaderTable stocks={[['PTT', '33.75', '+0.50', '+1.51%'], ['ADVANC', '245.00', '-1.00', '-0.41%'], ['KBANK', '133.50', '+2.00', '+1.52%'], ['CPALL', '57.25', '+0.50', '+0.88%'], ['BBL', '153.00', '+1.50', '+0.99%']]} title="Volume leader" icon={BarChart3} sourceNote="static seed" />
+            <VolumeLeaderTable stocks={usLeaders} title="US leaders" icon={TrendingUp} sourceNote="static seed" />
           </div>
         </div>
 
         <aside className="space-y-4">
-          <WatchlistPreview stocks={watchlistRows} empty={watchlistPreview.length === 0} />
+          <WatchlistPreview stocks={watchlistRows} empty={watchlistPreview.length === 0} sourceNote={showTrendingDemo ? 'แสดงตัวอย่างจาก static seed เพราะยังดึง trending provider ไม่สำเร็จ' : undefined} />
           <RiskPanel market={activeMarket} />
         </aside>
       </section>

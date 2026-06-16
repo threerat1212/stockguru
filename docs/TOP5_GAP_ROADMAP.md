@@ -57,18 +57,19 @@ StockGuru ควรวางตำแหน่งเป็น:
 - Market data: Yahoo Finance proxy + fallback/sample
 - Charts: TradingView widget + lightweight-charts
 - Deploy: Render
-- หน้าหลัก: home, stock detail, screener, AI, portfolio, news, compare, alerts, watchlist, journal, sector, earnings
+- หน้าหลัก: home, stock detail, screener, AI, portfolio, news, compare, alerts, watchlist, journal, sector, earnings, research memory
 - Subscription: Free / Pro / Trader พร้อม `PLAN_LIMITS`
 - Server gating: `lib/subscription/server.ts` มี `requireFeature()`
 - Alerts: มี cron `/api/alerts/check` และ email notification ถ้ามี `RESEND_API_KEY`
+- Research memory: มี Obsidian-style vault ที่ `knowledge/` สำหรับ article workflow แบบ near-real-time snapshot
 
 จุดที่ต้องระวังจากโค้ด:
 
 1. `lib/data/fetchers/set-index.ts` ยังเป็น mock SET index
 2. `lib/data/fetchers/thai-stocks.ts` ยัง mock แค่ไม่กี่หุ้นไทย
 3. `lib/services/stock-service.ts` มี fallback quotes/history สำหรับ selected symbols เท่านั้น
-4. News เป็น `AI Market Brief` ไม่ใช่ news wire จริง
-5. Alerts ตอนนี้เป็น price alert above/below เป็นหลัก
+4. News เป็น `AI Market Brief` ไม่ใช่ news wire จริง; impact score/points แยกตารางและ gate ด้วย Pro
+5. Alerts ตอนนี้มี price/%/volume alert path; email/push และ advanced conditions ยังต้อง production verify
 6. Sector / earnings ยังมี sample data ในหลายส่วน
 7. AI fallback analysis มี `isDemo: true` แต่ UI ต้องแสดงสถานะ demo ให้ชัดเสมอ
 
@@ -80,11 +81,11 @@ StockGuru ควรวางตำแหน่งเป็น:
 
 | ID | Feature | Gap ปัจจุบัน | Acceptance criteria | Priority |
 |---|---|---|---|---|
-| P0-1 | Reliable Thai market data | Yahoo proxy + sample ไม่พอสำหรับ SET/mai | มี provider, full SET/mai universe, meta `{ source, isDemo, provider, updatedAt }`, badge ชัดเจน | Critical |
-| P0-2 | Market dashboard | ยังไม่มีภาพรวมตลาดแบบ Finviz/Investing | แสดง SET/mai indices, advance/decline, top movers, volume movers, sector heatmap | Critical |
+| P0-1 | Reliable Thai market data | SiamChart path มี fallback/sample และ provider gaps | มี provider, full SET/mai universe, meta `{ source, isDemo, provider, updatedAt }`, badge ชัดเจน | Critical |
+| P0-2 | Market dashboard | มี `/market` + `/api/market/summary` แล้ว แต่ coverage/reliability ยังไม่พอ | แสดง SET/mai indices, advance/decline, top movers, volume movers, sector heatmap พร้อม provenance | Critical |
 | P0-3 | Advanced screener | มีหน้า screener แต่ต้องกรองจริง | Filter by sector, market cap, PE/PB/ROE/dividend, volume, 52-week, MA/RSI, save/export | Critical |
-| P0-4 | Smart alerts | มี price alert เท่านั้น | Alert ตาม price, % change, volume spike, MA cross, RSI, news/earnings; email + push | Critical |
-| P0-5 | Data trust layer | Demo/fallback ต้องไม่ทำให้เข้าใจผิด | ทุก card/chart/API แสดง source/status, demo badge, timestamp, disclaimer | Critical |
+| P0-4 | Smart alerts | มี price/%/volume alert path; email/push/advanced conditions ยังต้อง verify | Alert ตาม price, % change, volume spike, MA cross, RSI, news/earnings; email + push | Critical |
+| P0-5 | Data trust layer | Demo/fallback ต้องไม่ทำให้เข้าใจผิด | API หลักมี `meta`/warning และ UI sample/fallback surfaces มี badge; ยังต้องขยายไปยังทุก widget ที่ใช้ข้อมูลจำลอง | Critical |
 
 ### P1 — ทำให้ใกล้เคียง TradingView/Investing ใน workflow
 
@@ -92,9 +93,10 @@ StockGuru ควรวางตำแหน่งเป็น:
 |---|---|---|---|---|
 | P1-1 | Advanced charting | มี chart แต่ยังไม่ลึก | TradingView Advanced Chart, save layout, indicators, drawings, compare, templates | High |
 | P1-2 | News with citations + AI impact | ข่าวเป็น AI brief ไม่มี source | News card มี source link, timestamp, category, related symbols, AI impact panel gated Pro | High |
+| P1-2.1 | Research memory workflow | มี `knowledge/` vault + parser/API แต่ยังต้องเชื่อม ingestion pipeline | มี scheduled snapshot -> raw note -> reviewed article -> publish boundary พร้อม provenance และ human review | High |
 | P1-3 | Portfolio analytics | มี portfolio/journal แต่ analytics ยังน้อย | P/L, allocation, benchmark vs SET/SET50, sector exposure, dividend, realized/unrealized | High |
 | P1-4 | Watchlist intelligence | Watchlist เป็นแค่รายชื่อ | Mini chart, signal summary, news impact, alert status, AI watchlist digest | High |
-| P1-5 | PWA + push | ยังเป็น web ปกติ | Installable PWA, web push, offline shell, mobile-first audit | High |
+| P1-5 | PWA + push | มี manifest/service-worker/push subscribe บางส่วน | Installable PWA, web push payload icon, VAPID Render env, offline shell cached; ยังต้อง mobile install/push smoke test | High |
 
 ### P2 — สร้าง differentiation ระยะกลาง
 
@@ -195,7 +197,7 @@ StockGuru ควรวางตำแหน่งเป็น:
 | Unified cache layer | ปัจจุบัน cache แยก route/in-memory |
 | API schema validation | ลด `unknown`/implicit contract |
 | Structured logging / Sentry | production ต้องเห็น error/correlation |
-| Server-side gate audit | Pro feature ต้องกันทั้ง client และ API |
+| Server-side gate audit | Pro feature ต้องกันทั้ง client และ API | `exportCsv` มี API gate แล้ว; RLS plan gates เพิ่มแล้วสำหรับ portfolio/journal/war-room/newsImpact impact table |
 | Mobile-first audit | alerts/push/daily brief ต้องการ mobile UX |
 | i18n foundation | ถ้าจะขยาย EN ในอนาคต |
 
