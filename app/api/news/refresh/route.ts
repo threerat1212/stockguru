@@ -268,12 +268,24 @@ export async function POST(request: Request) {
     console.log('Insert successful')
 
     // Keep only last 200 articles to prevent table bloat
-    await supabase.rpc('cleanup_old_news')
+    const { error: cleanupError } = await supabase.rpc('cleanup_old_news')
+    if (cleanupError) {
+      // Don't fail the whole refresh just because cleanup failed, but surface it.
+      console.error('cleanup_old_news RPC error (non-fatal):', cleanupError)
+    }
 
     return NextResponse.json({ success: true, count: toInsertArticles.length })
   } catch (err) {
     console.error('News refresh error:', err)
-    const message = err instanceof Error ? err.message : 'Unknown error'
+    // Supabase errors are plain objects (not Error instances), so extract a
+    // useful message from the common shapes instead of falling back to
+    // "Unknown error" which hides the real cause.
+    const message =
+      err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : JSON.stringify(err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
